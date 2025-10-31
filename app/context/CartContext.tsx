@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 export interface CartItem {
   id: number;
   name: string;
-  price: string;
+  price: string | number;
   image: string;
   quantity: number;
 }
@@ -95,7 +95,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const getTotalPrice = () => {
     return cartItems.reduce((total, item) => {
-      const price = parseInt(item.price.replace(/[₺,.]/g, ''));
+      const price = typeof item.price === 'string' 
+        ? parseInt(item.price.replace(/[₺,.]/g, ''))
+        : item.price;
       return total + (price * item.quantity);
     }, 0);
   };

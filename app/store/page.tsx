@@ -19,6 +19,8 @@ export default function StorePage() {
     image: string;
     category: string;
     description?: string;
+    badge?: string;
+    inStock?: boolean;
   }
   
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);

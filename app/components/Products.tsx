@@ -3,10 +3,19 @@
 import Link from 'next/link';
 import { useCart } from '../context/CartContext';
 
+interface Product {
+  id: number;
+  name: string;
+  price: string | number;
+  image: string;
+  features: string[];
+  badge?: string;
+}
+
 export default function Products() {
   const { addToCart } = useCart();
 
-  const products = [
+  const products: Product[] = [
     {
       id: 1,
       name: 'Notouchness Black Card',
