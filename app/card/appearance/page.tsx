@@ -9,13 +9,26 @@ export default function AppearancePage() {
   const router = useRouter();
   const { currentCard, isOwner, updateCard } = useCard();
 
-  const [theme, setTheme] = useState<string>('sales');
+  type ThemeType = 'dark' | 'light' | 'gradient' | 'minimal' | 'lawyer' | 'ceo' | 'sales' | 'developer' | 'retail' | 'creative' | 'designer' | 'tech' | 'medical' | 'educator' | 'realestate' | 'marketing' | 'consultant' | 'artist' | 'fitness' | 'photographer' | 'writer' | 'chef' | 'ocean' | 'forest' | 'sunset' | 'neon' | 'royal' | 'mint' | 'lavender' | 'midnight';
+  
+  const [theme, setTheme] = useState<ThemeType>('sales');
   const [layoutStyle, setLayoutStyle] = useState<'icons-only' | 'icons-with-title' | 'full-description'>('icons-with-title');
   const [gridCols, setGridCols] = useState<number>(3);
   const [avatarPosition, setAvatarPosition] = useState<'top' | 'center' | 'above'>('above');
 
   // Hazır Temalar - Uyumlu Renk Paletleri (Her biri gerçekten farklı!)
-  const presetThemes = [
+  const presetThemes: Array<{
+    id: ThemeType;
+    name: string;
+    description: string;
+    backgroundColor: string;
+    containerBackgroundColor: string;
+    primaryColor: string;
+    secondaryColor: string;
+    textColor: string;
+    accentColor: string;
+    layoutStyle: 'icons-only' | 'icons-with-title' | 'full-description';
+  }> = [
     {
       id: 'sales',
       name: 'Satış Danışmanı',
@@ -242,7 +255,7 @@ export default function AppearancePage() {
     
     // Initialize state from currentCard
     const initializeState = () => {
-      setTheme(currentCard.theme || 'sales');
+      setTheme((currentCard.theme || 'sales') as ThemeType);
       setLayoutStyle(currentCard.layoutStyle || 'icons-with-title');
       setGridCols(currentCard.gridCols || 3);
       setAvatarPosition(currentCard.avatarPosition || 'above');
@@ -252,7 +265,7 @@ export default function AppearancePage() {
   }, [currentCard, isOwner, router]);
 
   const applyPresetTheme = (preset: typeof presetThemes[0]) => {
-    setTheme(preset.id);
+    setTheme(preset.id as ThemeType);
     setLayoutStyle(preset.layoutStyle);
   };
 
@@ -262,12 +275,12 @@ export default function AppearancePage() {
 
   const selectedTheme = getSelectedTheme();
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!currentCard) return;
 
-    const success = updateCard({
+    const success = await updateCard({
       ...currentCard,
-      theme: theme as 'sales' | 'lawyer' | 'ceo' | 'designer' | 'tech' | 'medical' | 'educator' | 'realestate' | 'marketing' | 'consultant' | 'artist' | 'fitness' | 'photographer' | 'writer' | 'chef' | 'dark' | 'ocean' | 'forest' | 'sunset' | 'neon' | 'royal' | 'mint' | 'lavender' | 'midnight',
+      theme,
       layoutStyle,
       primaryColor: selectedTheme.primaryColor,
       secondaryColor: selectedTheme.secondaryColor,

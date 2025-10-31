@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useCard } from '../../context/CardContext';
+import { CardProfile, useCard } from '../../context/CardContext';
 import Image from 'next/image';
 import { 
   Save, 
@@ -147,7 +147,7 @@ export default function CardSetupPage() {
     uber: '',
     bolt: '',
     // Görünüm
-    theme: 'dark' as 'dark' | 'light' | 'gradient' | 'minimal' | 'lawyer' | 'ceo' | 'sales' | 'developer' | 'retail' | 'creative',
+    theme: 'dark' as CardProfile['theme'],
     layoutStyle: 'icons-with-title' as 'icons-only' | 'icons-with-title' | 'full-description',
     primaryColor: '#000000',
     secondaryColor: '#ffffff',
@@ -241,7 +241,7 @@ export default function CardSetupPage() {
       tripadvisor: currentCard.tripadvisor || '',
       uber: currentCard.uber || '',
       bolt: currentCard.bolt || '',
-      theme: currentCard.theme || 'dark',
+      theme: currentCard.theme,
       layoutStyle: currentCard.layoutStyle || 'icons-with-title',
       primaryColor: currentCard.primaryColor || '#000000',
       secondaryColor: currentCard.secondaryColor || '#ffffff',

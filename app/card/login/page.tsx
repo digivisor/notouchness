@@ -23,11 +23,11 @@ export default function CardLoginPage() {
     setError('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    const success = loginToCard(formData.email, formData.password);
+    const success = await loginToCard(formData.email, formData.password);
     if (success) {
       router.push('/card/setup');
     } else {

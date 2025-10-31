@@ -109,7 +109,7 @@ export interface CardProfile {
   bolt: string;
   
   // Profil Görünümü
-  theme: 'dark' | 'light' | 'gradient' | 'minimal' | 'lawyer' | 'ceo' | 'sales' | 'developer' | 'retail' | 'creative';
+  theme: 'dark' | 'light' | 'gradient' | 'minimal' | 'lawyer' | 'ceo' | 'sales' | 'developer' | 'retail' | 'creative' | 'designer' | 'tech' | 'medical' | 'educator' | 'realestate' | 'marketing' | 'consultant' | 'artist' | 'fitness' | 'photographer' | 'writer' | 'chef' | 'ocean' | 'forest' | 'sunset' | 'neon' | 'royal' | 'mint' | 'lavender' | 'midnight';
   layoutStyle: 'icons-only' | 'icons-with-title' | 'full-description';
   avatarUrl: string;
   coverUrl: string;
