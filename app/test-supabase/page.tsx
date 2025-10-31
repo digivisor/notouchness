@@ -1,17 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 
 export default function TestSupabasePage() {
   const [status, setStatus] = useState<string>('Kontrol ediliyor...');
   const [tests, setTests] = useState<Array<{ name: string; status: 'loading' | 'success' | 'error'; message: string }>>([]);
 
-  useEffect(() => {
-    runTests();
-  }, []);
-
-  const runTests = async () => {
+  const runTests = useCallback(async () => {
     const results: Array<{ name: string; status: 'loading' | 'success' | 'error'; message: string }> = [];
 
     // Test 1: Bağlantı
@@ -19,14 +16,15 @@ export default function TestSupabasePage() {
     setTests([...results]);
     
     try {
-      const { data, error } = await supabase.from('cards').select('count').limit(1);
-      if (error) {
-        results[0] = { name: 'Supabase Bağlantısı', status: 'error', message: error.message };
+      const { error: connectionError } = await supabase.from('cards').select('count').limit(1);
+      if (connectionError) {
+        results[0] = { name: 'Supabase Bağlantısı', status: 'error', message: connectionError.message };
       } else {
-        results[0] = { name: 'Supabase Bağlantısı', status: 'success', message: 'Bağlantı başarılı!' };
+        results[0] = { name: 'Supabase Bağlantısı', status: 'success', message: '✅ Bağlantı başarılı!' };
       }
-    } catch (err: any) {
-      results[0] = { name: 'Supabase Bağlantısı', status: 'error', message: err.message };
+    } catch (err: unknown) {
+      const error = err as Error;
+      results[0] = { name: 'Supabase Bağlantısı', status: 'error', message: error.message };
     }
     setTests([...results]);
 
@@ -35,14 +33,15 @@ export default function TestSupabasePage() {
     setTests([...results]);
     
     try {
-      const { data, error } = await supabase.from('cards').select('*').limit(1);
+      const { data: cardsData, error } = await supabase.from('cards').select('*').limit(1);
       if (error) {
         results[1] = { name: 'Cards Tablosu', status: 'error', message: error.message };
       } else {
-        results[1] = { name: 'Cards Tablosu', status: 'success', message: `✅ Tablo mevcut (${data?.length || 0} kayıt)` };
+        results[1] = { name: 'Cards Tablosu', status: 'success', message: `✅ Tablo mevcut (${cardsData?.length || 0} kayıt)` };
       }
-    } catch (err: any) {
-      results[1] = { name: 'Cards Tablosu', status: 'error', message: err.message };
+    } catch (err: unknown) {
+      const error = err as Error;
+      results[1] = { name: 'Cards Tablosu', status: 'error', message: error.message };
     }
     setTests([...results]);
 
@@ -51,14 +50,15 @@ export default function TestSupabasePage() {
     setTests([...results]);
     
     try {
-      const { data, error } = await supabase.from('users').select('*').limit(1);
+      const { data: usersData, error } = await supabase.from('users').select('*').limit(1);
       if (error) {
         results[2] = { name: 'Users Tablosu', status: 'error', message: error.message };
       } else {
-        results[2] = { name: 'Users Tablosu', status: 'success', message: `✅ Tablo mevcut (${data?.length || 0} kayıt)` };
+        results[2] = { name: 'Users Tablosu', status: 'success', message: `✅ Tablo mevcut (${usersData?.length || 0} kayıt)` };
       }
-    } catch (err: any) {
-      results[2] = { name: 'Users Tablosu', status: 'error', message: err.message };
+    } catch (err: unknown) {
+      const error = err as Error;
+      results[2] = { name: 'Users Tablosu', status: 'error', message: error.message };
     }
     setTests([...results]);
 
@@ -67,14 +67,15 @@ export default function TestSupabasePage() {
     setTests([...results]);
     
     try {
-      const { data, error } = await supabase.from('cart_items').select('*').limit(1);
+      const { data: cartData, error } = await supabase.from('cart_items').select('*').limit(1);
       if (error) {
         results[3] = { name: 'Cart Items Tablosu', status: 'error', message: error.message };
       } else {
-        results[3] = { name: 'Cart Items Tablosu', status: 'success', message: `✅ Tablo mevcut (${data?.length || 0} kayıt)` };
+        results[3] = { name: 'Cart Items Tablosu', status: 'success', message: `✅ Tablo mevcut (${cartData?.length || 0} kayıt)` };
       }
-    } catch (err: any) {
-      results[3] = { name: 'Cart Items Tablosu', status: 'error', message: err.message };
+    } catch (err: unknown) {
+      const error = err as Error;
+      results[3] = { name: 'Cart Items Tablosu', status: 'error', message: error.message };
     }
     setTests([...results]);
 
@@ -100,14 +101,23 @@ export default function TestSupabasePage() {
         await supabase.from('cards').delete().eq('id', testHash);
         results[4] = { name: 'Write İzni', status: 'success', message: '✅ Write izni var!' };
       }
-    } catch (err: any) {
-      results[4] = { name: 'Write İzni', status: 'error', message: err.message };
+    } catch (err: unknown) {
+      const error = err as Error;
+      results[4] = { name: 'Write İzni', status: 'error', message: error.message };
     }
     setTests([...results]);
 
     const allSuccess = results.every(r => r.status === 'success');
     setStatus(allSuccess ? '✅ Tüm testler başarılı!' : '❌ Bazı testler başarısız');
-  };
+  }, []);
+
+  useEffect(() => {
+    // runTests'ı asenkron olarak çağır
+    const runTestsAsync = async () => {
+      await runTests();
+    };
+    runTestsAsync();
+  }, [runTests]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -157,8 +167,8 @@ export default function TestSupabasePage() {
             <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
               <h2 className="font-semibold text-blue-900 mb-3">Sonraki Adımlar:</h2>
               <ol className="list-decimal list-inside space-y-2 text-blue-800">
-                <li>Admin panelinden yeni kart oluştur: <a href="/admin" className="underline font-semibold">/admin</a></li>
-                <li>Kart URL'sine git ve register ol</li>
+                <li>Admin panelinden yeni kart oluştur: <Link href="/admin" className="underline font-semibold">/admin</Link></li>
+                <li>Kart URL&apos;sine git ve register ol</li>
                 <li>Setup sayfasında profil oluştur</li>
                 <li>Username ile profil sayfasını görüntüle</li>
               </ol>

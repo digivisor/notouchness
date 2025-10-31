@@ -12,10 +12,17 @@ interface User {
   createdAt: string;
 }
 
+interface RegisterData {
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+}
+
 interface UserContextType {
   user: User | null;
   login: (email: string, password: string) => boolean;
-  register: (data: any) => boolean;
+  register: (data: RegisterData) => boolean;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -40,11 +47,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // LocalStorage'dan kullanıcıyı yükle
   useEffect(() => {
-    const savedUser = localStorage.getItem('notouchness_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setIsLoaded(true);
+    const loadUser = () => {
+      const savedUser = localStorage.getItem('notouchness_user');
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+      setIsLoaded(true);
+    };
+    
+    loadUser();
   }, []);
 
   // Kullanıcı değiştiğinde localStorage'a kaydet
@@ -61,6 +72,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const login = (email: string, password: string): boolean => {
     // Demo login kontrolü
     if (email === DEMO_USER.email && password === DEMO_USER.password) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _, ...userWithoutPassword } = DEMO_USER;
       setUser(userWithoutPassword);
       return true;
@@ -68,7 +80,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
-  const register = (data: any): boolean => {
+  interface RegisterData {
+    email: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+  }
+  
+  const register = (data: RegisterData): boolean => {
     // Yeni kullanıcı oluştur
     const newUser: User = {
       id: Date.now().toString(),

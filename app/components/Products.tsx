@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import Link from 'next/link';
 import { useCart } from '../context/CartContext';
 
 export default function Products() {
@@ -136,13 +136,13 @@ export default function Products() {
 
         {/* Mağaza Butonu */}
         <div className="text-center">
-          <a 
+          <Link 
             href="/store"
             className="inline-block px-10 py-4 font-semibold text-white transition-all hover:shadow-lg text-lg"
             style={{ backgroundColor: 'black' }}
           >
             Mağaza
-          </a>
+          </Link>
         </div>
       </div>
     </section>

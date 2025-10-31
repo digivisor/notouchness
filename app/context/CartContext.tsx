@@ -10,9 +10,16 @@ export interface CartItem {
   quantity: number;
 }
 
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+}
+
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: any, quantity?: number) => void;
+  addToCart: (product: Product, quantity?: number) => void;
   removeFromCart: (productId: number) => void;
   updateQuantity: (productId: number, newQuantity: number) => void;
   getTotalPrice: () => number;
@@ -28,11 +35,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // LocalStorage'dan sepeti yükle
   useEffect(() => {
-    const savedCart = localStorage.getItem('notouchness_cart');
-    if (savedCart) {
-      setCartItems(JSON.parse(savedCart));
-    }
-    setIsLoaded(true);
+    const loadCart = () => {
+      const savedCart = localStorage.getItem('notouchness_cart');
+      if (savedCart) {
+        setCartItems(JSON.parse(savedCart));
+      }
+      setIsLoaded(true);
+    };
+    
+    loadCart();
   }, []);
 
   // Sepet değiştiğinde localStorage'a kaydet
@@ -46,7 +57,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [cartItems, isLoaded]);
 
-  const addToCart = (product: any, quantity: number = 1) => {
+  const addToCart = (product: Product, quantity: number = 1) => {
     const existingItem = cartItems.find(item => item.id === product.id);
     
     if (existingItem) {

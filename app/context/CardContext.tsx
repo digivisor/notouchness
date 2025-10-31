@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { cardDb } from '../../lib/supabase-cards';
 
 // NFC Kart Profil Interface
-interface CardProfile {
+export interface CardProfile {
   id: string; // Benzersiz hash (örn: dwferwqferver)
   username: string; // Kullanıcı adı (örn: fazilcanakbas)
   
@@ -366,21 +366,25 @@ export function CardProvider({ children }: { children: ReactNode }) {
 
   // LocalStorage'dan currentCard ve isOwner yükle (session için)
   useEffect(() => {
-    const savedCurrentCard = localStorage.getItem('notouchness_current_card');
-    if (savedCurrentCard) {
-      try {
-        setCurrentCard(JSON.parse(savedCurrentCard));
-      } catch (e) {
-        console.error('Error parsing saved card:', e);
+    const loadSession = () => {
+      const savedCurrentCard = localStorage.getItem('notouchness_current_card');
+      if (savedCurrentCard) {
+        try {
+          setCurrentCard(JSON.parse(savedCurrentCard));
+        } catch (e) {
+          console.error('Error parsing saved card:', e);
+        }
       }
-    }
+      
+      const savedIsOwner = localStorage.getItem('notouchness_is_owner');
+      if (savedIsOwner) {
+        setIsOwner(JSON.parse(savedIsOwner) === true);
+      }
+      
+      setIsLoading(false);
+    };
     
-    const savedIsOwner = localStorage.getItem('notouchness_is_owner');
-    if (savedIsOwner) {
-      setIsOwner(JSON.parse(savedIsOwner) === true);
-    }
-    
-    setIsLoading(false);
+    loadSession();
   }, []);
 
   const getCardByHash = async (hash: string): Promise<CardProfile | null> => {

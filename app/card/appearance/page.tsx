@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCard } from '../../context/CardContext';
-import { Save, Eye, User, LogOut, Home, Palette, Pen } from 'lucide-react';
+import { Save, Eye, User, LogOut, Home, Palette } from 'lucide-react';
 
 export default function AppearancePage() {
   const router = useRouter();
@@ -240,10 +240,15 @@ export default function AppearancePage() {
       return;
     }
     
-    setTheme(currentCard.theme || 'sales');
-    setLayoutStyle(currentCard.layoutStyle || 'icons-with-title');
-    setGridCols(currentCard.gridCols || 3);
-    setAvatarPosition(currentCard.avatarPosition || 'above');
+    // Initialize state from currentCard
+    const initializeState = () => {
+      setTheme(currentCard.theme || 'sales');
+      setLayoutStyle(currentCard.layoutStyle || 'icons-with-title');
+      setGridCols(currentCard.gridCols || 3);
+      setAvatarPosition(currentCard.avatarPosition || 'above');
+    };
+    
+    initializeState();
   }, [currentCard, isOwner, router]);
 
   const applyPresetTheme = (preset: typeof presetThemes[0]) => {
@@ -262,7 +267,7 @@ export default function AppearancePage() {
 
     const success = updateCard({
       ...currentCard,
-      theme: theme as any,
+      theme: theme as 'sales' | 'lawyer' | 'ceo' | 'designer' | 'tech' | 'medical' | 'educator' | 'realestate' | 'marketing' | 'consultant' | 'artist' | 'fitness' | 'photographer' | 'writer' | 'chef' | 'dark' | 'ocean' | 'forest' | 'sunset' | 'neon' | 'royal' | 'mint' | 'lavender' | 'midnight',
       layoutStyle,
       primaryColor: selectedTheme.primaryColor,
       secondaryColor: selectedTheme.secondaryColor,

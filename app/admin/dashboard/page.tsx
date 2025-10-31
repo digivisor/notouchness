@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useCard } from '../../context/CardContext';
+import { useCard, CardProfile } from '../../context/CardContext';
 import { QRCodeSVG } from 'qrcode.react';
 import { 
   Plus, Copy, Download, ExternalLink, CheckCircle, XCircle, 
-  LogOut, Home, LayoutDashboard, CreditCard, Users, Settings,
-  TrendingUp, Eye, Calendar, Search, Filter
+  CreditCard, Eye, Search
 } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
 import AdminHeader from '../components/AdminHeader';
@@ -15,8 +14,8 @@ import AdminHeader from '../components/AdminHeader';
 export default function AdminDashboardPage() {
   const router = useRouter();
   const { createCardByAdmin, getAllCards } = useCard();
-  const [cards, setCards] = useState<any[]>([]);
-  const [selectedCard, setSelectedCard] = useState<any | null>(null);
+  const [cards, setCards] = useState<CardProfile[]>([]);
+  const [selectedCard, setSelectedCard] = useState<CardProfile | null>(null);
   const [customHash, setCustomHash] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
@@ -27,20 +26,7 @@ export default function AdminDashboardPage() {
     totalViews: 0,
   });
 
-  useEffect(() => {
-    // Admin session kontrolü
-    const session = localStorage.getItem('admin_session');
-    if (!session) {
-      router.push('/admin/login');
-      return;
-    }
-
-    loadCards();
-    const interval = setInterval(loadCards, 5000); // 5 saniyede bir güncelle
-    return () => clearInterval(interval);
-  }, [router]);
-
-  const loadCards = async () => {
+  const loadCards = useCallback(async () => {
     const allCards = await getAllCards();
     setCards(allCards);
     
@@ -51,7 +37,26 @@ export default function AdminDashboardPage() {
       inactive: allCards.filter(c => !c.isActive).length,
       totalViews: allCards.reduce((sum, c) => sum + (c.viewCount || 0), 0),
     });
-  };
+  }, [getAllCards]);
+
+  useEffect(() => {
+    // Admin session kontrolü
+    const session = localStorage.getItem('admin_session');
+    if (!session) {
+      router.push('/admin/login');
+      return;
+    }
+
+    // loadCards'ı asenkron olarak çağır
+    const loadCardsAsync = async () => {
+      await loadCards();
+    };
+    loadCardsAsync();
+    const interval = setInterval(() => {
+      loadCardsAsync();
+    }, 5000); // 5 saniyede bir güncelle
+    return () => clearInterval(interval);
+  }, [router, loadCards]);
 
   const handleCreateCard = async () => {
     const newCard = await createCardByAdmin(customHash || undefined);
@@ -335,7 +340,16 @@ export default function AdminDashboardPage() {
   );
 }
 
-function CardItem({ card, getCardUrl, copyToClipboard, downloadQRCode, isSelected, onSelect }: any) {
+interface CardItemProps {
+  card: CardProfile;
+  getCardUrl: (hash: string) => string;
+  copyToClipboard: (text: string) => void;
+  downloadQRCode: (hash: string) => void;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+function CardItem({ card, getCardUrl, copyToClipboard, downloadQRCode, isSelected, onSelect }: CardItemProps) {
   return (
     <div
       className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${
@@ -396,7 +410,15 @@ function CardItem({ card, getCardUrl, copyToClipboard, downloadQRCode, isSelecte
   );
 }
 
-function CardDetailModal({ card, getCardUrl, copyToClipboard, downloadQRCode, onClose }: any) {
+interface CardDetailModalProps {
+  card: CardProfile;
+  getCardUrl: (hash: string) => string;
+  copyToClipboard: (text: string) => void;
+  downloadQRCode: (hash: string) => void;
+  onClose: () => void;
+}
+
+function CardDetailModal({ card, getCardUrl, copyToClipboard, downloadQRCode, onClose }: CardDetailModalProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={onClose}>
       <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>

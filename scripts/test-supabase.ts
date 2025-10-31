@@ -16,8 +16,9 @@ async function testSupabase() {
       return;
     }
     console.log('✅ Supabase bağlantısı başarılı!\n');
-  } catch (err: any) {
-    console.error('❌ Bağlantı hatası:', err.message);
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error('❌ Bağlantı hatası:', error.message);
     return;
   }
 
@@ -33,8 +34,9 @@ async function testSupabase() {
       } else {
         console.log(`✅ ${table} tablosu mevcut`);
       }
-    } catch (err: any) {
-      console.error(`❌ ${table} tablosu kontrol edilemedi:`, err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      console.error(`❌ ${table} tablosu kontrol edilemedi:`, error.message);
     }
   }
 

@@ -1,18 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useCard } from '../../context/CardContext';
+import { useCard, CardProfile } from '../../context/CardContext';
 import AdminSidebar from '../components/AdminSidebar';
 import AdminHeader from '../components/AdminHeader';
-import { CreditCard, Search, Filter } from 'lucide-react';
+import { CreditCard, Search } from 'lucide-react';
 
 export default function AdminCardsPage() {
   const router = useRouter();
   const { getAllCards } = useCard();
-  const [cards, setCards] = useState<any[]>([]);
+  const [cards, setCards] = useState<CardProfile[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
+
+  const loadCards = useCallback(async () => {
+    const allCards = await getAllCards();
+    setCards(allCards);
+  }, [getAllCards]);
 
   useEffect(() => {
     const session = localStorage.getItem('admin_session');
@@ -21,13 +26,12 @@ export default function AdminCardsPage() {
       return;
     }
 
-    loadCards();
-  }, []);
-
-  const loadCards = async () => {
-    const allCards = await getAllCards();
-    setCards(allCards);
-  };
+    // loadCards'ı asenkron olarak çağır
+    const loadCardsAsync = async () => {
+      await loadCards();
+    };
+    loadCardsAsync();
+  }, [router, loadCards]);
 
   const filteredCards = cards.filter(card => {
     const matchesSearch = 

@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
 import CartModal from '../../components/CartModal';
 import { useUser } from '../../context/UserContext';
 
@@ -69,13 +68,13 @@ export default function LoginPage() {
       <div className="pt-20 pb-12 px-6">
         <div className="max-w-md mx-auto">
           {/* Back Button */}
-          <a 
+          <Link 
             href="/"
             className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition mb-8"
           >
             <ArrowLeft size={20} />
             Ana Sayfaya Dön
-          </a>
+          </Link>
 
           {/* Login/Register Card */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
@@ -283,7 +282,7 @@ export default function LoginPage() {
                     />
                     <span className="text-sm text-gray-600">
                       <a href="#" className="text-black hover:underline">Kullanım Koşulları</a> ve{' '}
-                      <a href="#" className="text-black hover:underline">Gizlilik Politikası</a>'nı okudum, kabul ediyorum.
+                      <a href="#" className="text-black hover:underline">Gizlilik Politikası</a>&apos;nı okudum, kabul ediyorum.
                     </span>
                   </label>
                 </div>
@@ -346,7 +345,7 @@ export default function LoginPage() {
             <p className="text-sm text-gray-500">
               Giriş yaparak{' '}
               <a href="#" className="text-gray-700 hover:underline">Kullanım Koşulları</a> ve{' '}
-              <a href="#" className="text-gray-700 hover:underline">Gizlilik Politikası</a>'mızı kabul etmiş olursunuz.
+              <a href="#" className="text-gray-700 hover:underline">Gizlilik Politikası</a>&apos;mızı kabul etmiş olursunuz.
             </p>
           </div>
         </div>

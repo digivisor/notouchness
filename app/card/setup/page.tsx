@@ -158,23 +158,25 @@ export default function CardSetupPage() {
       router.push('/card/login');
       return;
     }
-    
-    setFormData({
-      username: currentCard.username || '',
-      fullName: currentCard.fullName || '',
-      title: currentCard.title || '',
-      company: currentCard.company || '',
-      bio: currentCard.bio || '',
-      email: currentCard.email || '',
-      phone: currentCard.phone || '',
-      website: currentCard.website || '',
-      location: currentCard.location || '',
-      instagram: currentCard.instagram || '',
-      facebook: currentCard.facebook || '',
-      twitter: currentCard.twitter || '',
-      linkedin: currentCard.linkedin || '',
-      youtube: currentCard.youtube || '',
-      tiktok: currentCard.tiktok || '',
+
+    // setFormData'yı callback içinde çağır
+    const initializeForm = () => {
+      setFormData({
+        username: currentCard.username || '',
+        fullName: currentCard.fullName || '',
+        title: currentCard.title || '',
+        company: currentCard.company || '',
+        bio: currentCard.bio || '',
+        email: currentCard.email || '',
+        phone: currentCard.phone || '',
+        website: currentCard.website || '',
+        location: currentCard.location || '',
+        instagram: currentCard.instagram || '',
+        facebook: currentCard.facebook || '',
+        twitter: currentCard.twitter || '',
+        linkedin: currentCard.linkedin || '',
+        youtube: currentCard.youtube || '',
+        tiktok: currentCard.tiktok || '',
       snapchat: currentCard.snapchat || '',
       pinterest: currentCard.pinterest || '',
       reddit: currentCard.reddit || '',
@@ -247,6 +249,9 @@ export default function CardSetupPage() {
     
     setProfileImage(currentCard.profileImage || '');
     setCustomLinks(currentCard.customLinks || []);
+    };
+    
+    initializeForm();
   }, [currentCard, isOwner, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

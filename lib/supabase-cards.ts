@@ -1,8 +1,12 @@
 import { supabase } from './supabase';
 import { CardProfile } from '../app/context/CardContext';
 
+interface DbCard {
+  [key: string]: string | number | boolean | null | unknown[] | Record<string, unknown>;
+}
+
 // CardProfile'i database formatına çevir
-const cardToDbFormat = (card: CardProfile): any => {
+const cardToDbFormat = (card: CardProfile): DbCard => {
   return {
     id: card.id,
     username: card.username || null,
@@ -130,7 +134,7 @@ const cardToDbFormat = (card: CardProfile): any => {
 };
 
 // Database formatını CardProfile'e çevir
-const dbToCardFormat = (row: any): CardProfile => {
+const dbToCardFormat = (row: DbCard): CardProfile => {
   return {
     id: row.id,
     username: row.username || '',
@@ -316,7 +320,7 @@ export const cardDb = {
     if (!currentCard) return null;
     
     // Güncellemeleri birleştir
-    const updatedCard = { ...currentCard, ...updates };
+    const updatedCard: CardProfile = { ...currentCard, ...updates };
     
     // Database formatına çevir
     const dbCard = cardToDbFormat(updatedCard);
@@ -337,12 +341,20 @@ export const cardDb = {
 
   // View count artır
   async incrementViewCount(id: string): Promise<void> {
-    await supabase.rpc('increment_card_views', { card_id: id }).catch(() => {
-      // RPC yoksa manuel olarak artır
-      supabase
+    await supabase.rpc('increment_card_views', { card_id: id }).catch(async () => {
+      // RPC yoksa mevcut count'u al ve artır
+      const { data: currentCard } = await supabase
         .from('cards')
-        .update({ view_count: supabase.raw('view_count + 1') } as any)
-        .eq('id', id);
+        .select('view_count')
+        .eq('id', id)
+        .single();
+      
+      if (currentCard) {
+        await supabase
+          .from('cards')
+          .update({ view_count: (currentCard.view_count || 0) + 1 })
+          .eq('id', id);
+      }
     });
   },
 };

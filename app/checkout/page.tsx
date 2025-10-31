@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
 import { useCart } from '../context/CartContext';
 import Header from '../components/Header';
@@ -12,6 +13,8 @@ export default function CheckoutPage() {
   const { cartItems, getTotalPrice, clearCart } = useCart();
   const [isCartVisible, setIsCartVisible] = useState(false);
   const [step, setStep] = useState(1); // 1: Bilgiler, 2: Ödeme, 3: Onay
+  // Order number'ı useState ile oluştur (sadece bir kez)
+  const [orderNumber] = useState(() => Math.floor(Math.random() * 100000));
 
   // Form states
   const [formData, setFormData] = useState({
@@ -79,12 +82,12 @@ export default function CheckoutPage() {
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Sepetiniz Boş</h1>
             <p className="text-gray-600 mb-8">Checkout yapmak için sepetinize ürün eklemelisiniz.</p>
-            <a 
+            <Link 
               href="/store"
               className="inline-block bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition"
             >
               Mağazaya Git
-            </a>
+            </Link>
           </div>
         </div>
         
@@ -100,13 +103,13 @@ export default function CheckoutPage() {
 
       <div className="max-w-7xl mx-auto px-6 py-12 mt-20">
         {/* Back Button */}
-        <a 
+        <Link 
           href="/store"
           className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition mb-8"
         >
           <ArrowLeft size={20} />
           Alışverişe Devam Et
-        </a>
+        </Link>
 
         {/* Progress Steps */}
         <div className="mb-12">
@@ -412,23 +415,23 @@ export default function CheckoutPage() {
                       </svg>
                     </div>
                     <h2 className="text-2xl font-bold mb-2">Siparişiniz Alındı!</h2>
-                    <p className="text-gray-600 mb-6">Sipariş numaranız: <strong>#NT{Math.floor(Math.random() * 100000)}</strong></p>
+                    <p className="text-gray-600 mb-6">Sipariş numaranız: <strong>#NT{orderNumber}</strong></p>
                     <p className="text-gray-600 mb-8">
                       Siparişiniz başarıyla oluşturuldu. Kısa süre içinde kargo takip numaranız e-posta adresinize gönderilecektir.
                     </p>
                     <div className="flex gap-4 justify-center">
-                      <a
+                      <Link
                         href="/"
                         className="px-8 py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition"
                       >
                         Ana Sayfaya Dön
-                      </a>
-                      <a
+                      </Link>
+                      <Link
                         href="/store"
                         className="px-8 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition"
                       >
                         Alışverişe Devam Et
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </div>

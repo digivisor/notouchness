@@ -12,7 +12,16 @@ export default function StorePage() {
   const { addToCart } = useCart();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isCartVisible, setIsCartVisible] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  interface Product {
+    id: number;
+    name: string;
+    price: number;
+    image: string;
+    category: string;
+    description?: string;
+  }
+  
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [minPrice, setMinPrice] = useState(149);
   const [maxPrice, setMaxPrice] = useState(1499);
@@ -27,7 +36,7 @@ export default function StorePage() {
     setIsCartVisible(false);
   };
 
-  const openProductModal = (product: any) => {
+  const openProductModal = (product: Product) => {
     setSelectedProduct(product);
     setIsProductModalOpen(true);
     setQuantity(1);
@@ -154,7 +163,7 @@ export default function StorePage() {
     }
   });
 
-  const handleAddToCart = (product: any, qty: number = 1) => {
+  const handleAddToCart = (product: Product, qty: number = 1) => {
     addToCart(product, qty);
   };
 

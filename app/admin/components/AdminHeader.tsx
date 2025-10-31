@@ -7,15 +7,18 @@ export default function AdminHeader() {
   const [adminEmail, setAdminEmail] = useState('');
 
   useEffect(() => {
-    const session = localStorage.getItem('admin_session');
-    if (session) {
-      try {
-        const parsed = JSON.parse(session);
-        setAdminEmail(parsed.email || '');
-      } catch (e) {
-        console.error('Error parsing session:', e);
+    const loadSession = () => {
+      const session = localStorage.getItem('admin_session');
+      if (session) {
+        try {
+          const parsed = JSON.parse(session);
+          setAdminEmail(parsed.email || '');
+        } catch (e) {
+          console.error('Error parsing session:', e);
+        }
       }
-    }
+    };
+    loadSession();
   }, []);
 
   return (

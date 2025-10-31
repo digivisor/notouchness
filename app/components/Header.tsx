@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
@@ -25,18 +26,18 @@ export default function Header({ onCartClick }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo - Left */}
-          <a href="/" className="flex items-center">
+          <Link href="/" className="flex items-center">
             <span className="text-white text-2xl font-light tracking-wider">notouchness</span>
-          </a>
+          </Link>
           
           {/* Menu - Center */}
           <div className="flex gap-12">
-            <a href="/" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Home</a>
+            <Link href="/" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Home</Link>
             <a href="#" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Nasıl Kullanılır?</a>
             <a href="#" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Ürün Özellikleri</a>
-            <a href="/store" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Mağaza</a>
+            <Link href="/store" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Mağaza</Link>
             <a href="#" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">İletişim</a>
-            <a href="/user/login" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Giriş</a>
+            <Link href="/user/login" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Giriş</Link>
           </div>
           
           {/* Cart - Right */}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react';
 import { useCard } from '../../context/CardContext';
 
@@ -38,13 +39,13 @@ export default function CardLoginPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6 py-12">
       <div className="max-w-md w-full">
         
-        <a 
+        <Link 
           href="/"
           className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition mb-8"
         >
           <ArrowLeft size={20} />
           Ana Sayfaya Dön
-        </a>
+        </Link>
 
         <div className="bg-white rounded-2xl shadow-lg p-8">
           
@@ -125,9 +126,9 @@ export default function CardLoginPage() {
 
           <p className="text-center text-sm text-gray-600 mt-6">
             Kartını henüz aktifleştirmedin mi?{' '}
-            <a href="/" className="text-black font-semibold hover:underline">
+            <Link href="/" className="text-black font-semibold hover:underline">
               Kartını Tarat
-            </a>
+            </Link>
           </p>
         </div>
       </div>

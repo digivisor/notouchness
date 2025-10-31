@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useCard } from '../context/CardContext';
+import { useCard, CardProfile } from '../context/CardContext';
 import Image from 'next/image';
 import { 
   Instagram, Linkedin, Twitter, Facebook, Youtube, MessageCircle, Send, Link2, 
@@ -13,7 +13,7 @@ export default function UserProfilePage() {
   const router = useRouter();
   const identifier = params.username as string;
   const { getCardByUsername, getCardByHash } = useCard();
-  const [card, setCard] = useState<any>(null);
+  const [card, setCard] = useState<CardProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,14 +38,14 @@ export default function UserProfilePage() {
       // Hash ile bulunamadı, username olarak dene
       foundCard = await getCardByUsername(identifier);
       if (foundCard) {
-        setCard(foundCard);
-        setLoading(false);
-        return;
-      }
+      setCard(foundCard);
+      setLoading(false);
+      return;
+    }
       
       // Hiçbir şey bulunamadı
       router.push('/');
-      setLoading(false);
+    setLoading(false);
     };
     
     fetchCard();
@@ -70,7 +70,7 @@ export default function UserProfilePage() {
     { name: 'WhatsApp', icon: MessageCircle, value: card.whatsapp, url: (val: string) => `https://wa.me/${val.replace(/\D/g, '')}` },
     { name: 'Telegram', icon: Send, value: card.telegram, url: (val: string) => `https://t.me/${val}` },
   ];
-  const allLinks: Array<{title: string, url: string, icon: any, description: string}> = [];
+  const allLinks: Array<{title: string, url: string, icon: React.ComponentType<{ size?: number }> | string, description: string}> = [];
   socialLinkDefs.forEach(link => {
     if (link.value) {
       allLinks.push({
@@ -81,8 +81,16 @@ export default function UserProfilePage() {
       });
     }
   });
+  interface CustomLink {
+    id?: string;
+    title: string;
+    url: string;
+    icon?: string;
+    description?: string;
+  }
+  
   if (Array.isArray(card.customLinks)) {
-    card.customLinks.forEach((cl: any) => {
+    card.customLinks.forEach((cl: CustomLink) => {
       allLinks.push({
         title: cl.title,
         url: cl.url,
@@ -161,10 +169,10 @@ export default function UserProfilePage() {
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <User size={60} className="text-gray-400" />
-                  </div>
-                )}
-              </div>
-            </div>
+          </div>
+        )}
+      </div>
+    </div>
 
             {/* Profile Info */}
             <div className="text-center mb-6 pt-4">
@@ -186,7 +194,7 @@ export default function UserProfilePage() {
                   {card.bio}
                 </p>
               )}
-            </div>
+        </div>
 
             {/* İletişim Bilgileri */}
             <div className="space-y-2">
@@ -205,12 +213,12 @@ export default function UserProfilePage() {
                     style={{ backgroundColor: containerBgColor === '#ffffff' ? '#f3f4f6' : containerBgColor, opacity: 0.8 }}
                   >
                     <Phone size={20} style={{ color: textColor, opacity: 0.8 }} />
-                  </div>
+            </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-base" style={{ color: textColor }}>Telefon</p>
                     <p className="text-sm truncate" style={{ color: textColor, opacity: 0.7 }}>{card.phone}</p>
-                  </div>
-                  <button
+          </div>
+                      <button
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -223,7 +231,7 @@ export default function UserProfilePage() {
                     }}
                   >
                     Rehbere Ekle
-                  </button>
+                      </button>
                 </a>
               )}
 
@@ -242,11 +250,11 @@ export default function UserProfilePage() {
                     style={{ backgroundColor: containerBgColor === '#ffffff' ? '#f3f4f6' : containerBgColor, opacity: 0.8 }}
                   >
                     <Mail size={20} style={{ color: textColor, opacity: 0.8 }} />
-                  </div>
+                      </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-base" style={{ color: textColor }}>E-posta</p>
                     <p className="text-sm truncate" style={{ color: textColor, opacity: 0.7 }}>{card.email}</p>
-                  </div>
+                    </div>
                 </a>
               )}
 
@@ -271,7 +279,7 @@ export default function UserProfilePage() {
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-base" style={{ color: textColor }}>Website</p>
                     <p className="text-sm truncate" style={{ color: textColor, opacity: 0.7 }}>{card.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}</p>
-                  </div>
+                            </div>
                 </a>
               )}
 
@@ -293,24 +301,25 @@ export default function UserProfilePage() {
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-base" style={{ color: textColor }}>Konum</p>
                     <p className="text-sm" style={{ color: textColor, opacity: 0.7 }}>{card.location}</p>
-                  </div>
-                </div>
-              )}
-            </div>
+                                </div>
+                              </div>
+                                )}
+                              </div>
 
             {/* Sosyal Medya Linkleri - Yan yana küçük kartlar */}
-            {allLinks.length > 0 && (
+                              {allLinks.length > 0 && (
               <div className="mt-6">
                 <div className={`grid gap-3 ${gridCols === 3 ? 'grid-cols-3' : 'grid-cols-4'}`}>
-                  {allLinks.map((link, idx) => {
-                    const Icon = link.icon;
+                                    {allLinks.map((link, idx) => {
+                                      const Icon = link.icon;
                     const isImageIcon = typeof Icon === 'string';
-                    return (
-                      <a
-                        key={idx}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                    const IconComponent = !isImageIcon ? Icon as React.ComponentType<{ size?: number }> : null;
+                                      return (
+                                        <a
+                                          key={idx}
+                                          href={link.url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
                         className="flex flex-col items-center gap-2 p-4 rounded-xl border hover:shadow-md transition-all duration-200 active:scale-[0.95]"
                       style={{ 
                         backgroundColor: containerBgColor === '#ffffff' ? '#f9fafb' : containerBgColor,
@@ -331,23 +340,25 @@ export default function UserProfilePage() {
                               alt={link.title} 
                               className="w-10 h-10 object-contain rounded" 
                             />
-                          ) : (
-                            <Icon size={32} style={{ color: textColor, opacity: 0.8 }} />
-                          )}
+                          ) : IconComponent ? (
+                            <div style={{ color: textColor, opacity: 0.8 }}>
+                              <IconComponent size={32} />
+                            </div>
+                          ) : null}
                         </div>
                         {/* Label */}
                         <span className="text-xs font-medium text-center" style={{ color: textColor }}>
                           {link.title}
                         </span>
-                      </a>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+                                        </a>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
 }

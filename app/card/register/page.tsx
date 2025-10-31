@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react';
 import { useCard } from '../../context/CardContext';
 
 export default function CardRegisterPage() {
@@ -23,18 +24,21 @@ export default function CardRegisterPage() {
   });
 
   useEffect(() => {
-    if (!hash) {
-      router.push('/');
-      return;
-    }
-    
-    const card = getCardByHash(hash);
-    if (!card) {
-      setError('Geçersiz kart kodu. Lütfen kartınızı kontrol edin.');
-    } else if (card.isActive) {
-      // Kart zaten aktif, profile git
-      router.push(`/${card.username}`);
-    }
+    const checkCard = async () => {
+      if (!hash) {
+        router.push('/');
+        return;
+      }
+      
+      const card = await getCardByHash(hash);
+      if (!card) {
+        setError('Geçersiz kart kodu. Lütfen kartınızı kontrol edin.');
+      } else if (card.isActive) {
+        // Kart zaten aktif, profile git
+        router.push(`/${card.username}`);
+      }
+    };
+    checkCard();
   }, [hash, getCardByHash, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,13 +97,13 @@ export default function CardRegisterPage() {
       <div className="max-w-md w-full">
         
         {/* Back Button */}
-        <a 
+        <Link 
           href="/"
           className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition mb-8"
         >
           <ArrowLeft size={20} />
           Ana Sayfaya Dön
-        </a>
+        </Link>
 
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
@@ -246,7 +250,7 @@ export default function CardRegisterPage() {
                 />
                 <span className="text-sm text-gray-600">
                   <a href="#" className="text-black hover:underline">Kullanım Koşulları</a> ve{' '}
-                  <a href="#" className="text-black hover:underline">Gizlilik Politikası</a>'nı okudum, kabul ediyorum.
+                  <a href="#" className="text-black hover:underline">Gizlilik Politikası</a>&apos;nı okudum, kabul ediyorum.
                 </span>
               </label>
             </div>
@@ -263,9 +267,9 @@ export default function CardRegisterPage() {
           {/* Login Link */}
           <p className="text-center text-sm text-gray-600 mt-6">
             Zaten hesabın var mı?{' '}
-            <a href="/card/login" className="text-black font-semibold hover:underline">
+            <Link href="/card/login" className="text-black font-semibold hover:underline">
               Giriş Yap
-            </a>
+            </Link>
           </p>
         </div>
 
