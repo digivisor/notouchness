@@ -15,7 +15,7 @@ export default function StorePage() {
   interface Product {
     id: number;
     name: string;
-    price: number;
+    price: number | string;
     image: string;
     category: string;
     description?: string;
