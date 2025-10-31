@@ -195,7 +195,7 @@ export default function AdminDashboardPage() {
                   value={customHash}
                   onChange={(e) => setCustomHash(e.target.value)}
                   placeholder="Örn: abc123xyz (boş bırakılırsa otomatik üretilir)"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                 />
               </div>
               <div className="flex items-end">
@@ -221,7 +221,7 @@ export default function AdminDashboardPage() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Kart ID, username, isim veya email ile ara..."
-                    className="w-full pl-11 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-11 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                   />
                 </div>
               </div>
@@ -440,7 +440,7 @@ function CardDetailModal({ card, getCardUrl, copyToClipboard, downloadQRCode, on
                 type="text"
                 value={card.id}
                 readOnly
-                className="flex-1 px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg font-mono text-sm"
+                className="flex-1 px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg font-mono text-sm text-gray-900"
               />
               <button
                 onClick={() => copyToClipboard(card.id)}
@@ -459,7 +459,7 @@ function CardDetailModal({ card, getCardUrl, copyToClipboard, downloadQRCode, on
                 type="text"
                 value={getCardUrl(card.id)}
                 readOnly
-                className="flex-1 px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg font-mono text-sm"
+                className="flex-1 px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg font-mono text-sm text-gray-900"
               />
               <button
                 onClick={() => copyToClipboard(getCardUrl(card.id))}
@@ -507,7 +507,7 @@ function CardDetailModal({ card, getCardUrl, copyToClipboard, downloadQRCode, on
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Oluşturulma</label>
-              <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm">
+              <div className="px-4 py-2 bg-gray-50 rounded-lg text-sm text-gray-900">
                 {new Date(card.createdAt).toLocaleDateString('tr-TR')}
               </div>
             </div>
@@ -516,7 +516,7 @@ function CardDetailModal({ card, getCardUrl, copyToClipboard, downloadQRCode, on
           {card.username && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-              <div className="px-4 py-2 bg-gray-50 rounded-lg font-mono">
+              <div className="px-4 py-2 bg-gray-50 rounded-lg font-mono text-gray-900">
                 {card.username}
               </div>
             </div>

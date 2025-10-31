@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react';
 import { useCard } from '../../context/CardContext';
+import Image from 'next/image';
 
 function CardRegisterContent() {
   const router = useRouter();
@@ -14,6 +15,7 @@ function CardRegisterContent() {
   
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -24,6 +26,9 @@ function CardRegisterContent() {
   });
 
   useEffect(() => {
+    // Sadece form submit edilmediğinde kontrol et
+    if (isSubmitting) return;
+    
     const checkCard = async () => {
       if (!hash) {
         router.push('/');
@@ -33,13 +38,16 @@ function CardRegisterContent() {
       const card = await getCardByHash(hash);
       if (!card) {
         setError('Geçersiz kart kodu. Lütfen kartınızı kontrol edin.');
-      } else if (card.isActive) {
-        // Kart zaten aktif, profile git
+      } else if (card.isActive && card.username) {
+        // Kart zaten aktif ve username var, profile git
         router.push(`/${card.username}`);
+      } else if (card.isActive && !card.username) {
+        // Kart aktif ama username yok, setup'a git
+        router.push('/card/setup');
       }
     };
     checkCard();
-  }, [hash, getCardByHash, router]);
+  }, [hash, getCardByHash, router, isSubmitting]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -74,21 +82,27 @@ function CardRegisterContent() {
       return;
     }
     
-    const success = await createCard(hash, formData.email, formData.password);
-    if (success) {
-      // Kart oluşturuldu, şimdi login yap (güvenli olması için)
-      const loginSuccess = await loginToCard(formData.email, formData.password);
-      if (loginSuccess) {
-        // Login başarılı, setup'a git
-        router.push('/card/setup');
-      } else {
-        // Login başarısız ama kart oluşturuldu, yine de setup'a git
-        setTimeout(() => {
+    setIsSubmitting(true);
+    try {
+      const success = await createCard(hash, formData.email, formData.password);
+      if (success) {
+        // Kart oluşturuldu, şimdi login yap (güvenli olması için)
+        const loginSuccess = await loginToCard(formData.email, formData.password);
+        if (loginSuccess) {
+          // Login başarılı, setup'a git
           router.push('/card/setup');
-        }, 500);
+        } else {
+          // Login başarısız, login sayfasına yönlendir
+          router.push(`/card/login?email=${encodeURIComponent(formData.email)}`);
+        }
+      } else {
+        setIsSubmitting(false);
+        setError('Kart kaydı oluşturulamadı. Kart zaten aktif olabilir.');
       }
-    } else {
-      setError('Kart kaydı oluşturulamadı. Kart zaten aktif olabilir.');
+    } catch (err) {
+      setIsSubmitting(false);
+      console.error('Registration error:', err);
+      setError('Bir hata oluştu. Lütfen tekrar deneyin.');
     }
   };
 
@@ -97,22 +111,25 @@ function CardRegisterContent() {
       <div className="max-w-md w-full">
         
         {/* Back Button */}
-        <Link 
+        {/* <Link 
           href="/"
           className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition mb-8"
         >
           <ArrowLeft size={20} />
           Ana Sayfaya Dön
-        </Link>
+        </Link> */}
 
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
           
           {/* Logo */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-white text-2xl font-light">N</span>
+             <div className="w-80 h-24 flex items-center justify-center mx-auto mb-4 ">
+              <Image src="/notouchness1.png" alt="Logo" width={250} height={250}  />
             </div>
+            {/* <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-white text-2xl font-light">N</span>
+            </div> */}
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               NFC Kartını Aktifleştir
             </h1>
