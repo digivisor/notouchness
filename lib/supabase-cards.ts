@@ -243,8 +243,10 @@ const dbToCardFormat = (row: DbCard): CardProfile => {
     primaryColor: String(row.primary_color || '#dc2626'),
     secondaryColor: String(row.secondary_color || '#fef2f2'),
     profileImage: String(row.profile_image || ''),
-    customLinks: row.custom_links || [],
-    platformDescriptions: row.platform_descriptions || {},
+    customLinks: Array.isArray(row.custom_links) ? row.custom_links as CardProfile['customLinks'] : [],
+    platformDescriptions: (row.platform_descriptions && typeof row.platform_descriptions === 'object' && !Array.isArray(row.platform_descriptions)) 
+      ? row.platform_descriptions as CardProfile['platformDescriptions']
+      : {},
     
     // Gelişmiş Görünüm Ayarları
     backgroundColor: row.background_color ? String(row.background_color) : undefined,
@@ -259,7 +261,7 @@ const dbToCardFormat = (row: DbCard): CardProfile => {
     isActive: Boolean(row.is_active),
     createdAt: String(row.created_at || new Date().toISOString()),
     updatedAt: String(row.updated_at || new Date().toISOString()),
-    viewCount: row.view_count || 0,
+    viewCount: typeof row.view_count === 'number' ? row.view_count : 0,
   };
 };
 
@@ -341,7 +343,9 @@ export const cardDb = {
 
   // View count artır
   async incrementViewCount(id: string): Promise<void> {
-    await supabase.rpc('increment_card_views', { card_id: id }).catch(async () => {
+    const { error: rpcError } = await supabase.rpc('increment_card_views', { card_id: id });
+    
+    if (rpcError) {
       // RPC yoksa mevcut count'u al ve artır
       const { data: currentCard } = await supabase
         .from('cards')
@@ -352,10 +356,10 @@ export const cardDb = {
       if (currentCard) {
         await supabase
           .from('cards')
-          .update({ view_count: (currentCard.view_count || 0) + 1 })
+          .update({ view_count: (typeof currentCard.view_count === 'number' ? currentCard.view_count : 0) + 1 })
           .eq('id', id);
       }
-    });
+    }
   },
 };
 
