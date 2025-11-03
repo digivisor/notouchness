@@ -65,6 +65,36 @@ export default function UserProfilePage() {
   const gridCols = card.gridCols || 3;
   const avatarPos = card.avatarPosition || 'above';
 
+  // VCF (vCard) oluşturma fonksiyonu
+  const generateVCF = () => {
+    const vcard = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      `FN:${card.fullName || 'Kullanıcı'}`,
+      card.title ? `TITLE:${card.title}` : '',
+      card.company ? `ORG:${card.company}` : '',
+      card.phone ? `TEL;TYPE=CELL:${card.phone}` : '',
+      card.email ? `EMAIL:${card.email}` : '',
+      card.website ? `URL:${card.website}` : '',
+      card.location ? `ADR:;;${card.location};;;;` : '',
+      card.bio ? `NOTE:${card.bio}` : '',
+      card.instagram ? `X-SOCIALPROFILE;TYPE=instagram:https://instagram.com/${card.instagram}` : '',
+      card.linkedin ? `X-SOCIALPROFILE;TYPE=linkedin:https://linkedin.com/in/${card.linkedin}` : '',
+      card.twitter ? `X-SOCIALPROFILE;TYPE=twitter:https://twitter.com/${card.twitter}` : '',
+      'END:VCARD'
+    ].filter(line => line !== '').join('\n');
+
+    const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${card.fullName || card.username || 'contact'}.vcf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
   // Platform icon mapping
   const getPlatformIcon = (platform: string) => {
     const icons: any = {
@@ -197,15 +227,21 @@ export default function UserProfilePage() {
               <Phone size={18} style={{ color: textColor }} />
               <div className="flex-1">
                 <p className="text-xs opacity-60" style={{ color: textColor }}>Telefon</p>
-                <p className="text-sm font-medium" style={{ color: textColor }}>{card.phone}</p>
+                <a 
+                  href={`tel:${card.phone}`}
+                  className="text-sm font-medium hover:underline" 
+                  style={{ color: textColor }}
+                >
+                  {card.phone}
+                </a>
               </div>
-              <a
-                href={`tel:${card.phone}`}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-white"
+              <button
+                onClick={generateVCF}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-white hover:opacity-90 transition"
                 style={{ backgroundColor: bgColor }}
               >
                 Rehbere Ekle
-              </a>
+              </button>
             </div>
           )}
           
