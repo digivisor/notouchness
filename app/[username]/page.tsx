@@ -206,7 +206,7 @@ export default function UserProfilePage() {
           
           {card.title && (
             <p className="text-sm font-medium mb-1" style={{ color: textColor }}>
-              {card.title}{card.company && `, ${card.company}`}
+              {card.title}{card.company && `- ${card.company}`}
             </p>
           )}
           
@@ -233,14 +233,14 @@ export default function UserProfilePage() {
                 </a>
               </div>
               <a
-                href={`data:text/vcard;charset=utf-8,${encodeURIComponent(generateVCard())}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-white hover:opacity-90 transition"
-                style={{ backgroundColor: bgColor }}
-              >
-                Rehbere Ekle
-              </a>
+  href={`data:text/vcard;charset=utf-8,${encodeURIComponent(generateVCard())}`}
+  download={`${card.fullName || 'contact'}.vcf`}
+  className="px-3 py-1.5 rounded-lg text-xs font-medium text-white hover:opacity-90 transition"
+  style={{ backgroundColor: bgColor }}
+>
+  Rehbere Ekle
+</a>
+
             </div>
           )}
           
