@@ -32,12 +32,12 @@ export default function Header({ onCartClick }: HeaderProps) {
           
           {/* Menu - Center */}
           <div className="flex gap-12">
-            <Link href="/" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Home</Link>
-            <a href="#" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Nasıl Kullanılır?</a>
-            <a href="#" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Ürün Özellikleri</a>
+            <Link href="/" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Ana Sayfa</Link>
+            <a href="#how-it-works" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Nasıl Kullanılır?</a>
+            <a href="#features" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Özellikler</a>
             <Link href="/store" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Mağaza</Link>
-            <a href="#" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">İletişim</a>
-            <Link href="/user/login" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Giriş</Link>
+            <a href="#contact" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">İletişim</a>
+            <Link href="/card/login" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Giriş</Link>
           </div>
           
           {/* Cart - Right */}

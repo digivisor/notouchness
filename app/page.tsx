@@ -6,7 +6,7 @@ import Products from './components/Products';
 import HowItWorks from './components/HowItWorks';
 import CorporateCTA from './components/CorporateCTA';
 import CorporateModal from './components/CorporateModal';
-import Brands from './components/Brands';
+import Features from './components/Features';
 import MobileApp from './components/MobileApp';
 import Footer from './components/Footer';
 import Header from './components/Header';
@@ -118,8 +118,8 @@ export default function Home() {
       {/* Corporate CTA Section */}
       <CorporateCTA onOpenModal={() => setIsCorporateModalOpen(true)} />
 
-      {/* Brands Section */}
-      <Brands />
+      {/* Features Section */}
+      <Features />
 
       {/* Mobile App Section */}
       <MobileApp />

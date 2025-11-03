@@ -19,7 +19,6 @@ const cardToDbFormat = (card: CardProfile): DbCard => {
     website: card.website || null,
     location: card.location || null,
     
-    // Sosyal Medya
     instagram: card.instagram || null,
     facebook: card.facebook || null,
     twitter: card.twitter || null,
@@ -35,7 +34,6 @@ const cardToDbFormat = (card: CardProfile): DbCard => {
     threads: card.threads || null,
     clubhouse: card.clubhouse || null,
     
-    // Mesajlaşma
     whatsapp: card.whatsapp || null,
     telegram: card.telegram || null,
     signal: card.signal || null,
@@ -360,6 +358,31 @@ export const cardDb = {
           .eq('id', id);
       }
     }
+  },
+
+  // Kullanıcı adı kontrolü (mevcut kartın ID'sini hariç tut)
+  async checkUsernameAvailability(username: string, excludeCardId?: string): Promise<boolean> {
+    if (!username || username.trim() === '') return false;
+    
+    let query = supabase
+      .from('cards')
+      .select('id')
+      .eq('username', username.toLowerCase().trim());
+    
+    // Eğer excludeCardId varsa, bu kartı sorgudan hariç tut
+    if (excludeCardId) {
+      query = query.neq('id', excludeCardId);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Username check error:', error);
+      return false;
+    }
+    
+    // Eğer veri yoksa, kullanıcı adı müsait
+    return !data || data.length === 0;
   },
 };
 

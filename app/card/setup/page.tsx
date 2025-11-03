@@ -41,6 +41,7 @@ import {
   Calendar
 } from 'lucide-react';
 import * as PlatformIcons from '@/components/PlatformIcons';
+import { cardDb } from '@/lib/supabase-cards';
 
 interface CustomLink {
   id: string;
@@ -55,6 +56,24 @@ export default function CardSetupPage() {
   
   const [profileImage, setProfileImage] = useState<string>('');
   const [customLinks, setCustomLinks] = useState<CustomLink[]>([]);
+  const [usernameError, setUsernameError] = useState<string>('');
+  const [isCheckingUsername, setIsCheckingUsername] = useState<boolean>(false);
+  
+  // Modal state
+  const [modal, setModal] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error' | 'warning' | 'info';
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+    confirmText?: string;
+    cancelText?: string;
+  }>({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: '',
+  });
   
   const [formData, setFormData] = useState({
     // Temel
@@ -254,10 +273,86 @@ export default function CardSetupPage() {
     initializeForm();
   }, [currentCard, isOwner, router]);
 
+  // Modal helper fonksiyonları
+  const showModal = (
+    type: 'success' | 'error' | 'warning' | 'info',
+    title: string,
+    message: string,
+    onConfirm?: () => void,
+    confirmText?: string,
+    cancelText?: string
+  ) => {
+    setModal({
+      isOpen: true,
+      type,
+      title,
+      message,
+      onConfirm,
+      confirmText,
+      cancelText,
+    });
+  };
+
+  const closeModal = () => {
+    setModal({ ...modal, isOpen: false });
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Kullanıcı adı değiştiğinde kontrolü temizle
+    if (name === 'username') {
+      setUsernameError('');
+    }
   };
+
+  // Kullanıcı adı kontrolü için debounce fonksiyonu
+  useEffect(() => {
+    const checkUsername = async () => {
+      const username = formData.username.trim();
+      
+      // Boş veya mevcut kullanıcı adıyla aynıysa kontrol yapma
+      if (!username || username === currentCard?.username) {
+        setUsernameError('');
+        return;
+      }
+      
+      // Kullanıcı adı formatı kontrolü
+      const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+      if (!usernameRegex.test(username)) {
+        setUsernameError('Kullanıcı adı sadece harf, rakam, tire ve alt çizgi içerebilir');
+        return;
+      }
+      
+      if (username.length < 3) {
+        setUsernameError('Kullanıcı adı en az 3 karakter olmalıdır');
+        return;
+      }
+      
+      setIsCheckingUsername(true);
+      
+      try {
+        const isAvailable = await cardDb.checkUsernameAvailability(username, currentCard?.id);
+        
+        if (!isAvailable) {
+          setUsernameError('Bu kullanıcı adı zaten kullanılıyor');
+        } else {
+          setUsernameError('');
+        }
+      } catch (error) {
+        console.error('Username check error:', error);
+        setUsernameError('Kullanıcı adı kontrol edilemedi');
+      } finally {
+        setIsCheckingUsername(false);
+      }
+    };
+    
+    // Debounce: Kullanıcı yazmayı bıraktıktan 500ms sonra kontrol et
+    const timeoutId = setTimeout(checkUsername, 500);
+    
+    return () => clearTimeout(timeoutId);
+  }, [formData.username, currentCard?.id, currentCard?.username]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -304,6 +399,28 @@ export default function CardSetupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Kullanıcı adı hatası varsa kaydetme
+    if (usernameError) {
+      showModal('error', 'Geçersiz Kullanıcı Adı', usernameError);
+      return;
+    }
+    
+    // Kullanıcı adı kontrolü devam ediyorsa bekle
+    if (isCheckingUsername) {
+      showModal('warning', 'Lütfen Bekleyin', 'Kullanıcı adı kontrol ediliyor...');
+      return;
+    }
+    
+    // Kullanıcı adı değiştiyse son bir kez daha kontrol et
+    if (formData.username && formData.username !== currentCard?.username) {
+      const isAvailable = await cardDb.checkUsernameAvailability(formData.username, currentCard?.id);
+      if (!isAvailable) {
+        setUsernameError('Bu kullanıcı adı zaten kullanılıyor');
+        showModal('error', 'Kullanıcı Adı Kullanımda', 'Bu kullanıcı adı zaten başka bir kart tarafından kullanılıyor.');
+        return;
+      }
+    }
+    
     const success = await updateCard({
       ...formData,
       profileImage,
@@ -311,12 +428,13 @@ export default function CardSetupPage() {
     });
     
     if (success) {
-      alert('Profil başarıyla güncellendi!');
-      if (formData.username) {
-        router.push(`/${formData.username}`);
-      }
+      showModal('success', 'Başarılı!', 'Profil bilgileriniz başarıyla güncellendi.', () => {
+        if (formData.username) {
+          router.push(`/${formData.username}`);
+        }
+      }, 'Profili Görüntüle');
     } else {
-      alert('Profil güncellenemedi!');
+      showModal('error', 'Hata!', 'Profil güncellenirken bir hata oluştu. Lütfen tekrar deneyin.');
     }
   };
 
@@ -324,13 +442,22 @@ export default function CardSetupPage() {
     if (formData.username) {
       window.open(`/${formData.username}`, '_blank');
     } else {
-      alert('Önce kullanıcı adı belirleyin!');
+      showModal('warning', 'Uyarı', 'Profili görüntülemek için önce bir kullanıcı adı belirlemelisiniz.');
     }
   };
 
   const handleLogout = () => {
-    logoutFromCard();
-    router.push('/');
+    showModal(
+      'warning',
+      'Çıkış Yap',
+      'Çıkış yapmak istediğinize emin misiniz?',
+      () => {
+        logoutFromCard();
+        router.push('/');
+      },
+      'Çıkış Yap',
+      'İptal'
+    );
   };
 
   useEffect(() => {
@@ -348,66 +475,65 @@ export default function CardSetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex">
+    <div className="flex min-h-screen bg-white">
       
-      {/* Sidebar - Fixed & Black */}
-      <div className="w-60 bg-black h-screen sticky top-0 flex flex-col">
-        
-        <div className="p-5 border-b border-gray-800">
-          <h2 className="text-lg font-bold text-white">Kontrol Paneli</h2>
-          <p className="text-xs text-gray-400 mt-1">
-            {currentCard.fullName || 'Kullanıcı'}
-          </p>
+      {/* Sol Sidebar */}
+      <div className="w-60 bg-black text-white flex flex-col sticky top-0 h-screen">
+        <div className="p-6">
+          <h1 className="text-2xl font-bold">Kart Ayarları</h1>
+          <p className="text-gray-400 text-sm mt-1">{currentCard.username || currentCard.fullName}</p>
         </div>
-
-        <nav className="p-3 space-y-1.5">
-          <div className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg bg-white text-black">
-            <User size={18} />
-            <span className="font-medium text-sm">Profil Düzenle</span>
-          </div>
+        
+        <nav className="flex-1 px-3">
+          <button
+            className="w-full flex items-center gap-3 px-4 py-3 bg-white text-black rounded-lg transition mb-2"
+          >
+            <User size={20} />
+            <span>Profil Düzenle</span>
+          </button>
+          
           <button
             type="button"
             onClick={() => router.push('/card/appearance')}
-            className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-gray-900 transition"
+            className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition mb-2"
           >
-            <Palette size={18} />
-            <span className="font-medium text-sm">Görünüm & Tema</span>
+            <Palette size={20} />
+            <span>Görünüm & Tema</span>
           </button>
         </nav>
 
-        {/* Spacer to push buttons to bottom */}
-        <div className="flex-1"></div>
-
-        <div className="p-3 border-t border-gray-800 space-y-1.5">
+        <div className="p-3 border-t border-gray-800">
           <button
             type="button"
             onClick={handlePreview}
-            className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-gray-900 transition text-sm"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 rounded-lg transition text-sm mb-2"
           >
             <Eye size={18} />
-            <span className="font-medium">Profili Görüntüle</span>
+            Profili Görüntüle
           </button>
+          
           <button
             type="button"
             onClick={() => router.push('/')}
-            className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-gray-900 transition text-sm"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 rounded-lg transition text-sm mb-2"
           >
             <Home size={18} />
-            <span className="font-medium">Ana Sayfa</span>
+            Ana Sayfa
           </button>
+          
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-red-400 hover:bg-gray-900 transition text-sm"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg transition text-sm"
           >
             <LogOut size={18} />
-            <span className="font-medium">Çıkış Yap</span>
+            Çıkış Yap
           </button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto bg-white">
+      {/* Ana İçerik */}
+      <div className="flex-1 overflow-auto">
         <div className="w-full px-8 py-6">
           
           <div className="mb-6">
@@ -480,16 +606,31 @@ export default function CardSetupPage() {
                   </label>
                   <div className="flex items-center gap-2">
                     <span className="text-gray-500">notouchness.com/</span>
-                    <input
-                      type="text"
-                      name="username"
-                      value={formData.username}
-                      onChange={handleInputChange}
-                      className="flex-1 px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                      placeholder="kullaniciadi"
-                      required
-                    />
+                    <div className="flex-1 relative">
+                      <input
+                        type="text"
+                        name="username"
+                        value={formData.username}
+                        onChange={handleInputChange}
+                        className={`w-full px-4 py-2 border rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900 ${
+                          usernameError ? 'border-red-500' : 'border-gray-200'
+                        }`}
+                        placeholder="kullaniciadi"
+                        required
+                      />
+                      {isCheckingUsername && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-black"></div>
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  {usernameError && (
+                    <p className="mt-1 text-sm text-red-500">{usernameError}</p>
+                  )}
+                  {!usernameError && formData.username && formData.username !== currentCard?.username && !isCheckingUsername && (
+                    <p className="mt-1 text-sm text-green-600">✓ Kullanıcı adı kullanılabilir</p>
+                  )}
                 </div>
 
                 <div>
@@ -1369,6 +1510,89 @@ export default function CardSetupPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal */}
+      {modal.isOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-100 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+            {/* Icon */}
+            <div className="flex justify-center mb-4">
+              {modal.type === 'success' && (
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              )}
+              {modal.type === 'error' && (
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+              )}
+              {modal.type === 'warning' && (
+                <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+              )}
+              {modal.type === 'info' && (
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              )}
+            </div>
+
+            {/* Content */}
+            <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
+              {modal.title}
+            </h3>
+            <p className="text-gray-600 text-center mb-6">
+              {modal.message}
+            </p>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              {modal.onConfirm ? (
+                <>
+                  <button
+                    onClick={() => {
+                      closeModal();
+                    }}
+                    className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                  >
+                    {modal.cancelText || 'İptal'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      modal.onConfirm?.();
+                      closeModal();
+                    }}
+                    className={`flex-1 px-4 py-2.5 rounded-lg transition font-medium text-white ${
+                      modal.type === 'error' || modal.type === 'warning'
+                        ? 'bg-red-600 hover:bg-red-700'
+                        : 'bg-black hover:bg-gray-800'
+                    }`}
+                  >
+                    {modal.confirmText || 'Tamam'}
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={closeModal}
+                  className="w-full px-4 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition font-medium"
+                >
+                  Tamam
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

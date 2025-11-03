@@ -1,364 +1,283 @@
+
 'use client';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useCard, CardProfile } from '../context/CardContext';
+import { cardDb } from '@/lib/supabase-cards';
 import Image from 'next/image';
+import * as PlatformIcons from '@/components/PlatformIcons';
 import { 
-  Instagram, Linkedin, Twitter, Facebook, Youtube, MessageCircle, Send, Link2, 
-  User, Mail, Phone, Globe, MapPin
+  Mail, Phone, Globe, MapPin, User, 
+  Instagram, Linkedin, Twitter, Facebook, Youtube, 
+  MessageCircle, Send, Github, Link2,
+  TrendingUp, ShoppingBag, DollarSign, Music, Video,
+  Briefcase, Code, Users, Calendar
 } from 'lucide-react';
 
 export default function UserProfilePage() {
   const params = useParams();
   const router = useRouter();
   const identifier = params.username as string;
-  const { getCardByUsername, getCardByHash } = useCard();
-  const [card, setCard] = useState<CardProfile | null>(null);
+  const [card, setCard] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCard = async () => {
-      // Önce hash olarak dene (kart ID olabilir)
-      let foundCard = await getCardByHash(identifier);
-      
-      if (foundCard) {
-        // Kart bulundu, aktif mi kontrol et
-        if (foundCard.isActive && foundCard.username) {
-          // Aktif ve username var, profil sayfasını göster
-          setCard(foundCard);
-          setLoading(false);
-          return;
-        } else if (!foundCard.isActive) {
-          // Kart var ama aktif değil (henüz register olmamış), register sayfasına yönlendir
-          router.push(`/card/register?hash=${identifier}`);
-          return;
+    const loadCard = async () => {
+      try {
+        // Önce username ile dene
+        let foundCard = await cardDb.getByUsername(identifier);
+        
+        // Username ile bulunamadıysa hash ile dene
+        if (!foundCard) {
+          foundCard = await cardDb.getByHash(identifier);
         }
+        
+        if (foundCard && foundCard.isActive) {
+          console.log('Card loaded:', foundCard);
+          setCard(foundCard);
+        } else {
+          router.push('/');
+        }
+      } catch (error) {
+        console.error('Error loading card:', error);
+        router.push('/');
+      } finally {
+        setLoading(false);
       }
-      
-      // Hash ile bulunamadı, username olarak dene
-      foundCard = await getCardByUsername(identifier);
-      if (foundCard) {
-      setCard(foundCard);
-      setLoading(false);
-      return;
-    }
-      
-      // Hiçbir şey bulunamadı
-      router.push('/');
-    setLoading(false);
     };
     
-    fetchCard();
-  }, [identifier, getCardByUsername, getCardByHash, router]);
+    loadCard();
+  }, [identifier, router]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
       </div>
     );
   }
+  
   if (!card) return null;
 
-  // Tüm linkleri birleştir
-  const socialLinkDefs = [
-    { name: 'Instagram', icon: Instagram, value: card.instagram, url: (val: string) => `https://instagram.com/${val}` },
-    { name: 'LinkedIn', icon: Linkedin, value: card.linkedin, url: (val: string) => `https://linkedin.com/in/${val}` },
-    { name: 'Twitter', icon: Twitter, value: card.twitter, url: (val: string) => `https://twitter.com/${val}` },
-    { name: 'Facebook', icon: Facebook, value: card.facebook, url: (val: string) => `https://facebook.com/${val}` },
-    { name: 'YouTube', icon: Youtube, value: card.youtube, url: (val: string) => `https://youtube.com/${val}` },
-    { name: 'WhatsApp', icon: MessageCircle, value: card.whatsapp, url: (val: string) => `https://wa.me/${val.replace(/\D/g, '')}` },
-    { name: 'Telegram', icon: Send, value: card.telegram, url: (val: string) => `https://t.me/${val}` },
+  // Theme colors
+  const bgColor = card.backgroundColor || card.primaryColor || '#dc2626';
+  const containerBg = card.containerBackgroundColor || '#ffffff';
+  const textColor = card.textColor || '#111827';
+  const gridCols = card.gridCols || 3;
+  const avatarPos = card.avatarPosition || 'above';
+
+  // Platform icon mapping
+  const getPlatformIcon = (platform: string) => {
+    const icons: any = {
+      instagram: Instagram,
+      linkedin: Linkedin,
+      twitter: Twitter,
+      facebook: Facebook,
+      youtube: Youtube,
+      whatsapp: MessageCircle,
+      telegram: Send,
+      github: Github,
+      tiktok: Music,
+      spotify: Music,
+      twitch: Video,
+      discord: MessageCircle,
+    };
+    return icons[platform.toLowerCase()] || Link2;
+  };
+
+  // Collect all social links
+  const socialLinks: Array<{ platform: string; url: string; icon: any }> = [];
+  
+  // Social media platforms
+  const platforms = [
+    { key: 'instagram', value: card.instagram, urlPattern: (v: string) => `https://instagram.com/${v}` },
+    { key: 'linkedin', value: card.linkedin, urlPattern: (v: string) => `https://linkedin.com/in/${v}` },
+    { key: 'twitter', value: card.twitter, urlPattern: (v: string) => `https://twitter.com/${v}` },
+    { key: 'facebook', value: card.facebook, urlPattern: (v: string) => `https://facebook.com/${v}` },
+    { key: 'youtube', value: card.youtube, urlPattern: (v: string) => `https://youtube.com/${v}` },
+    { key: 'github', value: card.github, urlPattern: (v: string) => `https://github.com/${v}` },
+    { key: 'tiktok', value: card.tiktok, urlPattern: (v: string) => `https://tiktok.com/@${v}` },
+    { key: 'whatsapp', value: card.whatsapp, urlPattern: (v: string) => `https://wa.me/${v.replace(/\D/g, '')}` },
+    { key: 'telegram', value: card.telegram, urlPattern: (v: string) => `https://t.me/${v}` },
+    { key: 'spotify', value: card.spotify, urlPattern: (v: string) => v.startsWith('http') ? v : `https://open.spotify.com/user/${v}` },
+    { key: 'twitch', value: card.twitch, urlPattern: (v: string) => `https://twitch.tv/${v}` },
+    { key: 'discord', value: card.discord, urlPattern: (v: string) => v },
   ];
-  const allLinks: Array<{title: string, url: string, icon: React.ComponentType<{ size?: number }> | string, description: string}> = [];
-  socialLinkDefs.forEach(link => {
-    if (link.value) {
-      allLinks.push({
-        title: link.name,
-        url: link.url(link.value),
-        icon: link.icon,
-        description: card.platformDescriptions?.[link.name.toLowerCase()] || '',
+
+  platforms.forEach(p => {
+    if (p.value && p.value.trim()) {
+      socialLinks.push({
+        platform: p.key,
+        url: p.urlPattern(p.value),
+        icon: getPlatformIcon(p.key)
       });
     }
   });
-  interface CustomLink {
-    id?: string;
-    title: string;
-    url: string;
-    icon?: string;
-    description?: string;
-  }
-  
+
+  // Add custom links
   if (Array.isArray(card.customLinks)) {
-    card.customLinks.forEach((cl: CustomLink) => {
-      allLinks.push({
-        title: cl.title,
-        url: cl.url,
-        icon: cl.icon || Link2,
-        description: cl.description || '',
-      });
+    card.customLinks.forEach((link: any) => {
+      if (link.url && link.title) {
+        socialLinks.push({
+          platform: link.title,
+          url: link.url,
+          icon: Link2
+        });
+      }
     });
   }
 
-  const primaryColor = card.primaryColor || '#dc2626';
-  const bgColor = card.backgroundColor || primaryColor || '#dc2626';
-  const containerBgColor = card.containerBackgroundColor || '#ffffff';
-  const textColor = card.textColor || '#111827';
-  const gridCols = card.gridCols || 3;
-  const avatarPosition = card.avatarPosition || 'above';
-
-  // Rehbere ekleme fonksiyonu
-  const addToContacts = () => {
-    if (!card.phone && !card.fullName) return;
-    
-    const vcard = [
-      'BEGIN:VCARD',
-      'VERSION:3.0',
-      `FN:${card.fullName || card.username}`,
-      card.phone ? `TEL;TYPE=CELL:${card.phone}` : '',
-      card.email ? `EMAIL:${card.email}` : '',
-      card.website ? `URL:${card.website}` : '',
-      card.location ? `ADR:;;${card.location};;;` : '',
-      card.company ? `ORG:${card.company}` : '',
-      card.title ? `TITLE:${card.title}` : '',
-      'END:VCARD'
-    ].filter(line => line).join('\n');
-
-    const blob = new Blob([vcard], { type: 'text/vcard' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${card.fullName || card.username || 'contact'}.vcf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  };
-
   return (
-    <div className="min-h-screen" style={{ backgroundColor: bgColor }}>
-      {/* Profile Container - Beyaz Bölüm */}
-      <div className="px-4 pb-20 pt-12">
-        <div className="max-w-lg mx-auto">
-          <div 
-            className="rounded-3xl shadow-2xl p-6 mb-4 border border-gray-100"
-            style={{ backgroundColor: containerBgColor }}
-          >
-            {/* Profile Picture - Container içinde */}
-            <div className={`flex justify-center mb-4 ${
-              avatarPosition === 'above' ? '-mt-16' : 
-              avatarPosition === 'top' ? 'mt-0' : 
-              'mt-4'
-            }`}>
-              <div className="relative w-32 h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gray-100">
-                {card.profileImage ? (
-                  card.profileImage.startsWith('data:') ? (
-                    <img 
-                      src={card.profileImage} 
-                      alt={card.fullName || 'Profile'} 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <Image 
-                      src={card.profileImage} 
-                      alt={card.fullName || 'Profile'} 
-                      fill
-                      className="object-cover"
-                    />
-                  )
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <User size={60} className="text-gray-400" />
+    <div 
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ backgroundColor: bgColor }}
+    >
+      <div className="relative w-full max-w-md">
+        {/* Avatar - Above position (taşan profil resmi) */}
+        {card.profileImage && avatarPos === 'above' && (
+          <div className="flex justify-center mb-[-60px] relative z-10">
+            <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl">
+              <Image
+                src={card.profileImage}
+                alt={card.fullName || 'Profile'}
+                fill
+                className="object-cover"
+              />
+            </div>
           </div>
         )}
-      </div>
-    </div>
 
-            {/* Profile Info */}
-            <div className="text-center mb-6 pt-4">
-              <h1 className="text-2xl font-bold mb-1" style={{ color: textColor }}>
-                {card.fullName || card.username || 'Kullanıcı'}
-              </h1>
-              {card.username && (
-                <p className="text-sm mb-3" style={{ color: textColor, opacity: 0.7 }}>
-                  @{card.username}
-                </p>
-              )}
-              {(card.title || card.company) && (
-                <p className="text-sm" style={{ color: textColor, opacity: 0.8 }}>
-                  {card.title && card.company ? `${card.title}, ${card.company}` : card.title || card.company}
-                </p>
-              )}
-              {card.bio && (
-                <p className="text-sm mt-3 leading-relaxed" style={{ color: textColor, opacity: 0.9 }}>
-                  {card.bio}
-                </p>
-              )}
+        <div 
+          className="w-full rounded-3xl shadow-2xl overflow-hidden"
+          style={{ backgroundColor: containerBg }}
+        >
+          {/* Avatar Section */}
+          <div className={`relative ${avatarPos === 'above' ? 'pt-20' : avatarPos === 'top' ? 'pt-8' : 'py-12'} px-6 text-center`}>
+            {/* Avatar - Top or Center position */}
+            {card.profileImage && avatarPos !== 'above' && (
+              <div className="mb-4 flex justify-center">
+                <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                  <Image
+                    src={card.profileImage}
+                    alt={card.fullName || 'Profile'}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+            )}
+          
+          {/* User Info */}
+          <h1 className="text-2xl font-bold mb-1" style={{ color: textColor }}>
+            {card.fullName || 'Kullanıcı'}
+          </h1>
+          
+          {card.username && (
+            <p className="text-sm opacity-60 mb-2" style={{ color: textColor }}>
+              @{card.username}
+            </p>
+          )}
+          
+          {card.title && (
+            <p className="text-sm font-medium mb-1" style={{ color: textColor }}>
+              {card.title}{card.company && `, ${card.company}`}
+            </p>
+          )}
+          
+          {card.bio && (
+            <p className="text-sm opacity-75 mt-3 mb-4" style={{ color: textColor }}>
+              {card.bio}
+            </p>
+          )}
         </div>
 
-            {/* İletişim Bilgileri */}
-            <div className="space-y-2">
-              {card.phone && (
-                <a
-                  href={`tel:${card.phone}`}
-                  className="flex items-center gap-4 p-4 rounded-2xl border transition-all active:scale-[0.98] group"
-                  style={{ 
-                    backgroundColor: containerBgColor === '#ffffff' ? '#f9fafb' : containerBgColor,
-                    borderColor: textColor + '30',
-                    opacity: 0.9
-                  }}
-                >
-                  <div 
-                    className="flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center transition-colors"
-                    style={{ backgroundColor: containerBgColor === '#ffffff' ? '#f3f4f6' : containerBgColor, opacity: 0.8 }}
-                  >
-                    <Phone size={20} style={{ color: textColor, opacity: 0.8 }} />
+        {/* Contact Info */}
+        <div className="px-6 pb-4 space-y-3">
+          {card.phone && (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-black/5">
+              <Phone size={18} style={{ color: textColor }} />
+              <div className="flex-1">
+                <p className="text-xs opacity-60" style={{ color: textColor }}>Telefon</p>
+                <p className="text-sm font-medium" style={{ color: textColor }}>{card.phone}</p>
+              </div>
+              <a
+                href={`tel:${card.phone}`}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-white"
+                style={{ backgroundColor: bgColor }}
+              >
+                Rehbere Ekle
+              </a>
             </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-base" style={{ color: textColor }}>Telefon</p>
-                    <p className="text-sm truncate" style={{ color: textColor, opacity: 0.7 }}>{card.phone}</p>
+          )}
+          
+          {card.email && (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-black/5">
+              <Mail size={18} style={{ color: textColor }} />
+              <div className="flex-1">
+                <p className="text-xs opacity-60" style={{ color: textColor }}>E-posta</p>
+                <p className="text-sm font-medium" style={{ color: textColor }}>{card.email}</p>
+              </div>
+            </div>
+          )}
+          
+          {card.website && (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-black/5">
+              <Globe size={18} style={{ color: textColor }} />
+              <div className="flex-1">
+                <p className="text-xs opacity-60" style={{ color: textColor }}>Website</p>
+                <p className="text-sm font-medium" style={{ color: textColor }}>{card.website}</p>
+              </div>
+            </div>
+          )}
+          
+          {card.location && (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-black/5">
+              <MapPin size={18} style={{ color: textColor }} />
+              <div className="flex-1">
+                <p className="text-xs opacity-60" style={{ color: textColor }}>Konum</p>
+                <p className="text-sm font-medium" style={{ color: textColor }}>{card.location}</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Social Links */}
+        {socialLinks.length > 0 && (
+          <div className="px-6 pb-6">
+            <div 
+              className={`grid gap-3`}
+              style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))` }}
+            >
+              {socialLinks.map((link, idx) => {
+                const Icon = link.icon;
+                return (
+                  <a
+                    key={idx}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-black/5 hover:bg-black/10 transition-all"
+                  >
+                    <Icon size={24} style={{ color: textColor }} />
+                    {card.layoutStyle === 'icons-with-title' && (
+                      <span className="text-xs font-medium capitalize" style={{ color: textColor }}>
+                        {link.platform}
+                      </span>
+                    )}
+                  </a>
+                );
+              })}
+            </div>
           </div>
-                      <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      addToContacts();
-                    }}
-                    className="flex-shrink-0 px-4 py-2 rounded-lg text-xs font-medium transition-colors"
-                    style={{ 
-                      backgroundColor: primaryColor,
-                      color: containerBgColor === '#ffffff' ? '#ffffff' : textColor
-                    }}
-                  >
-                    Rehbere Ekle
-                      </button>
-                </a>
-              )}
+        )}
 
-              {card.email && (
-                <a
-                  href={`mailto:${card.email}`}
-                  className="flex items-center gap-4 p-4 rounded-2xl border transition-all active:scale-[0.98]"
-                  style={{ 
-                    backgroundColor: containerBgColor === '#ffffff' ? '#f9fafb' : containerBgColor,
-                    borderColor: textColor + '30',
-                    opacity: 0.9
-                  }}
-                >
-                  <div 
-                    className="flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: containerBgColor === '#ffffff' ? '#f3f4f6' : containerBgColor, opacity: 0.8 }}
-                  >
-                    <Mail size={20} style={{ color: textColor, opacity: 0.8 }} />
-                      </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-base" style={{ color: textColor }}>E-posta</p>
-                    <p className="text-sm truncate" style={{ color: textColor, opacity: 0.7 }}>{card.email}</p>
-                    </div>
-                </a>
-              )}
-
-              {card.website && (
-                <a
-                  href={card.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 rounded-2xl border transition-all active:scale-[0.98]"
-                  style={{ 
-                    backgroundColor: containerBgColor === '#ffffff' ? '#f9fafb' : containerBgColor,
-                    borderColor: textColor + '30',
-                    opacity: 0.9
-                  }}
-                >
-                  <div 
-                    className="flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: containerBgColor === '#ffffff' ? '#f3f4f6' : containerBgColor, opacity: 0.8 }}
-                  >
-                    <Globe size={20} style={{ color: textColor, opacity: 0.8 }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-base" style={{ color: textColor }}>Website</p>
-                    <p className="text-sm truncate" style={{ color: textColor, opacity: 0.7 }}>{card.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}</p>
-                            </div>
-                </a>
-              )}
-
-              {card.location && (
-                <div 
-                  className="flex items-center gap-4 p-4 rounded-2xl border"
-                  style={{ 
-                    backgroundColor: containerBgColor === '#ffffff' ? '#f9fafb' : containerBgColor,
-                    borderColor: textColor + '30',
-                    opacity: 0.9
-                  }}
-                >
-                  <div 
-                    className="flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: containerBgColor === '#ffffff' ? '#f3f4f6' : containerBgColor, opacity: 0.8 }}
-                  >
-                    <MapPin size={20} style={{ color: textColor, opacity: 0.8 }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-base" style={{ color: textColor }}>Konum</p>
-                    <p className="text-sm" style={{ color: textColor, opacity: 0.7 }}>{card.location}</p>
-                                </div>
-                              </div>
-                                )}
-                              </div>
-
-            {/* Sosyal Medya Linkleri - Yan yana küçük kartlar */}
-                              {allLinks.length > 0 && (
-              <div className="mt-6">
-                <div className={`grid gap-3 ${gridCols === 3 ? 'grid-cols-3' : 'grid-cols-4'}`}>
-                                    {allLinks.map((link, idx) => {
-                                      const Icon = link.icon;
-                    const isImageIcon = typeof Icon === 'string';
-                    const IconComponent = !isImageIcon ? Icon as React.ComponentType<{ size?: number }> : null;
-                                      return (
-                                        <a
-                                          key={idx}
-                                          href={link.url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                        className="flex flex-col items-center gap-2 p-4 rounded-xl border hover:shadow-md transition-all duration-200 active:scale-[0.95]"
-                      style={{ 
-                        backgroundColor: containerBgColor === '#ffffff' ? '#f9fafb' : containerBgColor,
-                        borderColor: textColor + '30'
-                      }}
-                      >
-                        {/* Icon */}
-                        <div 
-                          className="w-16 h-16 rounded-lg flex items-center justify-center border shadow-sm"
-                          style={{ 
-                            backgroundColor: containerBgColor,
-                            borderColor: textColor + '40'
-                          }}
-                        >
-                          {isImageIcon ? (
-                            <img 
-                              src={Icon as string} 
-                              alt={link.title} 
-                              className="w-10 h-10 object-contain rounded" 
-                            />
-                          ) : IconComponent ? (
-                            <div style={{ color: textColor, opacity: 0.8 }}>
-                              <IconComponent size={32} />
-                            </div>
-                          ) : null}
-                        </div>
-                        {/* Label */}
-                        <span className="text-xs font-medium text-center" style={{ color: textColor }}>
-                          {link.title}
-                        </span>
-                                        </a>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
+        {/* Footer */}
+        <div className="px-6 pb-6 text-center">
+          <p className="text-xs opacity-50" style={{ color: textColor }}>
+            Powered by <span className="font-semibold">notouchness</span>
+          </p>
+        </div>
+        </div>
+      </div>
+    </div>
+  );
 }
