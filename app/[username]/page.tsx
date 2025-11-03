@@ -1,32 +1,38 @@
-'use client';
 
+'use client';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { cardDb } from '@/lib/supabase-cards';
 import Image from 'next/image';
-import {
-  Mail, Phone, Globe, MapPin,
-  Instagram, Linkedin, Twitter, Facebook, Youtube,
-  MessageCircle, Send, Github, Link2, Music, Video
+import * as PlatformIcons from '@/components/PlatformIcons';
+import { 
+  Mail, Phone, Globe, MapPin, User, 
+  Instagram, Linkedin, Twitter, Facebook, Youtube, 
+  MessageCircle, Send, Github, Link2,
+  TrendingUp, ShoppingBag, DollarSign, Music, Video,
+  Briefcase, Code, Users, Calendar
 } from 'lucide-react';
 
 export default function UserProfilePage() {
   const params = useParams();
   const router = useRouter();
   const identifier = params.username as string;
-
   const [card, setCard] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadCard = async () => {
       try {
+        // Önce username ile dene
         let foundCard = await cardDb.getByUsername(identifier);
+        
+        // Username ile bulunamadıysa hash ile dene
         if (!foundCard) {
           foundCard = await cardDb.getByHash(identifier);
         }
-
+        
         if (foundCard && foundCard.isActive) {
+          console.log('Card loaded:', foundCard);
           setCard(foundCard);
         } else {
           router.push('/');
@@ -38,7 +44,7 @@ export default function UserProfilePage() {
         setLoading(false);
       }
     };
-
+    
     loadCard();
   }, [identifier, router]);
 
@@ -49,19 +55,19 @@ export default function UserProfilePage() {
       </div>
     );
   }
-
+  
   if (!card) return null;
 
-  // Tema
+  // Theme colors
   const bgColor = card.backgroundColor || card.primaryColor || '#dc2626';
   const containerBg = card.containerBackgroundColor || '#ffffff';
   const textColor = card.textColor || '#111827';
   const gridCols = card.gridCols || 3;
   const avatarPos = card.avatarPosition || 'above';
 
-  // vCard üret (CRLF satır sonlarıyla)
+  // VCF (vCard) oluşturma
   const generateVCard = () => {
-    const lines = [
+    return [
       'BEGIN:VCARD',
       'VERSION:3.0',
       `FN:${card.fullName || 'Kullanıcı'}`,
@@ -76,58 +82,14 @@ export default function UserProfilePage() {
       card.linkedin ? `X-SOCIALPROFILE;TYPE=linkedin:https://linkedin.com/in/${card.linkedin}` : '',
       card.twitter ? `X-SOCIALPROFILE;TYPE=twitter:https://twitter.com/${card.twitter}` : '',
       'END:VCARD'
-    ].filter(Boolean);
-
-    return lines.join('\r\n');
+    ].filter(line => line !== '').join('\n');
   };
 
-  // Basit iOS tespiti
-  const isIOS = () =>
-    typeof navigator !== 'undefined' &&
-    /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-    !(window as any).MSStream;
-
-  // Rehbere ekle akışı
-  const handleAddToContacts = async () => {
-    try {
-      const vcard = generateVCard();
-      const fileName = `${card.fullName || card.username || 'contact'}.vcf`;
-
-      // 1) Web Share Level 2 (dosya paylaşımı)
-      if (typeof navigator !== 'undefined' && (navigator as any).share && (navigator as any).canShare) {
-        const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' }); // 'text/x-vcard' da kabul görebilir
-        const file = new File([blob], fileName, { type: 'text/vcard' });
-
-        if ((navigator as any).canShare({ files: [file] })) {
-          await (navigator as any).share({
-            files: [file],
-            title: card.fullName || 'Contact',
-            text: 'Kişiyi rehbere ekle'
-          });
-          return;
-        }
-      }
-
-      // 2) iOS Safari: data URL'i yeni sekmede aç (Kişilere Ekle teklifi çıkabiliyor)
-      if (isIOS()) {
-        const data = `data:text/vcard;charset=utf-8,${encodeURIComponent(vcard)}`;
-        window.open(data, '_blank');
-        return;
-      }
-
-      // 3) Fallback: indirme
-      const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error('vCard paylaş/ekle hatası:', e);
-    }
+  // VCard data URI oluştur
+  const vcardData = () => {
+    const vcard = generateVCard();
+    const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+    return window.URL.createObjectURL(blob);
   };
 
   // Platform icon mapping
@@ -149,8 +111,10 @@ export default function UserProfilePage() {
     return icons[platform.toLowerCase()] || Link2;
   };
 
-  // Sosyal linkler
+  // Collect all social links
   const socialLinks: Array<{ platform: string; url: string; icon: any }> = [];
+  
+  // Social media platforms
   const platforms = [
     { key: 'instagram', value: card.instagram, urlPattern: (v: string) => `https://instagram.com/${v}` },
     { key: 'linkedin', value: card.linkedin, urlPattern: (v: string) => `https://linkedin.com/in/${v}` },
@@ -161,13 +125,13 @@ export default function UserProfilePage() {
     { key: 'tiktok', value: card.tiktok, urlPattern: (v: string) => `https://tiktok.com/@${v}` },
     { key: 'whatsapp', value: card.whatsapp, urlPattern: (v: string) => `https://wa.me/${v.replace(/\D/g, '')}` },
     { key: 'telegram', value: card.telegram, urlPattern: (v: string) => `https://t.me/${v}` },
-    { key: 'spotify', value: card.spotify, urlPattern: (v: string) => (v.startsWith('http') ? v : `https://open.spotify.com/user/${v}`) },
+    { key: 'spotify', value: card.spotify, urlPattern: (v: string) => v.startsWith('http') ? v : `https://open.spotify.com/user/${v}` },
     { key: 'twitch', value: card.twitch, urlPattern: (v: string) => `https://twitch.tv/${v}` },
     { key: 'discord', value: card.discord, urlPattern: (v: string) => v },
   ];
 
   platforms.forEach(p => {
-    if (p.value && String(p.value).trim()) {
+    if (p.value && p.value.trim()) {
       socialLinks.push({
         platform: p.key,
         url: p.urlPattern(p.value),
@@ -176,7 +140,7 @@ export default function UserProfilePage() {
     }
   });
 
-  // Custom linkler
+  // Add custom links
   if (Array.isArray(card.customLinks)) {
     card.customLinks.forEach((link: any) => {
       if (link.url && link.title) {
@@ -190,12 +154,12 @@ export default function UserProfilePage() {
   }
 
   return (
-    <div
+    <div 
       className="min-h-screen flex items-center justify-center p-4"
       style={{ backgroundColor: bgColor }}
     >
       <div className="relative w-full max-w-md">
-        {/* Avatar - above */}
+        {/* Avatar - Above position (taşan profil resmi) */}
         {card.profileImage && avatarPos === 'above' && (
           <div className="flex justify-center mb-[-60px] relative z-10">
             <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl">
@@ -209,13 +173,13 @@ export default function UserProfilePage() {
           </div>
         )}
 
-        <div
+        <div 
           className="w-full rounded-3xl shadow-2xl overflow-hidden"
           style={{ backgroundColor: containerBg }}
         >
-          {/* Avatar alanı */}
+          {/* Avatar Section */}
           <div className={`relative ${avatarPos === 'above' ? 'pt-20' : avatarPos === 'top' ? 'pt-8' : 'py-12'} px-6 text-center`}>
-            {/* Avatar - top/center */}
+            {/* Avatar - Top or Center position */}
             {card.profileImage && avatarPos !== 'above' && (
               <div className="mb-4 flex justify-center">
                 <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-lg">
@@ -228,125 +192,125 @@ export default function UserProfilePage() {
                 </div>
               </div>
             )}
+          
+          {/* User Info */}
+          <h1 className="text-2xl font-bold mb-1" style={{ color: textColor }}>
+            {card.fullName || 'Kullanıcı'}
+          </h1>
+          
+          {card.username && (
+            <p className="text-sm opacity-60 mb-2" style={{ color: textColor }}>
+              @{card.username}
+            </p>
+          )}
+          
+          {card.title && (
+            <p className="text-sm font-medium mb-1" style={{ color: textColor }}>
+              {card.title}{card.company && `, ${card.company}`}
+            </p>
+          )}
+          
+          {card.bio && (
+            <p className="text-sm opacity-75 mt-3 mb-4" style={{ color: textColor }}>
+              {card.bio}
+            </p>
+          )}
+        </div>
 
-            {/* Bilgiler */}
-            <h1 className="text-2xl font-bold mb-1" style={{ color: textColor }}>
-              {card.fullName || 'Kullanıcı'}
-            </h1>
-
-            {card.username && (
-              <p className="text-sm opacity-60 mb-2" style={{ color: textColor }}>
-                @{card.username}
-              </p>
-            )}
-
-            {(card.title || card.company) && (
-              <p className="text-sm font-medium mb-1" style={{ color: textColor }}>
-                {card.title}{card.company ? `, ${card.company}` : ''}
-              </p>
-            )}
-
-            {card.bio && (
-              <p className="text-sm opacity-75 mt-3 mb-4" style={{ color: textColor }}>
-                {card.bio}
-              </p>
-            )}
-          </div>
-
-          {/* İletişim */}
-          <div className="px-6 pb-4 space-y-3">
-            {card.phone && (
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-black/5">
-                <Phone size={18} style={{ color: textColor }} />
-                <div className="flex-1">
-                  <p className="text-xs opacity-60" style={{ color: textColor }}>Telefon</p>
-                  <a
-                    href={`tel:${card.phone}`}
-                    className="text-sm font-medium hover:underline"
-                    style={{ color: textColor }}
-                  >
-                    {card.phone}
-                  </a>
-                </div>
-                {/* Burada artık <a download> yok */}
-                <button
-                  onClick={handleAddToContacts}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium text-white hover:opacity-90 transition"
-                  style={{ backgroundColor: bgColor }}
-                  type="button"
+        {/* Contact Info */}
+        <div className="px-6 pb-4 space-y-3">
+          {card.phone && (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-black/5">
+              <Phone size={18} style={{ color: textColor }} />
+              <div className="flex-1">
+                <p className="text-xs opacity-60" style={{ color: textColor }}>Telefon</p>
+                <a 
+                  href={`tel:${card.phone}`}
+                  className="text-sm font-medium hover:underline" 
+                  style={{ color: textColor }}
                 >
-                  Rehbere Ekle
-                </button>
+                  {card.phone}
+                </a>
               </div>
-            )}
-
-            {card.email && (
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-black/5">
-                <Mail size={18} style={{ color: textColor }} />
-                <div className="flex-1">
-                  <p className="text-xs opacity-60" style={{ color: textColor }}>E-posta</p>
-                  <p className="text-sm font-medium" style={{ color: textColor }}>{card.email}</p>
-                </div>
-              </div>
-            )}
-
-            {card.website && (
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-black/5">
-                <Globe size={18} style={{ color: textColor }} />
-                <div className="flex-1">
-                  <p className="text-xs opacity-60" style={{ color: textColor }}>Website</p>
-                  <p className="text-sm font-medium" style={{ color: textColor }}>{card.website}</p>
-                </div>
-              </div>
-            )}
-
-            {card.location && (
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-black/5">
-                <MapPin size={18} style={{ color: textColor }} />
-                <div className="flex-1">
-                  <p className="text-xs opacity-60" style={{ color: textColor }}>Konum</p>
-                  <p className="text-sm font-medium" style={{ color: textColor }}>{card.location}</p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Sosyal Linkler */}
-          {socialLinks.length > 0 && (
-            <div className="px-6 pb-6">
-              <div
-                className={`grid gap-3`}
-                style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))` }}
+              <a
+                href={`data:text/vcard;charset=utf-8,${encodeURIComponent(generateVCard())}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-white hover:opacity-90 transition"
+                style={{ backgroundColor: bgColor }}
               >
-                {socialLinks.map((link, idx) => {
-                  const Icon = link.icon;
-                  return (
-                    <a
-                      key={idx}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-black/5 hover:bg-black/10 transition-all"
-                    >
-                      <Icon size={24} style={{ color: textColor }} />
-                      {card.layoutStyle === 'icons-with-title' && (
-                        <span className="text-xs font-medium capitalize" style={{ color: textColor }}>
-                          {link.platform}
-                        </span>
-                      )}
-                    </a>
-                  );
-                })}
+                Rehbere Ekle
+              </a>
+            </div>
+          )}
+          
+          {card.email && (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-black/5">
+              <Mail size={18} style={{ color: textColor }} />
+              <div className="flex-1">
+                <p className="text-xs opacity-60" style={{ color: textColor }}>E-posta</p>
+                <p className="text-sm font-medium" style={{ color: textColor }}>{card.email}</p>
               </div>
             </div>
           )}
+          
+          {card.website && (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-black/5">
+              <Globe size={18} style={{ color: textColor }} />
+              <div className="flex-1">
+                <p className="text-xs opacity-60" style={{ color: textColor }}>Website</p>
+                <p className="text-sm font-medium" style={{ color: textColor }}>{card.website}</p>
+              </div>
+            </div>
+          )}
+          
+          {card.location && (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-black/5">
+              <MapPin size={18} style={{ color: textColor }} />
+              <div className="flex-1">
+                <p className="text-xs opacity-60" style={{ color: textColor }}>Konum</p>
+                <p className="text-sm font-medium" style={{ color: textColor }}>{card.location}</p>
+              </div>
+            </div>
+          )}
+        </div>
 
-          {/* Footer */}
-          <div className="px-6 pb-6 text-center">
-            <p className="text-xs opacity-50" style={{ color: textColor }}>
-              Powered by <span className="font-semibold">notouchness</span>
-            </p>
+        {/* Social Links */}
+        {socialLinks.length > 0 && (
+          <div className="px-6 pb-6">
+            <div 
+              className={`grid gap-3`}
+              style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))` }}
+            >
+              {socialLinks.map((link, idx) => {
+                const Icon = link.icon;
+                return (
+                  <a
+                    key={idx}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-black/5 hover:bg-black/10 transition-all"
+                  >
+                    <Icon size={24} style={{ color: textColor }} />
+                    {card.layoutStyle === 'icons-with-title' && (
+                      <span className="text-xs font-medium capitalize" style={{ color: textColor }}>
+                        {link.platform}
+                      </span>
+                    )}
+                  </a>
+                );
+              })}
+            </div>
           </div>
+        )}
+
+        {/* Footer */}
+        <div className="px-6 pb-6 text-center">
+          <p className="text-xs opacity-50" style={{ color: textColor }}>
+            Powered by <span className="font-semibold">notouchness</span>
+          </p>
+        </div>
         </div>
       </div>
     </div>
