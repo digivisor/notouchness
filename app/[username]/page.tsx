@@ -233,10 +233,8 @@ export default function UserProfilePage() {
                 </a>
               </div>
               <a
-  href={`data:text/vcard;charset=utf-8,${encodeURIComponent(generateVCard())}`}
-  download={`${card.fullName || 'contact'}.vcf`}
-  className="px-3 py-1.5 rounded-lg text-xs font-medium text-white hover:opacity-90 transition"
-  style={{ backgroundColor: bgColor }}
+  href={`intent://addcontact#Intent;scheme=content;type=text/x-vcard;S.vcard=${encodeURIComponent(generateVCard())};end`}
+
 >
   Rehbere Ekle
 </a>
