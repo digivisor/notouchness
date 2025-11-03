@@ -34,11 +34,17 @@ export async function GET(
     ].filter(line => line !== '').join('\n');
 
     // VCF dosyası olarak döndür
-    return new NextResponse(vcard, {
+    const encoder = new TextEncoder();
+    const uint8Array = encoder.encode(vcard);
+    
+    // Filename için ASCII-safe isim oluştur
+    const safeFilename = (card.username || 'contact').replace(/[^a-zA-Z0-9]/g, '_');
+    
+    return new NextResponse(uint8Array, {
       status: 200,
       headers: {
         'Content-Type': 'text/vcard; charset=utf-8',
-        'Content-Disposition': `attachment; filename="${card.fullName || card.username || 'contact'}.vcf"`,
+        'Content-Disposition': `attachment; filename="${safeFilename}.vcf"`,
       },
     });
   } catch (error) {
