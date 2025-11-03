@@ -65,9 +65,9 @@ export default function UserProfilePage() {
   const gridCols = card.gridCols || 3;
   const avatarPos = card.avatarPosition || 'above';
 
-  // VCF (vCard) oluşturma ve rehbere ekleme fonksiyonu
-  const addToContacts = () => {
-    const vcard = [
+  // VCF (vCard) oluşturma
+  const generateVCard = () => {
+    return [
       'BEGIN:VCARD',
       'VERSION:3.0',
       `FN:${card.fullName || 'Kullanıcı'}`,
@@ -83,26 +83,13 @@ export default function UserProfilePage() {
       card.twitter ? `X-SOCIALPROFILE;TYPE=twitter:https://twitter.com/${card.twitter}` : '',
       'END:VCARD'
     ].filter(line => line !== '').join('\n');
+  };
 
-    // Mobil cihaz kontrolü
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    
-    if (isMobile) {
-      // Mobilde: Data URI kullanarak direkt rehbere ekleme ekranını aç
-      const dataUri = 'data:text/vcard;charset=utf-8,' + encodeURIComponent(vcard);
-      window.location.href = dataUri;
-    } else {
-      // Desktop'ta: VCF dosyası olarak indir
-      const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${card.fullName || card.username || 'contact'}.vcf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    }
+  // VCard data URI oluştur
+  const vcardData = () => {
+    const vcard = generateVCard();
+    const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+    return window.URL.createObjectURL(blob);
   };
 
   // Platform icon mapping
@@ -245,13 +232,14 @@ export default function UserProfilePage() {
                   {card.phone}
                 </a>
               </div>
-              <button
-                onClick={addToContacts}
+              <a
+                href={`data:text/vcard;charset=utf-8,${encodeURIComponent(generateVCard())}`}
+                download={`${card.fullName || card.username || 'contact'}.vcf`}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium text-white hover:opacity-90 transition"
                 style={{ backgroundColor: bgColor }}
               >
                 Rehbere Ekle
-              </button>
+              </a>
             </div>
           )}
           
