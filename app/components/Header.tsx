@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
+import Image from 'next/image';
 
 interface HeaderProps {
   onCartClick: () => void;
@@ -27,7 +28,8 @@ export default function Header({ onCartClick }: HeaderProps) {
         <div className="flex justify-between items-center h-20">
           {/* Logo - Left */}
           <Link href="/" className="flex items-center">
-            <span className="text-white text-2xl font-light tracking-wider">notouchness</span>
+            <Image src="/notouchness3.png" alt="Logo" width={200} height={180} />
+            {/* <span className="text-white text-2xl font-light tracking-wider">notouchness</span> */}
           </Link>
           
           {/* Menu - Center */}

@@ -1,14 +1,19 @@
 'use client';
 
+import { Link } from "lucide-react";
+import Image from 'next/image'; 
+
 export default function Footer() {
   return (
     <footer id="contact" className="w-full bg-white py-16 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Logo ve Açıklama */}
-          <div className="space-y-4">
-            <h3 className="text-2xl font-light tracking-wider text-black">notouchness</h3>
-            <p className="text-gray-600 text-sm leading-relaxed">
+          <div className="space-y-6">
+            <Image src="/notouchness1.png" alt="Logo" width={200} height={180} />
+            {/* <span className="text-white text-2xl font-light tracking-wider">notouchness</span> */}
+            {/* <h3 className="text-2xl font-light tracking-wider text-black">notouchness</h3> */}
+            <p className="text-gray-600  text-sm leading-relaxed">
               Dijital kartvizit çözümleri ile profesyonel kimliğinizi yeni nesil teknoloji ile tanıştırın.
             </p>
           </div>

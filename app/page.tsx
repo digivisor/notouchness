@@ -11,6 +11,7 @@ import MobileApp from './components/MobileApp';
 import Footer from './components/Footer';
 import Header from './components/Header';
 import CartModal from './components/CartModal';
+import Image from 'next/image';
 
 export default function Home() {
   const [isCartVisible, setIsCartVisible] = useState(false);
@@ -96,7 +97,8 @@ export default function Home() {
                       <div className="w-12 h-12 border-2 border-white/20 rounded-lg"></div>
                     </div>
                     <div>
-                      <p className="text-white text-xl font-light tracking-wider">notouchness</p>
+                      <Image src="/notouchness3.png" alt="Logo" width={180} height={90} />
+                     
                     </div>
                   </div>
                 </div>

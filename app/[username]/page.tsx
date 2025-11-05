@@ -181,7 +181,7 @@ export default function UserProfilePage() {
           
           {card.title && (
             <p className="text-sm font-medium mb-1" style={{ color: textColor }}>
-              {card.title}{card.company && `- ${card.company}`}
+              {card.title}{card.company && ` - ${card.company}`}
             </p>
           )}
           
