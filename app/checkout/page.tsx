@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
@@ -424,7 +424,7 @@ function CheckoutContent() {
   const grandTotal = totalPrice + shippingCost;
 
   // Ödeme başarılı olduğunda siparişi kontrol et ve step 3'e geç
-  const handlePaymentSuccess = async (orderNumberFromUrl: string) => {
+  const handlePaymentSuccess = useCallback(async (orderNumberFromUrl: string) => {
     try {
       // Siparişi kontrol et
       const { data: existingOrder, error: orderError } = await supabase
@@ -502,7 +502,7 @@ function CheckoutContent() {
       });
       setStep(2);
     }
-  };
+  }, [setStep, setToast, setOrderNumber, setOrderPrices, setOrderItems, clearCart]);
 
   // Payment callback kontrolü - URL parametrelerinden ödeme sonucunu kontrol et
   useEffect(() => {
@@ -511,7 +511,14 @@ function CheckoutContent() {
 
     if (paymentStatus === 'success' && orderNumberFromUrl) {
       // Ödeme başarılı - siparişi kontrol et ve step 3'e geç
-      handlePaymentSuccess(orderNumberFromUrl);
+      handlePaymentSuccess(orderNumberFromUrl).catch((error) => {
+        console.error('handlePaymentSuccess error:', error);
+        setToast({ 
+          message: 'Sipariş yüklenirken bir hata oluştu.', 
+          type: 'error' 
+        });
+        setStep(2);
+      });
     } else if (paymentStatus === 'error') {
       // Ödeme başarısız - hata mesajı göster
       setToast({ 
@@ -520,8 +527,7 @@ function CheckoutContent() {
       });
       setStep(2); // Ödeme adımına geri dön
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams, handlePaymentSuccess]);
 
   // 3DS form auto-submit
   useEffect(() => {
