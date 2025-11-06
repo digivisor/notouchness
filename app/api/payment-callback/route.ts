@@ -40,22 +40,25 @@ export async function POST(request: NextRequest) {
       `${request.nextUrl.protocol}//${request.nextUrl.host}`;
 
     if (!conversationId || !paymentId) {
-      // Parametreler eksik - checkout'a error ile yönlendir
+      // Parametreler eksik - checkout'a error ile yönlendir (303 = GET redirect)
       return NextResponse.redirect(
-        `${baseUrl}/checkout?payment=error&reason=missing_params`
+        `${baseUrl}/checkout?payment=error&reason=missing_params`,
+        { status: 303 }
       );
     }
 
     if (!isSuccess) {
-      // 3D Secure başarısız - checkout'a error ile yönlendir
+      // 3D Secure başarısız - checkout'a error ile yönlendir (303 = GET redirect)
       return NextResponse.redirect(
-        `${baseUrl}/checkout?payment=error&reason=3ds_failed&mdStatus=${mdStatus}`
+        `${baseUrl}/checkout?payment=error&reason=3ds_failed&mdStatus=${mdStatus}`,
+        { status: 303 }
       );
     }
 
-    // Ödeme başarılı - checkout'a success ile yönlendir
+    // Ödeme başarılı - checkout'a success ile yönlendir (303 = GET redirect)
     return NextResponse.redirect(
-      `${baseUrl}/checkout?payment=success&order=${conversationId}`
+      `${baseUrl}/checkout?payment=success&order=${conversationId}`,
+      { status: 303 }
     );
 
   } catch (error: unknown) {
@@ -64,9 +67,10 @@ export async function POST(request: NextRequest) {
     // Base URL'i environment variable'dan al, yoksa request'ten türet
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
       `${request.nextUrl.protocol}//${request.nextUrl.host}`;
-    // Hata durumunda checkout'a error ile yönlendir
+    // Hata durumunda checkout'a error ile yönlendir (303 = GET redirect)
     return NextResponse.redirect(
-      `${baseUrl}/checkout?payment=error&reason=server_error`
+      `${baseUrl}/checkout?payment=error&reason=server_error`,
+      { status: 303 }
     );
   }
 }
@@ -94,18 +98,21 @@ export async function GET(request: NextRequest) {
 
   if (!conversationId || !paymentId) {
     return NextResponse.redirect(
-      `${baseUrl}/checkout?payment=error&reason=missing_params`
+      `${baseUrl}/checkout?payment=error&reason=missing_params`,
+      { status: 303 }
     );
   }
 
   if (!isSuccess) {
     return NextResponse.redirect(
-      `${baseUrl}/checkout?payment=error&reason=3ds_failed&mdStatus=${mdStatus}`
+      `${baseUrl}/checkout?payment=error&reason=3ds_failed&mdStatus=${mdStatus}`,
+      { status: 303 }
     );
   }
 
   return NextResponse.redirect(
-    `${baseUrl}/checkout?payment=success&order=${conversationId}`
+    `${baseUrl}/checkout?payment=success&order=${conversationId}`,
+    { status: 303 }
   );
 }
 
