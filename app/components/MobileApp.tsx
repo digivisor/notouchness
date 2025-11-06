@@ -11,7 +11,7 @@ export default function MobileApp() {
           <div className="relative flex justify-center lg:justify-start order-2 lg:order-1">
             <div className="relative w-full max-w-md">
               <Image
-                src="/mockup.png"
+                src="/notouchness-telefon-mockup.png"
                 alt="Notouchness Mobile App"
                 width={600}
                 height={800}

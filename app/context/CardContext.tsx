@@ -139,6 +139,8 @@ export interface CardProfile {
   createdAt: string;
   updatedAt: string;
   viewCount: number;
+  groupName?: string; // Toplu oluşturulan kartlar için grup ismi
+  cardType?: 'nfc' | 'comment'; // Kart tipi
 }
 
 interface CardContextType {
@@ -150,9 +152,12 @@ interface CardContextType {
   getCardByHash: (hash: string) => Promise<CardProfile | null>;
   getCardByUsername: (username: string) => Promise<CardProfile | null>;
   createCard: (hash: string, ownerEmail: string, password: string) => Promise<boolean>;
-  createCardByAdmin: (customHash?: string) => Promise<CardProfile | null>; // Admin için kart oluştur
+  createCardByAdmin: (customHash?: string, groupName?: string, cardType?: 'nfc' | 'comment') => Promise<CardProfile | null>; // Admin için kart oluştur
   getAllCards: () => Promise<CardProfile[]>; // Tüm kartları getir
   updateCard: (cardData: Partial<CardProfile>) => Promise<boolean>;
+  deleteCard: (id: string) => Promise<boolean>; // Tek kart sil
+  deleteMultipleCards: (ids: string[]) => Promise<boolean>; // Toplu kart sil
+  deleteGroup: (groupName: string) => Promise<boolean>; // Grup sil
   
   // Auth
   loginToCard: (email: string, password: string) => Promise<boolean>;
@@ -422,7 +427,7 @@ export function CardProvider({ children }: { children: ReactNode }) {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   };
 
-  const createCardByAdmin = async (customHash?: string): Promise<CardProfile | null> => {
+  const createCardByAdmin = async (customHash?: string, groupName?: string, cardType: 'nfc' | 'comment' = 'nfc'): Promise<CardProfile | null> => {
     let finalHash = customHash || generateHash();
     
     // Hash kontrolü için önce database'den kontrol et
@@ -541,6 +546,8 @@ export function CardProvider({ children }: { children: ReactNode }) {
       backgroundColor: '#dc2626',
       containerBackgroundColor: '#ffffff',
       textColor: '#111827',
+      groupName: groupName || undefined,
+      cardType: cardType,
     };
     
     // Database'e kaydet
@@ -624,6 +631,18 @@ export function CardProvider({ children }: { children: ReactNode }) {
     // currentCard'ı silme, sadece owner durumunu kaldır
   };
 
+  const deleteCard = async (id: string): Promise<boolean> => {
+    return await cardDb.delete(id);
+  };
+
+  const deleteMultipleCards = async (ids: string[]): Promise<boolean> => {
+    return await cardDb.deleteMultiple(ids);
+  };
+
+  const deleteGroup = async (groupName: string): Promise<boolean> => {
+    return await cardDb.deleteGroup(groupName);
+  };
+
   return (
     <CardContext.Provider value={{
       currentCard,
@@ -635,6 +654,9 @@ export function CardProvider({ children }: { children: ReactNode }) {
       createCardByAdmin,
       getAllCards,
       updateCard,
+      deleteCard,
+      deleteMultipleCards,
+      deleteGroup,
       loginToCard,
       logoutFromCard,
     }}>

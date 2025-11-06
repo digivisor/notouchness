@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 interface CorporateModalProps {
   isOpen: boolean;
@@ -17,12 +18,50 @@ export default function CorporateModal({ isOpen, onClose }: CorporateModalProps)
     quantity: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Form gönderme işlemi burada yapılacak
-    console.log('Form submitted:', formData);
-    onClose();
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const { error } = await supabase
+        .from('corporate_requests')
+        .insert([{
+          company_name: formData.companyName,
+          contact_name: formData.contactName,
+          email: formData.email,
+          phone: formData.phone,
+          quantity: parseInt(formData.quantity),
+          message: formData.message || null,
+          status: 'pending'
+        }]);
+
+      if (error) throw error;
+
+      setSubmitSuccess(true);
+      setTimeout(() => {
+        onClose();
+        // Reset form
+        setFormData({
+          companyName: '',
+          contactName: '',
+          email: '',
+          phone: '',
+          quantity: '',
+          message: ''
+        });
+        setSubmitSuccess(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Error submitting corporate request:', error);
+      setSubmitError('Bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -145,13 +184,27 @@ export default function CorporateModal({ isOpen, onClose }: CorporateModalProps)
               ></textarea>
             </div>
 
+            {/* Error Message */}
+            {submitError && (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                {submitError}
+              </div>
+            )}
+
+            {/* Success Message */}
+            {submitSuccess && (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
+                ✓ Talebiniz başarıyla gönderildi! En kısa sürede sizinle iletişime geçeceğiz.
+              </div>
+            )}
+
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-4 rounded-xl font-semibold text-white transition-all hover:shadow-lg text-lg"
-              style={{ backgroundColor: '#4BA3A2' }}
+              disabled={isSubmitting || submitSuccess}
+              className="w-full py-4 rounded-xl font-semibold text-white bg-black hover:bg-gray-800 transition-all hover:shadow-lg text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Teklif Talebi Gönder
+              {isSubmitting ? 'Gönderiliyor...' : submitSuccess ? '✓ Gönderildi' : 'Teklif Talebi Gönder'}
             </button>
 
             <p className="text-xs text-gray-500 text-center">

@@ -1,23 +1,23 @@
 
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { cardDb } from '@/lib/supabase-cards';
 import Image from 'next/image';
-import * as PlatformIcons from '@/components/PlatformIcons';
 import { 
-  Mail, Phone, Globe, MapPin, User, 
-  Instagram, Linkedin, Twitter, Facebook, Youtube, 
+  Mail, Phone, Globe, MapPin,
+  Instagram, Linkedin, Twitter, Facebook, Youtube,
   MessageCircle, Send, Github, Link2,
-  TrendingUp, ShoppingBag, DollarSign, Music, Video,
-  Briefcase, Code, Users, Calendar
+  Music, Video,
+  type LucideIcon
 } from 'lucide-react';
+import type { CardProfile } from '@/app/context/CardContext';
 
 export default function UserProfilePage() {
   const params = useParams();
   const router = useRouter();
   const identifier = params.username as string;
-  const [card, setCard] = useState<any>(null);
+  const [card, setCard] = useState<CardProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -68,8 +68,9 @@ export default function UserProfilePage() {
 
 
   // Platform icon mapping
-  const getPlatformIcon = (platform: string) => {
-    const icons: any = {
+  type IconType = LucideIcon;
+  const getPlatformIcon = (platform: string): IconType => {
+    const icons: Record<string, IconType> = {
       instagram: Instagram,
       linkedin: Linkedin,
       twitter: Twitter,
@@ -87,7 +88,7 @@ export default function UserProfilePage() {
   };
 
   // Collect all social links
-  const socialLinks: Array<{ platform: string; url: string; icon: any }> = [];
+  const socialLinks: Array<{ platform: string; url: string; icon: IconType }> = [];
   
   // Social media platforms
   const platforms = [
@@ -117,7 +118,7 @@ export default function UserProfilePage() {
 
   // Add custom links
   if (Array.isArray(card.customLinks)) {
-    card.customLinks.forEach((link: any) => {
+    card.customLinks.forEach((link) => {
       if (link.url && link.title) {
         socialLinks.push({
           platform: link.title,
@@ -142,6 +143,7 @@ export default function UserProfilePage() {
                 src={card.profileImage}
                 alt={card.fullName || 'Profile'}
                 fill
+                unoptimized
                 className="object-cover"
               />
             </div>
@@ -162,6 +164,7 @@ export default function UserProfilePage() {
                     src={card.profileImage}
                     alt={card.fullName || 'Profile'}
                     fill
+                    unoptimized
                     className="object-cover"
                   />
                 </div>

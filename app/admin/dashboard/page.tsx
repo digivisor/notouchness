@@ -4,21 +4,36 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCard, CardProfile } from '../../context/CardContext';
 import { QRCodeSVG } from 'qrcode.react';
+import JSZip from 'jszip';
 import { 
   Plus, Copy, Download, ExternalLink, CheckCircle, XCircle, 
-  CreditCard, Eye, Search
+  CreditCard, Eye, Search, Folder, FileDown, Trash2
 } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
 import AdminHeader from '../components/AdminHeader';
+import Toast from '../../components/Toast';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const { createCardByAdmin, getAllCards } = useCard();
+  const { createCardByAdmin, getAllCards, deleteCard, deleteMultipleCards, deleteGroup } = useCard();
   const [cards, setCards] = useState<CardProfile[]>([]);
   const [selectedCard, setSelectedCard] = useState<CardProfile | null>(null);
   const [customHash, setCustomHash] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [cardType, setCardType] = useState<'nfc' | 'comment'>('nfc');
+  const [quantity, setQuantity] = useState(1);
+  const [groupName, setGroupName] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+  const [groups, setGroups] = useState<Array<{ name: string; count: number }>>([]);
+  const [isCreatingCards, setIsCreatingCards] = useState(false);
+  const [creatingProgress, setCreatingProgress] = useState({ current: 0, total: 0 });
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set());
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ type: 'single' | 'multiple' | 'group'; id?: string; groupName?: string } | null>(null);
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -29,6 +44,18 @@ export default function AdminDashboardPage() {
   const loadCards = useCallback(async () => {
     const allCards = await getAllCards();
     setCards(allCards);
+    
+    // Grupları hesapla
+    const groupMap = new Map<string, number>();
+    allCards.forEach(card => {
+      if (card.groupName) {
+        console.log('Grup bulundu:', card.groupName, 'Kart ID:', card.id);
+        groupMap.set(card.groupName, (groupMap.get(card.groupName) || 0) + 1);
+      }
+    });
+    const groupList = Array.from(groupMap.entries()).map(([name, count]) => ({ name, count }));
+    console.log('Toplam grup sayısı:', groupList.length, 'Gruplar:', groupList);
+    setGroups(groupList);
     
     // İstatistikleri hesapla
     setStats({
@@ -58,15 +85,45 @@ export default function AdminDashboardPage() {
     return () => clearInterval(interval);
   }, [router, loadCards]);
 
+  const showToast = (message: string, type: 'success' | 'error' | 'info') => {
+    setToast({ message, type });
+  };
+
   const handleCreateCard = async () => {
-    const newCard = await createCardByAdmin(customHash || undefined);
-    if (newCard) {
-      setCustomHash('');
-      await loadCards();
-      setSelectedCard(newCard);
-    } else {
-      alert('❌ Kart oluşturulamadı!');
+    if (cardType === 'comment') {
+      showToast('Yorum kartı özelliği henüz aktif değil. Lütfen NFC kart seçin.', 'info');
+      return;
     }
+
+    setIsCreatingCards(true);
+    setCreatingProgress({ current: 0, total: quantity });
+
+    // NFC kart oluşturma
+    const createdCards = [];
+    for (let i = 0; i < quantity; i++) {
+      // Tek kart ise custom hash kullan, birden fazla ise sadece ilkinde kullan
+      const hashToUse = (i === 0 && quantity === 1) ? (customHash || undefined) : undefined;
+      const newCard = await createCardByAdmin(hashToUse, groupName || undefined, cardType);
+      if (newCard) {
+        createdCards.push(newCard);
+        setCreatingProgress({ current: i + 1, total: quantity });
+      }
+    }
+
+    if (createdCards.length > 0) {
+      setCustomHash('');
+      setGroupName('');
+      setQuantity(1);
+      setIsCreateModalOpen(false);
+      await loadCards();
+      setSelectedCard(createdCards[0]);
+      showToast(`${createdCards.length} adet kart başarıyla oluşturuldu!${groupName ? ` 📁 Grup: ${groupName}` : ''}`, 'success');
+    } else {
+      showToast('Kart oluşturulamadı!', 'error');
+    }
+
+    setIsCreatingCards(false);
+    setCreatingProgress({ current: 0, total: 0 });
   };
 
   const getCardUrl = (hash: string) => {
@@ -78,30 +135,162 @@ export default function AdminDashboardPage() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    alert('✅ Kopyalandı!');
+    showToast('Kopyalandı!', 'success');
   };
 
   const downloadQRCode = (hash: string) => {
     const svg = document.getElementById(`qr-${hash}`)?.querySelector('svg');
     if (!svg) return;
 
+    // SVG'yi string olarak al
     const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
+    
+    // SVG'yi blob olarak indir
+    const blob = new Blob([svgData], { type: 'image/svg+xml' });
+    const url = window.URL.createObjectURL(blob);
+    const downloadLink = document.createElement('a');
+    downloadLink.download = `qr-${hash}.svg`;
+    downloadLink.href = url;
+    downloadLink.click();
+    window.URL.revokeObjectURL(url);
+  };
 
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx?.drawImage(img, 0, 0);
-      const pngFile = canvas.toDataURL('image/png');
-      const downloadLink = document.createElement('a');
-      downloadLink.download = `qr-${hash}.png`;
-      downloadLink.href = pngFile;
-      downloadLink.click();
-    };
+  // Grup bazlı işlemler
+  const getGroupCards = (groupName: string) => {
+    return cards.filter(c => c.groupName === groupName);
+  };
 
-    img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+  const downloadGroupQRCodes = async (groupName: string) => {
+    const groupCards = getGroupCards(groupName);
+    if (groupCards.length === 0) {
+      showToast('Bu grupta kart bulunamadı!', 'error');
+      return;
+    }
+
+    showToast(`${groupCards.length} adet QR kod ZIP'e ekleniyor...`, 'info');
+
+    const zip = new JSZip();
+
+    // Her QR'ı SVG olarak ZIP'e ekle
+    for (const card of groupCards) {
+      const svg = document.getElementById(`qr-${card.id}`)?.querySelector('svg');
+      if (!svg) continue;
+
+      // SVG'yi string olarak al
+      const svgData = new XMLSerializer().serializeToString(svg);
+      
+      // SVG dosyasını ZIP'e ekle
+      zip.file(`${card.username || card.id}.svg`, svgData);
+    }
+
+    // ZIP'i indir
+    const content = await zip.generateAsync({ type: 'blob' });
+    const url = window.URL.createObjectURL(content);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${groupName.replace(/\s+/g, '_')}_QR_Kodlari.zip`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+    showToast(`${groupCards.length} adet QR kod ZIP olarak indirildi!`, 'success');
+  };
+
+  const copyGroupURLs = (groupName: string) => {
+    const groupCards = getGroupCards(groupName);
+    if (groupCards.length === 0) {
+      showToast('Bu grupta kart bulunamadı!', 'error');
+      return;
+    }
+
+    const urls = groupCards.map(card => getCardUrl(card.id)).join('\n');
+    navigator.clipboard.writeText(urls);
+    showToast(`${groupCards.length} adet URL kopyalandı!`, 'success');
+  };
+
+  const exportGroupData = (groupName: string) => {
+    const groupCards = getGroupCards(groupName);
+    if (groupCards.length === 0) {
+      showToast('Bu grupta kart bulunamadı!', 'error');
+      return;
+    }
+
+    const data = groupCards.map(card => ({
+      hash: card.id,
+      url: getCardUrl(card.id),
+      username: card.username || '',
+      fullName: card.fullName || '',
+      email: card.email || '',
+      phone: card.phone || '',
+      isActive: card.isActive,
+      createdAt: card.createdAt,
+    }));
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${groupName.replace(/\s+/g, '_')}_kartlar.json`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    showToast(`${groupCards.length} kartlık veri dışa aktarıldı!`, 'success');
+  };
+
+  // Silme işlemleri
+  const handleDeleteClick = (type: 'single' | 'multiple' | 'group', id?: string, groupName?: string) => {
+    setDeleteTarget({ type, id, groupName });
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    let success = false;
+    let message = '';
+
+    if (deleteTarget.type === 'single' && deleteTarget.id) {
+      success = await deleteCard(deleteTarget.id);
+      message = success ? 'Kart silindi!' : 'Kart silinemedi!';
+    } else if (deleteTarget.type === 'multiple') {
+      const ids = Array.from(selectedCards);
+      success = await deleteMultipleCards(ids);
+      message = success ? `${ids.length} kart silindi!` : 'Kartlar silinemedi!';
+      if (success) setSelectedCards(new Set());
+    } else if (deleteTarget.type === 'group' && deleteTarget.groupName) {
+      const groupCards = getGroupCards(deleteTarget.groupName);
+      success = await deleteGroup(deleteTarget.groupName);
+      message = success ? `"${deleteTarget.groupName}" grubu (${groupCards.length} kart) silindi!` : 'Grup silinemedi!';
+      if (success) setSelectedGroup(null);
+    }
+
+    showToast(message, success ? 'success' : 'error');
+    setIsDeleteModalOpen(false);
+    setDeleteTarget(null);
+
+    if (success) {
+      await loadCards();
+      if (selectedCard && deleteTarget.type === 'single' && deleteTarget.id === selectedCard.id) {
+        setSelectedCard(null);
+      }
+    }
+  };
+
+  const toggleCardSelection = (cardId: string) => {
+    const newSelection = new Set(selectedCards);
+    if (newSelection.has(cardId)) {
+      newSelection.delete(cardId);
+    } else {
+      newSelection.add(cardId);
+    }
+    setSelectedCards(newSelection);
+  };
+
+  const selectAllFiltered = () => {
+    const newSelection = new Set(filteredCards.map(c => c.id));
+    setSelectedCards(newSelection);
+  };
+
+  const deselectAll = () => {
+    setSelectedCards(new Set());
   };
 
   // Filtreleme
@@ -117,7 +306,11 @@ export default function AdminDashboardPage() {
       (filterStatus === 'active' && card.isActive) ||
       (filterStatus === 'inactive' && !card.isActive);
     
-    return matchesSearch && matchesFilter;
+    const matchesGroup = 
+      selectedGroup === null || 
+      card.groupName === selectedGroup;
+    
+    return matchesSearch && matchesFilter && matchesGroup;
   });
 
   const activeCards = filteredCards.filter(c => c.isActive);
@@ -125,6 +318,14 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+      
       <AdminSidebar activePage="dashboard" />
       
       <div className="flex-1 flex flex-col">
@@ -182,33 +383,232 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Yeni Kart Oluştur */}
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Yeni Kart Oluştur</h2>
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Özel Hash (Opsiyonel)
-                </label>
-                <input
-                  type="text"
-                  value={customHash}
-                  onChange={(e) => setCustomHash(e.target.value)}
-                  placeholder="Örn: abc123xyz (boş bırakılırsa otomatik üretilir)"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                />
+          {/* Group Tabs */}
+            <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-gray-900">Grup Filtreleme</h2>
+                {selectedGroup && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => downloadGroupQRCodes(selectedGroup)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm"
+                      title="Tüm QR kodlarını indir"
+                    >
+                      <Download size={16} />
+                      QR'ları İndir
+                    </button>
+                    <button
+                      onClick={() => copyGroupURLs(selectedGroup)}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2 text-sm"
+                      title="Tüm URL'leri kopyala"
+                    >
+                      <Copy size={16} />
+                      URL'leri Kopyala
+                    </button>
+                    <button
+                      onClick={() => exportGroupData(selectedGroup)}
+                      className="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors flex items-center gap-2 text-sm"
+                      title="Grup verilerini dışa aktar"
+                    >
+                      <FileDown size={16} />
+                      Verileri Dışa Aktar
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick('group', undefined, selectedGroup)}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center gap-2 text-sm"
+                      title="Tüm grubu sil"
+                    >
+                      <Trash2 size={16} />
+                      Grubu Sil
+                    </button>
+                  </div>
+                )}
               </div>
-              <div className="flex items-end">
+              
+              <div className="flex gap-2 overflow-x-auto pb-2">
                 <button
-                  onClick={handleCreateCard}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  onClick={() => setSelectedGroup(null)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center gap-2 ${
+                    selectedGroup === null
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
                 >
-                  <Plus size={20} />
-                  Kart Oluştur
+                  <CreditCard size={16} />
+                  Tümü ({stats.total})
                 </button>
+                
+                {groups.map((group) => (
+                  <button
+                    key={group.name}
+                    onClick={() => setSelectedGroup(group.name)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center gap-2 ${
+                      selectedGroup === group.name
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    <Folder size={16} />
+                    {group.name} ({group.count})
+                  </button>
+                ))}
               </div>
             </div>
+
+          {/* Yeni Kart Oluştur - Button */}
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">Kart Yönetimi</h2>
+                <p className="text-sm text-gray-600">Yeni NFC veya Yorum kartı oluşturun</p>
+              </div>
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center gap-2"
+              >
+                <Plus size={20} />
+                Kart Oluştur
+              </button>
+            </div>
           </div>
+
+          {/* Create Card Modal */}
+          {isCreateModalOpen && (
+            <>
+              <div 
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+                onClick={() => setIsCreateModalOpen(false)}
+              />
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl">
+                  <div className="p-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Yeni Kart Oluştur</h2>
+                    
+                    {/* Kart Tipi Seçimi */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-semibold text-gray-900 mb-3">
+                        Kart Tipi *
+                      </label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <button
+                          onClick={() => setCardType('nfc')}
+                          className={`p-4 rounded-xl border-2 transition-all ${
+                            cardType === 'nfc' 
+                              ? 'border-black bg-black text-white' 
+                              : 'border-gray-300 bg-white text-gray-900 hover:border-gray-400'
+                          }`}
+                        >
+                          <div className="flex flex-col items-center gap-2">
+                            <CreditCard size={32} />
+                            <span className="font-semibold">NFC Kart</span>
+                            <span className="text-xs opacity-75">Fiziksel kartvizit kartı</span>
+                          </div>
+                        </button>
+                        <button
+                          onClick={() => setCardType('comment')}
+                          className={`p-4 rounded-xl border-2 transition-all ${
+                            cardType === 'comment' 
+                              ? 'border-black bg-black text-white' 
+                              : 'border-gray-300 bg-white text-gray-900 hover:border-gray-400'
+                          }`}
+                        >
+                          <div className="flex flex-col items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            <span className="font-semibold">Yorum Kartı</span>
+                            <span className="text-xs opacity-75">Müşteri geri bildirimi</span>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Adet */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-semibold text-gray-900 mb-2">
+                        Kaç Adet Oluşturulacak? *
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="1000"
+                        value={quantity}
+                        onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent text-gray-900"
+                        placeholder="Örn: 50"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Maksimum 1000 adet</p>
+                    </div>
+
+                    {/* Grup İsmi */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-semibold text-gray-900 mb-2">
+                        Grup İsmi (Opsiyonel)
+                      </label>
+                      <input
+                        type="text"
+                        value={groupName}
+                        onChange={(e) => setGroupName(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent text-gray-900"
+                        placeholder="Örn: Şirket Çalışanları 2025"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Toplu oluşturulan kartları gruplandırmak için</p>
+                    </div>
+
+                    {/* Özel Hash - Sadece tek kart için */}
+                    {quantity === 1 && (
+                      <div className="mb-6">
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">
+                          Özel Hash (Opsiyonel)
+                        </label>
+                        <input
+                          type="text"
+                          value={customHash}
+                          onChange={(e) => setCustomHash(e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent text-gray-900"
+                          placeholder="Örn: abc123xyz"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Boş bırakılırsa otomatik üretilir</p>
+                      </div>
+                    )}
+
+                    {/* Buttons */}
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          setIsCreateModalOpen(false);
+                          setCardType('nfc');
+                          setQuantity(1);
+                          setGroupName('');
+                          setCustomHash('');
+                        }}
+                        className="flex-1 py-3 px-4 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition"
+                      >
+                        İptal
+                      </button>
+                      <button
+                        onClick={handleCreateCard}
+                        disabled={isCreatingCards}
+                        className="flex-1 py-3 px-4 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isCreatingCards ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            {creatingProgress.current}/{creatingProgress.total} Oluşturuluyor...
+                          </span>
+                        ) : (
+                          quantity > 1 ? `${quantity} Kart Oluştur` : 'Kart Oluştur'
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Filtre ve Arama */}
           <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-200">
@@ -266,6 +666,36 @@ export default function AdminDashboardPage() {
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-900">Kartlar ({filteredCards.length})</h2>
+              <div className="flex gap-2">
+                {selectedCards.size > 0 && (
+                  <>
+                    <span className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg font-medium text-sm">
+                      {selectedCards.size} seçili
+                    </span>
+                    <button
+                      onClick={() => handleDeleteClick('multiple')}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center gap-2 text-sm"
+                    >
+                      <Trash2 size={16} />
+                      Seçilenleri Sil
+                    </button>
+                    <button
+                      onClick={deselectAll}
+                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors text-sm"
+                    >
+                      Seçimi Kaldır
+                    </button>
+                  </>
+                )}
+                {selectedCards.size === 0 && filteredCards.length > 0 && (
+                  <button
+                    onClick={selectAllFiltered}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors text-sm"
+                  >
+                    Tümünü Seç
+                  </button>
+                )}
+              </div>
             </div>
             
             {filteredCards.length === 0 ? (
@@ -292,6 +722,9 @@ export default function AdminDashboardPage() {
                           downloadQRCode={downloadQRCode}
                           isSelected={selectedCard?.id === card.id}
                           onSelect={() => setSelectedCard(card)}
+                          isChecked={selectedCards.has(card.id)}
+                          onToggleCheck={() => toggleCardSelection(card.id)}
+                          onDelete={() => handleDeleteClick('single', card.id)}
                         />
                       ))}
                     </div>
@@ -315,6 +748,9 @@ export default function AdminDashboardPage() {
                           downloadQRCode={downloadQRCode}
                           isSelected={selectedCard?.id === card.id}
                           onSelect={() => setSelectedCard(card)}
+                          isChecked={selectedCards.has(card.id)}
+                          onToggleCheck={() => toggleCardSelection(card.id)}
+                          onDelete={() => handleDeleteClick('single', card.id)}
                         />
                       ))}
                     </div>
@@ -325,6 +761,56 @@ export default function AdminDashboardPage() {
           </div>
         </main>
       </div>
+
+      {/* Silme Onay Modal */}
+      {isDeleteModalOpen && deleteTarget && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            onClick={() => setIsDeleteModalOpen(false)}
+          />
+          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <Trash2 className="text-red-600" size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    {deleteTarget.type === 'group' ? 'Grubu Sil' : 
+                     deleteTarget.type === 'multiple' ? 'Kartları Sil' : 'Kartı Sil'}
+                  </h3>
+                  <p className="text-sm text-gray-500">Bu işlem geri alınamaz!</p>
+                </div>
+              </div>
+              
+              <p className="text-gray-700 mb-6">
+                {deleteTarget.type === 'group' && deleteTarget.groupName && 
+                  `"${deleteTarget.groupName}" grubundaki tüm kartlar (${getGroupCards(deleteTarget.groupName).length} adet) silinecek. Emin misiniz?`}
+                {deleteTarget.type === 'multiple' && 
+                  `Seçilen ${selectedCards.size} adet kart silinecek. Emin misiniz?`}
+                {deleteTarget.type === 'single' && 
+                  'Bu kart kalıcı olarak silinecek. Emin misiniz?'}
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  className="flex-1 py-3 px-4 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="flex-1 py-3 px-4 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition"
+                >
+                  Evet, Sil
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Seçili Kart Detayları Modal */}
       {selectedCard && (
@@ -347,41 +833,72 @@ interface CardItemProps {
   downloadQRCode: (hash: string) => void;
   isSelected: boolean;
   onSelect: () => void;
+  isChecked: boolean;
+  onToggleCheck: () => void;
+  onDelete: () => void;
 }
 
-function CardItem({ card, getCardUrl, copyToClipboard, downloadQRCode, isSelected, onSelect }: CardItemProps) {
+function CardItem({ card, getCardUrl, copyToClipboard, downloadQRCode, isSelected, onSelect, isChecked, onToggleCheck, onDelete }: CardItemProps) {
   return (
     <div
-      className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${
+      className={`border-2 rounded-xl p-4 transition-all ${
         isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300 bg-white'
       }`}
-      onClick={onSelect}
     >
       <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono text-sm font-bold text-gray-900">{card.id}</span>
-            {card.isActive ? (
-              <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded">
-                Aktif
-              </span>
-            ) : (
-              <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded">
-                Pasif
-              </span>
+        <div className="flex items-center gap-2 flex-1">
+          <input
+            type="checkbox"
+            checked={isChecked}
+            onChange={(e) => {
+              e.stopPropagation();
+              onToggleCheck();
+            }}
+            className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
+          />
+          <div className="flex-1 cursor-pointer" onClick={onSelect}>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-mono text-sm font-bold text-gray-900">{card.id}</span>
+              {card.isActive ? (
+                <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded">
+                  Aktif
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded">
+                  Pasif
+                </span>
+              )}
+              {card.groupName && (
+                <span className="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs font-medium rounded flex items-center gap-1">
+                  <Folder size={12} />
+                  {card.groupName}
+                </span>
+              )}
+            </div>
+            {card.username && (
+              <p className="text-sm text-gray-600">@{card.username}</p>
+            )}
+            {card.fullName && (
+              <p className="text-sm font-medium text-gray-900">{card.fullName}</p>
             )}
           </div>
-          {card.username && (
-            <p className="text-sm text-gray-600">@{card.username}</p>
-          )}
-          {card.fullName && (
-            <p className="text-sm font-medium text-gray-900">{card.fullName}</p>
-          )}
         </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          title="Kartı Sil"
+        >
+          <Trash2 size={16} />
+        </button>
       </div>
 
-      <div className="flex justify-center mb-3 p-2 bg-gray-50 rounded-lg">
-        <QRCodeSVG value={getCardUrl(card.id)} size={100} />
+      <div className="flex justify-center mb-3 p-2 bg-gray-50 rounded-lg" onClick={onSelect} style={{ cursor: 'pointer' }}>
+        <div id={`qr-${card.id}`}>
+          <QRCodeSVG value={getCardUrl(card.id)} size={100} />
+        </div>
       </div>
 
       <div className="flex gap-2">

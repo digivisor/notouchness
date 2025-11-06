@@ -10,7 +10,7 @@
 
 body {
   background: var(--background);
-  color: var(--foreground);
+  color: var(--background);
   font-family: var(--font-poppins);
   scroll-behavior: smooth;
 }
@@ -190,5 +190,42 @@ button, a {
   height: 2px;
   background: transparent;
   border-radius: 4px;
+}
+
+/* 3D flip utilities */
+.perspective {
+  perspective: 1000px;
+}
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Flip helper for group hover */
+.flip-inner {
+  transform: rotateY(0deg);
+  /* smoother, slower flip */
+  transition: transform 1s ease-in-out;
+  will-change: transform;
+}
+.group:hover .flip-inner {
+  transform: rotateY(180deg);
+}
+
+/* Flip faces */
+.flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flip-back {
+  transform: rotateY(180deg);
 }
 

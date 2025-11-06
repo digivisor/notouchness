@@ -2,58 +2,79 @@
 
 import Link from 'next/link';
 import { useCart } from '../context/CartContext';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import Image from 'next/image';
+import ProductModal, { type ModalProduct } from './ProductModal';
 
 interface Product {
   id: number;
   name: string;
   price: string | number;
   image: string;
+  backImage?: string;
   features: string[];
   badge?: string;
+  description?: string;
+  inStock?: boolean;
 }
 
 export default function Products() {
   const { addToCart } = useCart();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
 
-  const products: Product[] = [
-    {
-      id: 1,
-      name: 'Notouchness Black Card',
-      price: '₺899',
-      image: '/card-black.png',
-      features: ['Premium Metal', 'NFC & QR', 'Sınırsız Paylaşım', 'Özel Tasarım']
-    },
-    {
-      id: 2,
-      name: 'Notouchness White Card',
-      price: '₺899',
-      image: '/card-white.png',
-      features: ['Premium Metal', 'NFC & QR', 'Sınırsız Paylaşım', 'Özel Tasarım']
-    },
-    {
-      id: 3,
-      name: 'Notouchness Wood Card',
-      price: '₺1,299',
-      image: '/card-wood.png',
-      features: ['Doğal Ahşap', 'NFC & QR', 'Sınırsız Paylaşım', 'Eşsiz Doku'],
-      badge: 'Premium'
-    },
-    {
-      id: 4,
-      name: 'Notouchness Gold Card',
-      price: '₺1,499',
-      image: '/card-gold.png',
-      features: ['24K Gold Plated', 'NFC & QR', 'Sınırsız Paylaşım', 'Lüks Tasarım'],
-      badge: 'Lüks'
-    },
-    {
-      id: 5,
-      name: 'Notouchness Carbon Card',
-      price: '₺1,099',
-      image: '/card-carbon.png',
-      features: ['Carbon Fiber', 'NFC & QR', 'Sınırsız Paylaşım', 'Spor Tasarım']
-    }
-  ];
+  // DB row type for sales_cards (minimal fields used here)
+  type SalesCardRow = {
+    id: string;
+    name: string;
+    price: number;
+    currency: string;
+    features?: string[] | null;
+    description?: string | null;
+    in_stock?: boolean | null;
+    image_front?: string | null;
+    image_back?: string | null;
+    badge?: string | null;
+    created_at?: string;
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('sales_cards')
+          .select('id,name,price,currency,features,description,in_stock,image_front,image_back,badge,created_at')
+          .order('created_at', { ascending: false })
+          .limit(12);
+        if (error) {
+          console.error('Homepage products fetch error:', error.message);
+          return;
+        }
+        if (!cancelled) {
+          const mapped: Product[] = (data as SalesCardRow[] | null | undefined || []).map((row, idx) => ({
+            id: idx + 1,
+            name: row.name,
+            price: row.currency === 'TRY' ? `₺${row.price}` : `${row.price} ${row.currency}`,
+            image: row.image_front || '/card-black.png',
+            backImage: row.image_back || undefined,
+            features: row.features && row.features.length ? row.features : ['NFC & QR', 'Sınırsız Paylaşım'],
+            badge: row.badge || undefined,
+            description: row.description || undefined,
+            inStock: row.in_stock !== null ? row.in_stock : true,
+          }));
+          setProducts(mapped);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    void load();
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <section className="w-full bg-white py-20 px-6">
@@ -84,43 +105,65 @@ export default function Products() {
           </button>
 
           <div id="products-scroll" className="flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory scrollbar-hide w-full">
-            {products.map((product) => (
+            {(loading ? Array.from({ length: 5 }).map((_, i) => ({ id: i + 1, name: 'Yükleniyor…', price: '—', image: '/card-black.png', backImage: undefined, features: ['—'], badge: undefined })) : products).map((product) => (
               <div 
                 key={product.id}
-                className="flex-shrink-0 w-80 bg-gray-50 hover:shadow-xl transition-all duration-300 snap-start"
+                className="group shrink-0 w-80 bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 snap-start flex flex-col"
+                onClick={() => {
+                  setSelectedProduct(product);
+                  setIsProductModalOpen(true);
+                }}
               >
-                {/* Üst - Kart Görseli */}
-                <div className="relative w-full h-80 flex items-center justify-center bg-gray-100 p-8">
+                {/* Üst - Kart Görseli (Gerçek görseller + flip) */}
+                <div className="relative w-full h-72 overflow-hidden bg-gray-50 perspective">
                   {product.badge && (
-                    <div 
-                      className="absolute top-4 left-4 px-3 py-1 bg-black text-white text-xs font-semibold z-10"
-                    >
+                    <div className="absolute top-3 left-3 z-10 rounded px-3 py-1 bg-black/90 text-white text-xs font-semibold">
                       {product.badge}
                     </div>
                   )}
-                  {/* Placeholder - gerçek kart görseli */}
-                  <div className="w-full h-full relative flex items-center justify-center">
-                    <div className="w-64 h-40 bg-gradient-to-br from-gray-800 to-black shadow-xl flex items-center justify-center transform hover:scale-105 transition-transform">
-                      <p className="text-white text-xl font-light tracking-wider">notouchness</p>
+                  <div className="absolute inset-0 preserve-3d flip-inner">
+                    {/* Front */}
+                    <div className="flip-face">
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                        priority={false}
+                      />
                     </div>
+                    {/* Back */}
+                    <div className="flip-face flip-back">
+                      <Image
+                        src={product.backImage || product.image}
+                        alt={`${product.name} arka yüz`}
+                        fill
+                        className="object-cover"
+                        priority={false}
+                      />
+                    </div>
+                  </div>
+                  {/* Price pill */}
+                  <div className="absolute bottom-3 right-3 z-10">
+                    <span className="inline-block rounded-full bg-black text-white shadow-lg px-3 py-1 text-base font-semibold">
+                      {product.price}
+                    </span>
                   </div>
                 </div>
 
                 {/* Alt - Detaylar */}
-                <div className="p-6 bg-white space-y-3">
-                  <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
-                  
-                  <p className="text-2xl font-bold text-gray-900">{product.price}</p>
+                <div className="p-5 bg-white space-y-3 flex flex-col flex-1">
+                  <h3 className="text-base font-semibold text-gray-900 line-clamp-2 min-h-11">{product.name}</h3>
 
                   {/* Açıklama */}
-                  <p className="text-gray-600 text-sm leading-relaxed">
+                  <p className="text-gray-600 text-sm leading-relaxed line-clamp-2 min-h-10">
                     {product.features.join(' • ')}
                   </p>
 
                   {/* Satın Al Butonu */}
                   <button 
-                    onClick={() => addToCart(product)}
-                    className="w-full py-3 font-semibold bg-black text-white hover:bg-gray-800 transition-all"
+                    onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                    className="w-full mt-auto py-3 font-semibold bg-black text-white hover:bg-gray-800 transition-all rounded-lg"
                   >
                     Sepete Ekle
                   </button>
@@ -147,13 +190,37 @@ export default function Products() {
         <div className="text-center">
           <Link 
             href="/store"
-            className="inline-block px-10 py-4 font-semibold text-white transition-all hover:shadow-lg text-lg"
-            style={{ backgroundColor: 'black' }}
+            className="inline-flex items-center gap-2 px-8 py-4 font-semibold text-white bg-black rounded-full transition-all hover:shadow-xl hover:-translate-y-0.5 text-lg"
           >
             Mağaza
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5">
+              <path d="M5 12h14"/>
+              <path d="m12 5 7 7-7 7"/>
+            </svg>
           </Link>
         </div>
       </div>
+      {/* Product Detail Modal (same style as store) */}
+      <ProductModal
+        isOpen={isProductModalOpen}
+        product={selectedProduct ? {
+          ...selectedProduct,
+          description: selectedProduct.description,
+          inStock: selectedProduct.inStock
+        } as unknown as ModalProduct : null}
+        onClose={() => setIsProductModalOpen(false)}
+        onAddToCart={(p, qty) => {
+          addToCart(p as unknown as { id: number; name: string; price: string | number; image: string }, qty);
+        }}
+        onBuyNow={() => {
+          window.location.href = '/checkout';
+        }}
+      />
     </section>
   );
+}
+
+// Modal usage at bottom to keep file tidy
+export function ProductsModalHost() {
+  return null;
 }

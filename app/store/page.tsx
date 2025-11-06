@@ -1,12 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
-import { ShoppingCart, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ShoppingCart } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import CartModal from '../components/CartModal';
+import ProductModal, { type ModalProduct } from '../components/ProductModal';
 import { useCart } from '../context/CartContext';
+import { supabase } from '@/lib/supabase';
 
 export default function StorePage() {
   const { addToCart } = useCart();
@@ -17,18 +19,20 @@ export default function StorePage() {
     name: string;
     price: number | string;
     image: string;
+    backImage?: string;
     category: string;
     description?: string;
+    features?: string[];
     badge?: string;
     inStock?: boolean;
   }
   
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [minPrice, setMinPrice] = useState(149);
   const [maxPrice, setMaxPrice] = useState(1499);
   const [sortBy, setSortBy] = useState('recommended');
-  const [quantity, setQuantity] = useState(1);
 
   const openCart = () => {
     setIsCartVisible(true);
@@ -38,19 +42,12 @@ export default function StorePage() {
     setIsCartVisible(false);
   };
 
-  const openProductModal = (product: Product) => {
-    setSelectedProduct(product);
-    setIsProductModalOpen(true);
-    setQuantity(1);
-  };
-
   const closeProductModal = () => {
     setIsProductModalOpen(false);
     setTimeout(() => setSelectedProduct(null), 300);
   };
 
   const handleBuyNow = () => {
-    // Satın alma sayfasına yönlendir
     window.location.href = '/checkout';
   };
 
@@ -68,6 +65,11 @@ export default function StorePage() {
     }
   };
 
+  const openProductModal = (product: Product) => {
+    setSelectedProduct(product);
+    setIsProductModalOpen(true);
+  };
+
   const categories = [
     { id: 'all', name: 'Tümü' },
     { id: 'metal', name: 'Metal Kartlar' },
@@ -76,80 +78,71 @@ export default function StorePage() {
     { id: 'accessories', name: 'Aksesuarlar' }
   ];
 
-  const products = [
-    {
-      id: 1,
-      name: 'Notouchness Black Card',
-      price: '₺899',
-      category: 'metal',
-      image: '/card.png',
-      description: 'Premium Metal • NFC & QR • Sınırsız Paylaşım • Özel Tasarım',
-      inStock: true
-    },
-    {
-      id: 2,
-      name: 'Notouchness White Card',
-      price: '₺899',
-      category: 'metal',
-      image: '/card.png',
-      description: 'Premium Metal • NFC & QR • Sınırsız Paylaşım • Özel Tasarım',
-      inStock: true
-    },
-    {
-      id: 3,
-      name: 'Notouchness Wood Card',
-      price: '₺1,299',
-      category: 'wood',
-      image: '/card.png',
-      description: 'Doğal Ahşap • NFC & QR • Sınırsız Paylaşım • Eşsiz Doku',
-      badge: 'Premium',
-      inStock: true
-    },
-    {
-      id: 4,
-      name: 'Notouchness Gold Card',
-      price: '₺1,499',
-      category: 'premium',
-      image: '/card.png',
-      description: '24K Gold Plated • NFC & QR • Sınırsız Paylaşım • Lüks Tasarım',
-      badge: 'Lüks',
-      inStock: true
-    },
-    {
-      id: 5,
-      name: 'Notouchness Carbon Card',
-      price: '₺1,099',
-      category: 'premium',
-      image: '/card.png',
-      description: 'Carbon Fiber • NFC & QR • Sınırsız Paylaşım • Spor Tasarım',
-      inStock: true
-    },
-    {
-      id: 6,
-      name: 'Kart Tutucu',
-      price: '₺149',
-      category: 'accessories',
-      image: '/card.png',
-      description: 'Deri Kart Tutucu • Premium Kalite • Şık Tasarım',
-      inStock: true
-    }
-  ];
+  // DB row type for sales_cards
+  type SalesCardRow = {
+    id: string;
+    name: string;
+    price: number;
+    currency: string;
+    category: string;
+    badge?: string | null;
+    description?: string | null;
+    features?: string[] | null;
+    image_front?: string | null;
+    image_back?: string | null;
+    stock_count?: number | null;
+    in_stock?: boolean | null;
+    created_at?: string;
+  };
+
+  // Load products from Supabase sales_cards
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const { data, error } = await supabase
+        .from('sales_cards')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.error('Sales cards fetch error:', error.message);
+        return;
+      }
+      if (!cancelled) {
+        const mapped: Product[] = (data as SalesCardRow[] | null | undefined || []).map((row, idx) => ({
+          id: idx + 1,
+          name: row.name,
+          price: row.currency === 'TRY' ? `₺${row.price}` : `${row.price} ${row.currency}`,
+          category: row.category,
+          image: row.image_front || '/card.png',
+          backImage: row.image_back || undefined,
+          description: row.description || '',
+          features: row.features || undefined,
+          badge: row.badge || undefined,
+          inStock: row.in_stock !== null ? row.in_stock : true,
+        }));
+        setProducts(mapped);
+      }
+    };
+    void load();
+    return () => { cancelled = true; };
+  }, []);
 
   // Filter by category and price
-  let filteredProducts = selectedCategory === 'all' 
+  const toNumberPrice = (p: string | number) => (typeof p === 'number' ? p : parseInt(p.replace(/[₺,.]/g, '')));
+  const filteredProductsBase = selectedCategory === 'all' 
     ? products 
     : products.filter(p => p.category === selectedCategory);
 
   // Filter by price range
-  filteredProducts = filteredProducts.filter(p => {
-    const price = parseInt(p.price.replace(/[₺,.]/g, ''));
+  const filteredProducts = filteredProductsBase.filter(p => {
+    const price = toNumberPrice(p.price);
     return price >= minPrice && price <= maxPrice;
   });
 
   // Sort products
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    const priceA = parseInt(a.price.replace(/[₺,.]/g, ''));
-    const priceB = parseInt(b.price.replace(/[₺,.]/g, ''));
+    const priceA = toNumberPrice(a.price);
+    const priceB = toNumberPrice(b.price);
     
     switch (sortBy) {
       case 'price-asc':
@@ -334,8 +327,8 @@ export default function StorePage() {
                     onClick={() => openProductModal(product)}
                     className="bg-gray-50 hover:shadow-2xl transition-all duration-300 group text-left flex flex-col"
                   >
-              {/* Product Image */}
-              <div className="relative w-full h-80 overflow-hidden">
+              {/* Product Image (Flip on hover) */}
+              <div className="relative w-full h-80 overflow-hidden perspective">
                 {product.badge && (
                   <div 
                     className="absolute top-2 left-2 px-3 py-1 bg-black text-white text-xs font-semibold z-10 rounded"
@@ -348,12 +341,28 @@ export default function StorePage() {
                     <span className="text-white font-bold text-lg">Stokta Yok</span>
                   </div>
                 )}
-                <Image 
-                  src={product.image}
-                  alt={product.name}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform"
-                />
+                <div className="absolute inset-0 preserve-3d flip-inner">
+                  {/* Front side */}
+                  <div className="flip-face">
+                    <Image 
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                      priority={false}
+                    />
+                  </div>
+                  {/* Back side */}
+                  <div className="flip-face flip-back">
+                    <Image 
+                      src={product.backImage || (product.image === '/kartön.png' ? '/kartarka.png' : product.image)}
+                      alt={`${product.name} arka yüz`}
+                      fill
+                      className="object-cover"
+                      priority={false}
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Product Details */}
@@ -395,153 +404,16 @@ export default function StorePage() {
           </div>
         </div>
 
-      {/* Product Detail Modal */}
-      {isProductModalOpen && selectedProduct && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-            onClick={closeProductModal}
-          ></div>
-          
-          {/* Modal */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-6xl w-full shadow-2xl relative">
-              {/* Close Button */}
-              <button 
-                onClick={closeProductModal}
-                className="absolute top-6 right-6 p-2 hover:bg-gray-100 rounded-full transition z-10"
-              >
-                <X size={24} className="text-gray-600" />
-              </button>
-
-              <div className="grid md:grid-cols-2 gap-8 p-10">
-                {/* Left - Product Image */}
-                <div className="relative rounded-xl overflow-hidden">
-                  {selectedProduct.badge && (
-                    <div className="absolute top-4 left-4 px-4 py-2 bg-black text-white text-sm font-semibold z-10 rounded-lg">
-                      {selectedProduct.badge}
-                    </div>
-                  )}
-                  <div className="relative w-full h-[500px]">
-                    <Image 
-                      src={selectedProduct.image}
-                      alt={selectedProduct.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </div>
-
-                {/* Right - Product Details */}
-                <div className="space-y-6 flex flex-col justify-center">
-                  <div>
-                    <h2 className="text-3xl font-bold text-gray-900 mb-2">{selectedProduct.name}</h2>
-                    <p className="text-4xl font-bold text-gray-900">{selectedProduct.price}</p>
-                  </div>
-
-                  <div className="border-t border-b border-gray-200 py-4">
-                    <p className="text-gray-700 leading-relaxed">
-                      {selectedProduct.description}
-                    </p>
-                  </div>
-
-                  {/* Features */}
-                  <div>
-                    <h3 className="font-bold text-gray-900 mb-3">Ürün Özellikleri</h3>
-                    <ul className="space-y-2">
-                      <li className="flex items-start gap-2">
-                        <span className="text-black mt-1">✓</span>
-                        <span className="text-gray-700">NFC ve QR kod teknolojisi</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-black mt-1">✓</span>
-                        <span className="text-gray-700">Sınırsız paylaşım ve güncelleme</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-black mt-1">✓</span>
-                        <span className="text-gray-700">Özel tasarım ve baskı seçenekleri</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-black mt-1">✓</span>
-                        <span className="text-gray-700">Su geçirmez ve dayanıklı</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-black mt-1">✓</span>
-                        <span className="text-gray-700">Anında aktivasyon</span>
-                      </li>
-                    </ul>
-                  </div>
-
-                  {/* Stock Status */}
-                  <div className={`px-4 py-2 rounded-lg inline-block ${
-                    selectedProduct.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    {selectedProduct.inStock ? '✓ Stokta Var' : '✗ Stokta Yok'}
-                  </div>
-
-                  {/* Quantity and Buttons */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <span className="text-gray-700 font-medium">Adet:</span>
-                      <div className="flex items-center border border-gray-300 rounded-lg">
-                        <button 
-                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="px-4 py-2 hover:bg-gray-100 text-gray-900 font-semibold"
-                        >
-                          -
-                        </button>
-                        <span className="px-6 py-2 border-x border-gray-300 text-gray-900 font-medium min-w-[60px] text-center">
-                          {quantity}
-                        </span>
-                        <button 
-                          onClick={() => setQuantity(quantity + 1)}
-                          className="px-4 py-2 hover:bg-gray-100 text-gray-900 font-semibold"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3">
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddToCart(selectedProduct, quantity);
-                          closeProductModal();
-                        }}
-                        disabled={!selectedProduct.inStock}
-                        className={`flex-1 py-4 font-semibold text-lg rounded-lg transition-all border-2 ${
-                          selectedProduct.inStock 
-                            ? 'bg-white text-black border-black hover:bg-gray-50' 
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300'
-                        }`}
-                      >
-                        Sepete Ekle
-                      </button>
-                      
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleBuyNow();
-                        }}
-                        disabled={!selectedProduct.inStock}
-                        className={`flex-1 py-4 font-semibold text-lg rounded-lg transition-all ${
-                          selectedProduct.inStock 
-                            ? 'bg-black text-white hover:bg-gray-800' 
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        }`}
-                      >
-                        Satın Al
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      {/* Product Detail Modal - using shared component */}
+      <ProductModal
+        isOpen={isProductModalOpen}
+        product={selectedProduct as unknown as ModalProduct}
+        onClose={closeProductModal}
+        onAddToCart={(p, qty) => {
+          handleAddToCart(p as unknown as Product, qty);
+        }}
+        onBuyNow={handleBuyNow}
+      />
 
       {/* Footer */}
       <Footer />

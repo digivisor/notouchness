@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, CreditCard, Users, Settings, 
-  LogOut, Home
+  LogOut, Home, ShoppingBag, MessageSquare, Package
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -24,6 +24,9 @@ export default function AdminSidebar({ activePage }: AdminSidebarProps) {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/admin/dashboard', key: 'dashboard' },
     { icon: CreditCard, label: 'Kartlar', href: '/admin/cards', key: 'cards' },
+    { icon: Package, label: 'Siparişler', href: '/admin/orders', key: 'orders' },
+    { icon: ShoppingBag, label: 'Satış Kartları', href: '/admin/sales-cards', key: 'sales-cards' },
+    { icon: MessageSquare, label: 'Kurumsal Mesajlar', href: '/admin/corporate-requests', key: 'corporate-requests' },
     { icon: Users, label: 'Kullanıcılar', href: '/admin/users', key: 'users' },
     { icon: Settings, label: 'Ayarlar', href: '/admin/settings', key: 'settings' },
   ];

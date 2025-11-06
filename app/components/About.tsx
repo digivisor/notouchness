@@ -11,11 +11,11 @@ export default function About() {
           <div className="relative flex justify-center lg:justify-start">
             <div className="relative w-full max-w-lg">
               <Image
-                src="/mockup.png"
+                src="/notouchness-telefon-mockup.png"
                 alt="Notouchness Digital NFC Card"
-                width={900}
+                width={1000}
                 height={900}
-                className="w-full h-auto"
+                className="w-full h-auto rounded-2xl"
                 priority
               />
             </div>

@@ -128,6 +128,10 @@ const cardToDbFormat = (card: CardProfile): DbCard => {
     hashed_password: card.hashedPassword || null,
     is_active: card.isActive || false,
     view_count: card.viewCount || 0,
+    
+    // Grup ve Kart Tipi
+    group_name: card.groupName || null,
+    card_type: card.cardType || 'nfc',
   };
 };
 
@@ -260,6 +264,10 @@ const dbToCardFormat = (row: DbCard): CardProfile => {
     createdAt: String(row.created_at || new Date().toISOString()),
     updatedAt: String(row.updated_at || new Date().toISOString()),
     viewCount: typeof row.view_count === 'number' ? row.view_count : 0,
+    
+    // Grup ve Kart Tipi
+    groupName: row.group_name ? String(row.group_name) : undefined,
+    cardType: (row.card_type || 'nfc') as 'nfc' | 'comment',
   };
 };
 
@@ -383,6 +391,36 @@ export const cardDb = {
     
     // Eğer veri yoksa, kullanıcı adı müsait
     return !data || data.length === 0;
+  },
+
+  // Kart silme - tek kart
+  async delete(id: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('cards')
+      .delete()
+      .eq('id', id);
+    
+    return !error;
+  },
+
+  // Toplu kart silme
+  async deleteMultiple(ids: string[]): Promise<boolean> {
+    const { error } = await supabase
+      .from('cards')
+      .delete()
+      .in('id', ids);
+    
+    return !error;
+  },
+
+  // Grup silme (grubun tüm kartlarını sil)
+  async deleteGroup(groupName: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('cards')
+      .delete()
+      .eq('group_name', groupName);
+    
+    return !error;
   },
 };
 
