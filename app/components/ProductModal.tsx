@@ -1,7 +1,7 @@
 "use client";
 
 import Image from 'next/image';
-import { X } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export interface ModalProduct {
@@ -26,12 +26,14 @@ interface ProductModalProps {
 
 export default function ProductModal({ isOpen, product, onClose, onAddToCart, onBuyNow }: ProductModalProps) {
   const [quantity, setQuantity] = useState(1);
+  const [isAdded, setIsAdded] = useState(false);
 
   // Reset quantity when modal opens
   useEffect(() => {
     if (isOpen) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setQuantity(1);
+      setIsAdded(false);
     }
   }, [isOpen]);
 
@@ -132,11 +134,32 @@ export default function ProductModal({ isOpen, product, onClose, onAddToCart, on
 
                 <div className="flex gap-3">
                   <button 
-                    onClick={(e) => { e.stopPropagation(); onAddToCart(product, quantity); onClose(); }}
-                    disabled={product.inStock === false}
-                    className={`flex-1 py-4 font-semibold text-lg rounded-lg transition-all border-2 ${product.inStock !== false ? 'bg-white text-black border-black hover:bg-gray-50' : 'bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300'}`}
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      onAddToCart(product, quantity);
+                      setIsAdded(true);
+                      setTimeout(() => {
+                        setIsAdded(false);
+                        onClose();
+                      }, 1500);
+                    }}
+                    disabled={product.inStock === false || isAdded}
+                    className={`flex-1 py-4 font-semibold text-lg rounded-lg transition-all border-2 flex items-center justify-center gap-2 ${
+                      isAdded
+                        ? 'bg-gray-900 text-white border-gray-900 scale-105'
+                        : product.inStock !== false 
+                          ? 'bg-white text-black border-black hover:bg-gray-50' 
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300'
+                    }`}
                   >
-                    Sepete Ekle
+                    {isAdded ? (
+                      <>
+                        <Check size={20} />
+                        <span>Eklendi!</span>
+                      </>
+                    ) : (
+                      'Sepete Ekle'
+                    )}
                   </button>
                   
                   <button 

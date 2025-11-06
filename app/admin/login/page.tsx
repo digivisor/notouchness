@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -22,21 +24,46 @@ export default function AdminLoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
-    // Basit admin kontrolü (production'da Supabase Auth kullanılmalı)
-    const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@digivisor.com';
-    const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
+    try {
+      // Password hash ile doğrulama yap
+      const response = await fetch('/api/admin/verify-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
 
-    if (formData.email === ADMIN_EMAIL && formData.password === ADMIN_PASSWORD) {
-      // Admin session'ı kaydet
-      localStorage.setItem('admin_session', JSON.stringify({
-        email: formData.email,
-        loggedIn: true,
-        timestamp: Date.now(),
-      }));
-      router.push('/admin/dashboard');
-    } else {
-      setError('E-posta veya şifre hatalı!');
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result.error || 'E-posta veya şifre hatalı!');
+        setIsLoading(false);
+        return;
+      }
+
+      if (result.success) {
+        // Admin session'ı kaydet
+        localStorage.setItem('admin_session', JSON.stringify({
+          email: formData.email,
+          loggedIn: true,
+          timestamp: Date.now(),
+        }));
+
+        router.push('/admin/dashboard');
+      } else {
+        setError('Giriş başarısız!');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -46,15 +73,20 @@ export default function AdminLoginPage() {
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           {/* Logo */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-white text-2xl font-bold">A</span>
+            <div className="w-40 h-20 mx-auto mb-4 flex items-center justify-center">
+              <Image
+                src="/notouchness1.png"
+                alt="Logo"
+                width={120}
+                height={120}
+                className="object-contain w-full h-full"
+                priority
+              />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Admin Paneli
+              Yönetim Paneli
             </h1>
-            <p className="text-gray-600 text-sm">
-              Yönetim paneline giriş yap
-            </p>
+            
           </div>
 
           {/* Error Message */}
@@ -114,18 +146,15 @@ export default function AdminLoginPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition mt-6"
+              disabled={isLoading}
+              className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Giriş Yap
+              {isLoading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
             </button>
           </form>
 
           {/* Info */}
-          <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-xs text-yellow-800">
-              <strong>Not:</strong> Demo için varsayılan giriş: admin@digivisor.com / admin123
-            </p>
-          </div>
+          
         </div>
       </div>
     </div>

@@ -938,13 +938,16 @@ function CheckoutContent() {
                       </div>
                     </div>
 
-                    {/* Kabul Edilen Kartlar */}
+                    {/* iyzico ile Öde */}
                     <div className="mt-6 pt-6 border-t border-gray-200">
-                      <p className="text-sm text-gray-600 mb-3">Kabul Edilen Kartlar</p>
-                      <div className="flex gap-3">
-                        <div className="px-3 py-2 border rounded text-xs font-semibold">VISA</div>
-                        <div className="px-3 py-2 border rounded text-xs font-semibold">MasterCard</div>
-                        <div className="px-3 py-2 border rounded text-xs font-semibold">Troy</div>
+                      <div className="flex items-center justify-center">
+                        <Image 
+                          src="/iyzico_ile_ode_colored_horizontal.png" 
+                          alt="iyzico ile Öde" 
+                          width={200} 
+                          height={60}
+                          className="h-auto"
+                        />
                       </div>
                     </div>
                   </div>

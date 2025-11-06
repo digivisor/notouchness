@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCart } from '../context/CartContext';
+import Toast from './Toast';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
@@ -25,6 +26,7 @@ export default function Products() {
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [addedToCart, setAddedToCart] = useState<number | null>(null);
 
   // DB row type for sales_cards (minimal fields used here)
   type SalesCardRow = {
@@ -162,10 +164,28 @@ export default function Products() {
 
                   {/* Satın Al Butonu */}
                   <button 
-                    onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                    className="w-full mt-auto py-3 font-semibold bg-black text-white hover:bg-gray-800 transition-all rounded-lg"
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      addToCart(product); 
+                      setAddedToCart(product.id);
+                      setTimeout(() => setAddedToCart(null), 2000);
+                    }}
+                    className={`w-full mt-auto py-3 font-semibold transition-all rounded-lg ${
+                      addedToCart === product.id
+                        ? 'bg-gray-900 text-white scale-105'
+                        : 'bg-black text-white hover:bg-gray-800'
+                    }`}
                   >
-                    Sepete Ekle
+                    {addedToCart === product.id ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Eklendi!
+                      </span>
+                    ) : (
+                      'Sepete Ekle'
+                    )}
                   </button>
                 </div>
               </div>
@@ -211,6 +231,8 @@ export default function Products() {
         onClose={() => setIsProductModalOpen(false)}
         onAddToCart={(p, qty) => {
           addToCart(p as unknown as { id: number; name: string; price: string | number; image: string }, qty);
+          setAddedToCart(p.id);
+          setTimeout(() => setAddedToCart(null), 2000);
         }}
         onBuyNow={() => {
           window.location.href = '/checkout';

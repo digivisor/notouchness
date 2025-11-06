@@ -1,6 +1,6 @@
 'use client';
 
-import { Link } from "lucide-react";
+import Link from 'next/link';
 import Image from 'next/image'; 
 
 export default function Footer() {
@@ -22,10 +22,11 @@ export default function Footer() {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-black">Ürünler</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-600 hover:text-black transition text-sm">Black Card</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-black transition text-sm">White Card</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-black transition text-sm">Wood Card</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-black transition text-sm">Kurumsal Çözümler</a></li>
+              <li><Link href="/store" className="text-gray-600 hover:text-black transition text-sm">Mağaza</Link></li>
+              <li><Link href="/store?category=metal" className="text-gray-600 hover:text-black transition text-sm">Metal Kartlar</Link></li>
+              <li><Link href="/store?category=wood" className="text-gray-600 hover:text-black transition text-sm">Ahşap Kartlar</Link></li>
+              <li><Link href="/store?category=premium" className="text-gray-600 hover:text-black transition text-sm">Premium</Link></li>
+              <li><Link href="/store?category=accessories" className="text-gray-600 hover:text-black transition text-sm">Aksesuarlar</Link></li>
             </ul>
           </div>
 
@@ -33,22 +34,30 @@ export default function Footer() {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-black">Şirket</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-600 hover:text-black transition text-sm">Hakkımızda</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-black transition text-sm">Blog</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-black transition text-sm">Kariyer</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-black transition text-sm">İletişim</a></li>
+              <li><Link href="/hakkimizda" className="text-gray-600 hover:text-black transition text-sm">Hakkımızda</Link></li>
+              <li><Link href="/iletisim" className="text-gray-600 hover:text-black transition text-sm">İletişim</Link></li>
             </ul>
           </div>
 
-          {/* Destek */}
+          {/* Yasal */}
           <div>
-            <h4 className="text-lg font-semibold mb-4 text-black">Destek</h4>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-gray-600 hover:text-black transition text-sm">SSS</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-black transition text-sm">Kullanım Kılavuzu</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-black transition text-sm">Gizlilik Politikası</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-black transition text-sm">Kullanım Koşulları</a></li>
+            <h4 className="text-lg font-semibold mb-4 text-black">Yasal</h4>
+            <ul className="space-y-2 mb-6">
+              <li><Link href="/gizlilik-sozlesmesi" className="text-gray-600 hover:text-black transition text-sm">Gizlilik Sözleşmesi</Link></li>
+              <li><Link href="/mesafeli-satis-sozlesmesi" className="text-gray-600 hover:text-black transition text-sm">Mesafeli Satış Sözleşmesi</Link></li>
+              <li><Link href="/teslimat-ve-iade" className="text-gray-600 hover:text-black transition text-sm">Teslimat ve İade</Link></li>
+              <li><Link href="/ssl-sertifikasi" className="text-gray-600 hover:text-black transition text-sm">SSL Sertifikası</Link></li>
             </ul>
+            {/* iyzico Logo */}
+            <div className="mt-4">
+              <Image 
+                src="/logo_band_colored@2x.png" 
+                alt="iyzico" 
+                width={500} 
+                height={500}
+                className="h-auto w-auto"
+              />
+            </div>
           </div>
         </div>
 

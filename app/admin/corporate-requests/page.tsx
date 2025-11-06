@@ -122,7 +122,7 @@ export default function CorporateRequestsPage() {
     <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar activePage="corporate-requests" />
       
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col ml-64">
         <AdminHeader />
         
         <main className="flex-1 p-8">

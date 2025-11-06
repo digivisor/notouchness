@@ -77,11 +77,11 @@ export default function Features() {
         {/* Stats Section */}
         <div className="mt-20 grid md:grid-cols-3 gap-8">
           <div className="text-center p-8 rounded-2xl bg-linear-to-br from-gray-50 to-gray-100 border border-gray-200">
-            <div className="text-5xl font-bold text-gray-900 mb-2">10K+</div>
+            <div className="text-5xl font-bold text-gray-900 mb-2">1K+</div>
             <div className="text-gray-600">Aktif Kullanıcı</div>
           </div>
           <div className="text-center p-8 rounded-2xl bg-linear-to-br from-gray-50 to-gray-100 border border-gray-200">
-            <div className="text-5xl font-bold text-gray-900 mb-2">50K+</div>
+            <div className="text-5xl font-bold text-gray-900 mb-2">1K+</div>
             <div className="text-gray-600">Paylaşılan Kart</div>
           </div>
           <div className="text-center p-8 rounded-2xl bg-linear-to-br from-gray-50 to-gray-100 border border-gray-200">

@@ -3,10 +3,12 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 import { 
   LayoutDashboard, CreditCard, Users, Settings, 
   LogOut, Home, ShoppingBag, MessageSquare, Package
 } from 'lucide-react';
+import { supabase } from '../../../lib/supabase';
 
 interface AdminSidebarProps {
   activePage: string;
@@ -16,8 +18,11 @@ export default function AdminSidebar({ activePage }: AdminSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Supabase'den çıkış yap
+    await supabase.auth.signOut();
     localStorage.removeItem('admin_session');
+    localStorage.removeItem('supabase_auth_token');
     router.push('/admin/login');
   };
 
@@ -32,17 +37,21 @@ export default function AdminSidebar({ activePage }: AdminSidebarProps) {
   ];
 
   return (
-    <aside className="w-64 bg-gray-900 min-h-screen flex flex-col">
+    <aside className="fixed left-0 top-0 w-64 h-screen bg-gray-900 flex flex-col z-40 overflow-y-auto">
       {/* Logo */}
       <div className="p-6 border-b border-gray-800">
-        <Link href="/admin/dashboard" className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-            <span className="text-gray-900 font-bold text-lg">A</span>
+        <Link href="/admin/dashboard" className="flex flex-col items-center gap-2">
+          <div className="w-32 h-12 flex items-center justify-center">
+            <Image
+              src="/notouchness1.png"
+              alt="Logo"
+              width={120}
+              height={60}
+              className="object-contain w-full h-full brightness-0 invert"
+              priority
+            />
           </div>
-          <div>
-            <h1 className="text-white font-bold text-lg">Admin Panel</h1>
-            <p className="text-gray-400 text-xs">Digivisor</p>
-          </div>
+          <p className="text-gray-400 text-xs">by digivisor</p>
         </Link>
       </div>
 

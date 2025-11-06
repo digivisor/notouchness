@@ -14,6 +14,7 @@ export default function StorePage() {
   const { addToCart } = useCart();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isCartVisible, setIsCartVisible] = useState(false);
+  const [addedToCart, setAddedToCart] = useState<number | null>(null);
   interface Product {
     id: number;
     name: string;
@@ -160,6 +161,8 @@ export default function StorePage() {
 
   const handleAddToCart = (product: Product, qty: number = 1) => {
     addToCart(product, qty);
+    setAddedToCart(product.id);
+    setTimeout(() => setAddedToCart(null), 2000);
   };
 
   return (
@@ -391,9 +394,22 @@ export default function StorePage() {
                       e.stopPropagation();
                       handleAddToCart(product, 1);
                     }}
-                    className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition"
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                      addedToCart === product.id
+                        ? 'bg-gray-900 text-white scale-105'
+                        : 'bg-black text-white hover:bg-gray-800'
+                    }`}
                   >
-                    <ShoppingCart size={16} />
+                    {addedToCart === product.id ? (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="text-sm font-medium">Eklendi!</span>
+                      </>
+                    ) : (
+                      <ShoppingCart size={16} />
+                    )}
                   </button>
                 </div>
               </div>

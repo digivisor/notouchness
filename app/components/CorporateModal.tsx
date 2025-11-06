@@ -79,7 +79,7 @@ export default function CorporateModal({ isOpen, onClose }: CorporateModalProps)
         <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
           {/* Header */}
           <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex justify-between items-center rounded-t-3xl">
-            <h2 className="text-3xl font-bold text-gray-900">Kurumsal Teklif Alın</h2>
+            <h2 className="text-3xl font-bold text-gray-900">Kurumsal Çözümler</h2>
             <button 
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full transition"
@@ -91,7 +91,7 @@ export default function CorporateModal({ isOpen, onClose }: CorporateModalProps)
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
             <p className="text-gray-600 mb-6">
-              Ekibiniz için özel fiyat teklifi almak için formu doldurun. En kısa sürede sizinle iletişime geçeceğiz.
+              Ekibiniz için toplu sipariş mi vermek istiyorsunuz? Özel tasarım ve indirimli fiyatlardan yararlanın.
             </p>
 
             {/* Şirket Adı */}
@@ -204,7 +204,7 @@ export default function CorporateModal({ isOpen, onClose }: CorporateModalProps)
               disabled={isSubmitting || submitSuccess}
               className="w-full py-4 rounded-xl font-semibold text-white bg-black hover:bg-gray-800 transition-all hover:shadow-lg text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Gönderiliyor...' : submitSuccess ? '✓ Gönderildi' : 'Teklif Talebi Gönder'}
+              {isSubmitting ? 'Gönderiliyor...' : submitSuccess ? '✓ Gönderildi' : 'Kurumsal Teklif Alın'}
             </button>
 
             <p className="text-xs text-gray-500 text-center">

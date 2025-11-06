@@ -52,10 +52,10 @@ export default function AdminCardsPage() {
     <div className="min-h-screen bg-gray-50 flex">
       <AdminSidebar activePage="cards" />
       
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col ml-64">
         <AdminHeader />
         
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Kartlar</h1>
             <p className="text-gray-600">Tüm kartları görüntüle ve yönet</p>
@@ -64,7 +64,7 @@ export default function AdminCardsPage() {
           {/* Filtre ve Arama */}
           <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-200">
             <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                   <input
@@ -76,10 +76,10 @@ export default function AdminCardsPage() {
                   />
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-shrink-0">
                 <button
                   onClick={() => setFilterStatus('all')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
                     filterStatus === 'all'
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -89,7 +89,7 @@ export default function AdminCardsPage() {
                 </button>
                 <button
                   onClick={() => setFilterStatus('active')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
                     filterStatus === 'active'
                       ? 'bg-green-600 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -99,7 +99,7 @@ export default function AdminCardsPage() {
                 </button>
                 <button
                   onClick={() => setFilterStatus('inactive')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
                     filterStatus === 'inactive'
                       ? 'bg-orange-600 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -114,17 +114,17 @@ export default function AdminCardsPage() {
           {/* Kartlar Tablosu */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[800px]">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İsim</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Görüntüleme</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oluşturulma</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İsim</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Görüntüleme</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oluşturulma</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -138,25 +138,25 @@ export default function AdminCardsPage() {
                   ) : (
                     filteredCards.map((card) => (
                       <tr key={card.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="font-mono text-sm text-gray-900">{card.id}</span>
+                        <td className="px-4 py-4">
+                          <span className="font-mono text-sm text-gray-900 break-all">{card.id}</span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 py-4">
                           {card.username ? (
-                            <a href={`/${card.username}`} target="_blank" className="text-blue-600 hover:underline">
+                            <a href={`/${card.username}`} target="_blank" className="text-blue-600 hover:underline break-all">
                               @{card.username}
                             </a>
                           ) : (
                             <span className="text-gray-400">-</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-4 py-4 text-sm text-gray-900 max-w-[150px] truncate">
                           {card.fullName || '-'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td className="px-4 py-4 text-sm text-gray-600 max-w-[200px] truncate">
                           {card.email || '-'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 py-4 whitespace-nowrap">
                           {card.isActive ? (
                             <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
                               Aktif
@@ -167,17 +167,17 @@ export default function AdminCardsPage() {
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
                           {card.viewCount || 0}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
                           {new Date(card.createdAt).toLocaleDateString('tr-TR')}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <a
                             href={`/card/${card.id}`}
                             target="_blank"
-                            className="text-blue-600 hover:text-blue-900 mr-4"
+                            className="text-blue-600 hover:text-blue-900"
                           >
                             Görüntüle
                           </a>

@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
+import AdminHeader from '../components/AdminHeader';
 import { supabase } from '@/lib/supabase';
-import { Plus, Save, Trash2, Edit2, Upload, ImageOff, RefreshCcw } from 'lucide-react';
+import { Plus, Save, Trash2, Edit2, Upload, ImageOff, RefreshCcw, CreditCard } from 'lucide-react';
 
 type SalesCard = {
   id?: string;
@@ -150,20 +151,24 @@ export default function AdminSalesCardsPage() {
   }) => {
     return (
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-        <div className="border rounded-lg p-3 flex items-center gap-3 bg-gray-50">
+        <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+        <div className="border border-gray-300 rounded-lg p-4 flex items-center gap-4 bg-gray-50">
           {value ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={value} alt="preview" className="w-20 h-14 object-cover rounded" />
+            <img src={value} alt="preview" className="w-24 h-16 object-cover rounded-lg border border-gray-200" />
           ) : (
-            <div className="w-20 h-14 bg-gray-200 rounded flex items-center justify-center text-gray-400">
-              <ImageOff size={18} />
+            <div className="w-24 h-16 bg-gray-200 rounded-lg border border-gray-300 flex items-center justify-center text-gray-400">
+              <ImageOff size={20} />
             </div>
           )}
           <div className="flex-1">
-            <p className="text-xs text-gray-500">JPG, PNG. Max ~5MB</p>
-            <div className="mt-2 flex gap-2">
-              <label className={`inline-flex items-center gap-2 px-3 py-2 rounded border ${loading ? 'bg-gray-200 text-gray-500' : 'bg-white hover:bg-gray-50 cursor-pointer'}`}>
+            <p className="text-xs text-gray-500 mb-2">JPG, PNG. Max ~5MB</p>
+            <div className="flex gap-2">
+              <label className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+                loading 
+                  ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed' 
+                  : 'bg-white hover:bg-gray-50 cursor-pointer border-gray-300'
+              }`}>
                 <Upload size={16} /> {loading ? 'Yükleniyor…' : 'Görsel Yükle'}
                 <input
                   type="file"
@@ -179,7 +184,7 @@ export default function AdminSalesCardsPage() {
               {value && (
                 <button
                   type="button"
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded border bg-white hover:bg-gray-50"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
                   onClick={() => onChange(new File([], ''))}
                   title="Kaldır"
                 >
@@ -289,58 +294,63 @@ export default function AdminSalesCardsPage() {
   }, [model.price, model.currency]);
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="flex">
-        <AdminSidebar activePage={activePage} />
-
-        <main className="flex-1 p-8">
-          <div className="max-w-6xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Satış Kartları</h1>
+    <div className="min-h-screen bg-gray-50 flex">
+      <AdminSidebar activePage={activePage} />
+      
+      <div className="flex-1 flex flex-col ml-64">
+        <AdminHeader />
+        
+        <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden">
+          <div className="max-w-7xl mx-auto">
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Satış Kartları</h1>
+              <p className="text-gray-600">Ürün kartlarını yönet ve düzenle</p>
+            </div>
 
             {error && (
-              <div className="mb-4 p-3 bg-red-50 text-red-700 rounded border border-red-200">{error}</div>
+              <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200">{error}</div>
             )}
 
             {/* Form */}
-            <div className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-6 mb-8">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Kart Adı</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Kart Adı</label>
                   <input
                     value={model.name}
                     onChange={(e) => setField({ name: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                     placeholder="Örn: Notouchness Black Card"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Fiyat</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Fiyat</label>
                   <div className="flex gap-2">
                     <input
                       type="number"
                       value={model.price}
                       onChange={(e) => setField({ price: Number(e.target.value) })}
-                      className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                      className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                       placeholder="Örn: 899"
                     />
                     <select
                       value={model.currency}
                       onChange={(e) => setField({ currency: e.target.value })}
-                      className="w-28 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                      className="w-28 border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                     >
                       <option value="TRY">TRY</option>
                       <option value="USD">USD</option>
                       <option value="EUR">EUR</option>
                     </select>
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">Önizleme: {pricePreview}</div>
+                  <div className="text-xs text-gray-500 mt-1.5">Önizleme: <span className="font-semibold">{pricePreview}</span></div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
                   <select
                     value={model.category}
                     onChange={(e) => setField({ category: e.target.value as SalesCard['category'] })}
-                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                   >
                     <option value="metal">Metal Kartlar</option>
                     <option value="wood">Ahşap Kartlar</option>
@@ -350,20 +360,20 @@ export default function AdminSalesCardsPage() {
                   </select>
                 </div>
                 <div className="xl:col-span-3">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Etiket (Badge)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Etiket (Badge)</label>
                   <input
                     value={model.badge || ''}
                     onChange={(e) => setField({ badge: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                     placeholder="Örn: Premium, Lüks, Yeni"
                   />
                 </div>
                 <div className="xl:col-span-3">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Açıklama</label>
                   <textarea
                     value={model.description || ''}
                     onChange={(e) => setField({ description: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none"
                     rows={3}
                     placeholder="Kısa ürün açıklaması"
                   />
@@ -393,12 +403,12 @@ export default function AdminSalesCardsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Stok Adedi</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Stok Adedi</label>
                   <input
                     type="number"
                     value={model.stock_count}
                     onChange={(e) => setField({ stock_count: Number(e.target.value) })}
-                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                     placeholder="Örn: 100"
                   />
                 </div>
@@ -414,42 +424,50 @@ export default function AdminSalesCardsPage() {
                 </div>
                 {/* Features */}
                 <div className="xl:col-span-3">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Özellikler</label>
-                  <div className="flex gap-2 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Özellikler</label>
+                  <div className="flex gap-2 mb-3">
                     <input
                       value={featureInput}
                       onChange={(e) => setFeatureInput(e.target.value)}
-                      className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                      className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                       placeholder="Örn: NFC ve QR kod teknolojisi"
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addFeature(); } }}
                     />
-                    <button onClick={addFeature} className="px-3 py-2 bg-gray-900 text-white rounded-lg flex items-center gap-2">
+                    <button 
+                      onClick={addFeature} 
+                      className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 font-medium"
+                    >
                       <Plus size={16} /> Ekle
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {(model.features || []).map((f, idx) => (
-                      <span key={idx} className="px-3 py-1 bg-gray-100 rounded-full text-sm flex items-center gap-2">
+                      <span key={idx} className="px-3 py-1.5 bg-blue-50 text-blue-800 rounded-full text-sm flex items-center gap-2 border border-blue-200">
                         {f}
-                        <button onClick={() => removeFeature(idx)} className="text-gray-500 hover:text-gray-700">×</button>
+                        <button 
+                          onClick={() => removeFeature(idx)} 
+                          className="text-blue-600 hover:text-blue-800 font-semibold"
+                        >
+                          ×
+                        </button>
                       </span>
                     ))}
                   </div>
                 </div>
               </div>
 
-              <div className="mt-6 flex gap-3 sticky bottom-4">
+              <div className="mt-6 flex gap-3 pt-6 border-t border-gray-200">
                 <button
                   onClick={upsertCard}
                   disabled={saving}
-                  className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow"
+                  className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 font-medium shadow-sm"
                 >
-                  <Save size={16} /> {model.id ? 'Güncelle' : 'Kaydet'}
+                  <Save size={16} /> {saving ? 'Kaydediliyor...' : (model.id ? 'Güncelle' : 'Kaydet')}
                 </button>
                 {model.id && (
                   <button
                     onClick={resetForm}
-                    className="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+                    className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
                   >
                     İptal
                   </button>
@@ -458,57 +476,86 @@ export default function AdminSalesCardsPage() {
             </div>
 
             {/* List */}
-            <div className="bg-white rounded-lg shadow">
-              <div className="p-4 border-b font-semibold">Kayıtlı Kartlar</div>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h2 className="text-lg font-semibold text-gray-900">Kayıtlı Kartlar</h2>
+              </div>
               {loading ? (
-                <div className="p-6 text-gray-500">Yükleniyor…</div>
+                <div className="p-12 text-center text-gray-500">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                  Yükleniyor…
+                </div>
               ) : list.length === 0 ? (
-                <div className="p-6 text-gray-500">Henüz kayıt yok.</div>
+                <div className="p-12 text-center">
+                  <CreditCard className="mx-auto text-gray-400 mb-4" size={48} />
+                  <p className="text-gray-500">Henüz kayıt yok.</p>
+                </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full">
-                    <thead>
-                      <tr className="text-left text-sm text-gray-600 border-b">
-                        <th className="p-3">Ön Resim</th>
-                        <th className="p-3">Ad</th>
-                        <th className="p-3">Kategori</th>
-                        <th className="p-3">Fiyat</th>
-                        <th className="p-3">Stok</th>
-                        <th className="p-3">Durum</th>
-                        <th className="p-3">İşlemler</th>
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ön Resim</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ad</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fiyat</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stok</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="bg-white divide-y divide-gray-200">
                       {list.map((item) => (
-                        <tr key={item.id} className="border-b">
-                          <td className="p-3">
+                        <tr key={item.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-4 whitespace-nowrap">
                             {item.image_front ? (
                               // eslint-disable-next-line @next/next/no-img-element
-                              <img src={item.image_front} alt={item.name} className="w-16 h-10 object-cover rounded" />
+                              <img src={item.image_front} alt={item.name} className="w-20 h-14 object-cover rounded-lg border border-gray-200" />
                             ) : (
-                              <div className="w-16 h-10 bg-gray-100 rounded" />
+                              <div className="w-20 h-14 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center">
+                                <ImageOff className="text-gray-400" size={20} />
+                              </div>
                             )}
                           </td>
-                          <td className="p-3 font-medium">{item.name}</td>
-                          <td className="p-3">{item.category}</td>
-                          <td className="p-3">{item.currency === 'TRY' ? `₺${item.price}` : `${item.price} ${item.currency}`}</td>
-                          <td className="p-3">{item.stock_count}</td>
-                          <td className="p-3">
-                            <span className={`px-2 py-1 rounded text-xs ${item.in_stock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                          <td className="px-4 py-4">
+                            <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                            {item.badge && (
+                              <div className="text-xs text-gray-500 mt-1">
+                                <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">{item.badge}</span>
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded">
+                              {item.category}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                            {item.currency === 'TRY' ? `₺${item.price.toLocaleString()}` : `${item.price.toLocaleString()} ${item.currency}`}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {item.stock_count}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              item.in_stock 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-red-100 text-red-800'
+                            }`}>
                               {item.in_stock ? 'Stokta' : 'Tükendi'}
                             </span>
                           </td>
-                          <td className="p-3">
-                            <div className="flex gap-2">
+                          <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex items-center justify-end gap-2">
                               <button
                                 onClick={() => setEditing(item)}
-                                className="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 flex items-center gap-1"
+                                className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1.5"
                               >
                                 <Edit2 size={14} /> Düzenle
                               </button>
                               <button
                                 onClick={() => removeCard(item.id)}
-                                className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 flex items-center gap-1"
+                                className="px-3 py-1.5 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors flex items-center gap-1.5"
                               >
                                 <Trash2 size={14} /> Sil
                               </button>
