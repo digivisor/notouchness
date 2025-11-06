@@ -35,31 +35,38 @@ export async function POST(request: NextRequest) {
     const successMd = ['1', '2', '3', '4'];
     const isSuccess = mdStatus && successMd.includes(mdStatus);
 
+    // Base URL'i environment variable'dan al, yoksa request'ten türet
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+      `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+
     if (!conversationId || !paymentId) {
       // Parametreler eksik - checkout'a error ile yönlendir
       return NextResponse.redirect(
-        new URL(`/checkout?payment=error&reason=missing_params`, request.url)
+        `${baseUrl}/checkout?payment=error&reason=missing_params`
       );
     }
 
     if (!isSuccess) {
       // 3D Secure başarısız - checkout'a error ile yönlendir
       return NextResponse.redirect(
-        new URL(`/checkout?payment=error&reason=3ds_failed&mdStatus=${mdStatus}`, request.url)
+        `${baseUrl}/checkout?payment=error&reason=3ds_failed&mdStatus=${mdStatus}`
       );
     }
 
     // Ödeme başarılı - checkout'a success ile yönlendir
     return NextResponse.redirect(
-      new URL(`/checkout?payment=success&order=${conversationId}`, request.url)
+      `${baseUrl}/checkout?payment=success&order=${conversationId}`
     );
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Payment callback failed';
     console.error('Payment callback error:', errorMessage);
+    // Base URL'i environment variable'dan al, yoksa request'ten türet
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+      `${request.nextUrl.protocol}//${request.nextUrl.host}`;
     // Hata durumunda checkout'a error ile yönlendir
     return NextResponse.redirect(
-      new URL(`/checkout?payment=error&reason=server_error`, request.url)
+      `${baseUrl}/checkout?payment=error&reason=server_error`
     );
   }
 }
@@ -81,20 +88,24 @@ export async function GET(request: NextRequest) {
   const successMd = ['1', '2', '3', '4'];
   const isSuccess = mdStatus && successMd.includes(mdStatus);
 
+  // Base URL'i environment variable'dan al, yoksa request'ten türet
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+    `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+
   if (!conversationId || !paymentId) {
     return NextResponse.redirect(
-      new URL(`/checkout?payment=error&reason=missing_params`, request.url)
+      `${baseUrl}/checkout?payment=error&reason=missing_params`
     );
   }
 
   if (!isSuccess) {
     return NextResponse.redirect(
-      new URL(`/checkout?payment=error&reason=3ds_failed&mdStatus=${mdStatus}`, request.url)
+      `${baseUrl}/checkout?payment=error&reason=3ds_failed&mdStatus=${mdStatus}`
     );
   }
 
   return NextResponse.redirect(
-    new URL(`/checkout?payment=success&order=${conversationId}`, request.url)
+    `${baseUrl}/checkout?payment=success&order=${conversationId}`
   );
 }
 
