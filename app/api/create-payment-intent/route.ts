@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
 
     // iyzico 3D Secure ödeme isteği oluştur (threedsInitialize için)
     // Key sıralaması önemli olabilir - iyzico'nun beklediği sıralama
-    const requestBody: any = {
+    const requestBody: Record<string, unknown> = {
       locale: 'tr',
       conversationId: orderNumber,
       price: amount.toFixed(2),
@@ -238,7 +238,7 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
-    } catch (apiError: any) {
+    } catch (apiError: unknown) {
       console.error('iyzico API error:', apiError);
       // Production modunda API hatası varsa hata döndür
       return NextResponse.json(
@@ -250,10 +250,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Payment initialization failed';
     console.error('Payment initialization error:', error);
     return NextResponse.json(
-      { error: error.message || 'Payment initialization failed' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

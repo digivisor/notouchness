@@ -27,8 +27,12 @@ interface ProductModalProps {
 export default function ProductModal({ isOpen, product, onClose, onAddToCart, onBuyNow }: ProductModalProps) {
   const [quantity, setQuantity] = useState(1);
 
+  // Reset quantity when modal opens
   useEffect(() => {
-    if (isOpen) setQuantity(1);
+    if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setQuantity(1);
+    }
   }, [isOpen]);
 
   if (!isOpen || !product) return null;

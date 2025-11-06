@@ -395,7 +395,7 @@ export default function AdminDashboardPage() {
                       title="Tüm QR kodlarını indir"
                     >
                       <Download size={16} />
-                      QR'ları İndir
+                      QR&apos;ları İndir
                     </button>
                     <button
                       onClick={() => copyGroupURLs(selectedGroup)}
@@ -403,7 +403,7 @@ export default function AdminDashboardPage() {
                       title="Tüm URL'leri kopyala"
                     >
                       <Copy size={16} />
-                      URL'leri Kopyala
+                      URL&apos;leri Kopyala
                     </button>
                     <button
                       onClick={() => exportGroupData(selectedGroup)}

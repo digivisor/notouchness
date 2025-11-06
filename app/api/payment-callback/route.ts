@@ -54,8 +54,9 @@ export async function POST(request: NextRequest) {
       new URL(`/checkout?payment=success&order=${conversationId}`, request.url)
     );
 
-  } catch (error: any) {
-    console.error('Payment callback error:', error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Payment callback failed';
+    console.error('Payment callback error:', errorMessage);
     // Hata durumunda checkout'a error ile yönlendir
     return NextResponse.redirect(
       new URL(`/checkout?payment=error&reason=server_error`, request.url)

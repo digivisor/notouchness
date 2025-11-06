@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -52,14 +52,7 @@ function OrderTrackingContent() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelOrderNumber, setCancelOrderNumber] = useState('');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-
-  useEffect(() => {
-    const orderFromUrl = searchParams.get('order');
-    if (orderFromUrl) {
-      setOrderNumber(orderFromUrl);
-      handleSearch(orderFromUrl);
-    }
-  }, [searchParams]);
+  const lastSearchedOrderRef = useRef<string | null>(null);
 
   const handleSearch = async (orderNum?: string) => {
     const searchOrderNum = orderNum || orderNumber;
@@ -84,8 +77,28 @@ function OrderTrackingContent() {
       return;
     }
 
-    setOrder(data);
+    // Items'ı parse et (JSON string olabilir)
+    const parsedData = {
+      ...data,
+      items: typeof data.items === 'string' 
+        ? JSON.parse(data.items) 
+        : (data.items || [])
+    };
+
+    setOrder(parsedData);
   };
+
+  useEffect(() => {
+    const orderFromUrl = searchParams.get('order');
+    if (orderFromUrl && orderFromUrl !== lastSearchedOrderRef.current) {
+      // URL'den gelen order number'ı set et
+      setOrderNumber(orderFromUrl);
+      // Otomatik sorgu yap (URL'de order parametresi varsa ve daha önce sorgulanmamışsa)
+      handleSearch(orderFromUrl);
+      lastSearchedOrderRef.current = orderFromUrl;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const handleCancelClick = () => {
     if (!order) return;
@@ -133,7 +146,8 @@ function OrderTrackingContent() {
   };
 
   const getStatusInfo = (status: string) => {
-    const statuses: Record<string, { label: string; color: string; icon: any; description: string }> = {
+    type StatusIcon = React.ComponentType<{ size?: number; className?: string }>;
+    const statuses: Record<string, { label: string; color: string; icon: StatusIcon; description: string }> = {
       pending: { 
         label: 'Beklemede', 
         color: 'bg-gray-100 text-gray-800 border-gray-300',
@@ -268,7 +282,7 @@ function OrderTrackingContent() {
 
               {/* Timeline */}
               <div className="space-y-4">
-                {['pending', 'processing', 'shipped', 'delivered'].map((status, idx) => {
+                {['pending', 'processing', 'shipped', 'delivered'].map((status) => {
                   const statusInfo = getStatusInfo(status);
                   const Icon = statusInfo.icon;
                   const isCompleted = getStatusProgress(order.order_status) >= getStatusProgress(status);
@@ -341,7 +355,8 @@ function OrderTrackingContent() {
                 Sipariş Ürünleri
               </h3>
               <div className="space-y-4">
-                {order.items.map((item, idx) => (
+                {order.items && order.items.length > 0 ? (
+                  order.items.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
                     {item.image && (
                       <div className="w-20 h-20 bg-white rounded-lg overflow-hidden shrink-0">
@@ -363,7 +378,10 @@ function OrderTrackingContent() {
                       <p className="text-sm text-gray-500">₺{item.price.toFixed(2)} / adet</p>
                     </div>
                   </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-center py-4">Sipariş ürünleri bulunamadı.</p>
+                )}
               </div>
 
               {/* Price Summary */}

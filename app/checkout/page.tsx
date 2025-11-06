@@ -71,7 +71,7 @@ export default function CheckoutPage() {
   };
 
   // Order number'ı useState ile oluştur (sadece bir kez)
-  const [orderNumber] = useState(() => {
+  const [orderNumber, setOrderNumber] = useState(() => {
     const date = new Date();
     const dateStr = date.toISOString().split('T')[0].replace(/-/g, '');
     const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
@@ -402,8 +402,8 @@ export default function CheckoutPage() {
             return;
           }
         }
-      } catch (paymentError: any) {
-        console.error('Payment oluşturulamadı:', paymentError);
+      } catch (paymentError: unknown) {
+        console.error('Payment oluşturulamadı:', paymentError instanceof Error ? paymentError.message : String(paymentError));
         setToast({ 
           message: 'Ödeme işlemi başlatılamadı. Lütfen tekrar deneyin.', 
           type: 'error' 
@@ -478,6 +478,8 @@ export default function CheckoutPage() {
 
       // Sipariş var, step 3'e geç
       setStep(3);
+      // Order number'ı güncelle (callback'ten gelen doğru order number)
+      setOrderNumber(orderNumberFromUrl);
       // Fiyatları set et
       setOrderPrices({
         subtotal: existingOrder.subtotal,
@@ -844,7 +846,7 @@ export default function CheckoutPage() {
                         <div>
                           <p className="text-sm font-semibold text-gray-900 mb-1">iyzico Test Modu (Sandbox)</p>
                           <p className="text-xs text-gray-600">
-                            Bu bir test ortamıdır. Gerçek ödeme yapılmaz. Test kartları ile ödeme simüle edilir ve Supabase'e kaydedilir.
+                            Bu bir test ortamıdır. Gerçek ödeme yapılmaz. Test kartları ile ödeme simüle edilir ve Supabase&apos;e kaydedilir.
                           </p>
                         </div>
                       </div>

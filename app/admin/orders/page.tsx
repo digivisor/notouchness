@@ -81,11 +81,16 @@ export default function OrdersPage() {
       return;
     }
 
-    loadOrders();
+    // Load orders on mount
+    const fetchOrders = async () => {
+      await loadOrders();
+    };
+    fetchOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   const updateOrderStatus = async (orderId: string, status: string) => {
-    const updateData: any = {
+    const updateData: { order_status: string; updated_at?: string } = {
       order_status: status,
       updated_at: new Date().toISOString(),
     };
