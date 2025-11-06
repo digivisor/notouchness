@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
@@ -1141,7 +1141,55 @@ export default function CheckoutPage() {
         <Footer />
       </div>
     }>
-      <CheckoutContent />
+      <ErrorBoundary>
+        <CheckoutContent />
+      </ErrorBoundary>
     </Suspense>
   );
+}
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Checkout page error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-gray-50">
+          <Header onCartClick={() => {}} />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-20">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">Bir hata oluştu</h1>
+              <p className="text-gray-600 mb-4">
+                Sayfa yüklenirken bir sorun oluştu. Lütfen sayfayı yenileyin.
+              </p>
+              <button
+                onClick={() => window.location.href = '/checkout'}
+                className="px-6 py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition"
+              >
+                Checkout Sayfasına Dön
+              </button>
+            </div>
+          </div>
+          <Footer />
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
 }
