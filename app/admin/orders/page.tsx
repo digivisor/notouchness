@@ -90,7 +90,12 @@ export default function OrdersPage() {
   }, [router]);
 
   const updateOrderStatus = async (orderId: string, status: string) => {
-    const updateData: { order_status: string; updated_at?: string } = {
+    const updateData: { 
+      order_status: string; 
+      updated_at?: string;
+      shipped_at?: string;
+      delivered_at?: string;
+    } = {
       order_status: status,
       updated_at: new Date().toISOString(),
     };
