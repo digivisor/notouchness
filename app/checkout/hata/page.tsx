@@ -1,12 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
 import CartModal from '@/app/components/CartModal';
 import { XCircle, AlertCircle, ArrowLeft, CreditCard } from 'lucide-react';
+
+// Sayfayı dinamik hale getir
+export const dynamic = 'force-dynamic';
 
 // iyzico hata mesajları mapping
 const errorMessages: Record<string, { title: string; message: string }> = {
@@ -68,9 +71,8 @@ const errorMessages: Record<string, { title: string; message: string }> = {
   }
 };
 
-export default function PaymentErrorPage() {
+function PaymentErrorContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [isCartVisible, setIsCartVisible] = useState(false);
   
   const reason = searchParams.get('reason') || 'default';
@@ -163,6 +165,21 @@ export default function PaymentErrorPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function PaymentErrorPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-black mb-4"></div>
+          <p className="text-gray-600">Yükleniyor...</p>
+        </div>
+      </div>
+    }>
+      <PaymentErrorContent />
+    </Suspense>
   );
 }
 
