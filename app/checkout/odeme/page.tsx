@@ -183,6 +183,18 @@ export default function PaymentPage() {
     setCardErrors({ cardNumber: '', expiryDate: '', cvv: '' });
   };
 
+  // Başarısız test kartı doldur
+  const fillFailedTestCard = () => {
+    setFormData(prev => ({
+      ...prev,
+      cardNumber: '4125 1111 1111 1115',
+      cardName: 'TEST KARTI',
+      expiryDate: '12/25',
+      cvv: '123'
+    }));
+    setCardErrors({ cardNumber: '', expiryDate: '', cvv: '' });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -209,51 +221,7 @@ export default function PaymentPage() {
       const shippingCost = 0;
       const grandTotal = totalPrice + shippingCost;
 
-      // Sipariş verisini hazırla
-      const orderData = {
-        order_number: orderNumber,
-        customer_name: `${formData.firstName} ${formData.lastName}`,
-        customer_email: formData.email,
-        customer_phone: formData.phone,
-        customer_address: `${formData.address}, ${formData.district}, ${formData.city} ${formData.postalCode}`,
-        items: cartItems.map(item => {
-          const price = typeof item.price === 'string' 
-            ? parseFloat(item.price.replace(/[₺,.]/g, ''))
-            : item.price;
-          
-          return {
-            id: item.id,
-            name: item.name,
-            price: price,
-            quantity: item.quantity,
-            image: item.image,
-            total: price * item.quantity
-          };
-        }),
-        subtotal: totalPrice,
-        shipping_cost: shippingCost,
-        tax: 0,
-        total: grandTotal,
-        payment_method: 'credit_card',
-        payment_status: 'pending',
-        order_status: 'pending',
-        customer_note: formData.orderNote || null,
-        admin_note: null,
-      };
-
-      // Supabase'e kaydet
-      const { error: orderError } = await supabase
-        .from('orders')
-        .insert([orderData]);
-
-      if (orderError) {
-        console.error('Sipariş kaydedilemedi:', orderError);
-        alert('Sipariş kaydedilirken bir hata oluştu!');
-        setIsSubmitting(false);
-        return;
-      }
-
-      // iyzico 3D Secure Payment oluştur
+      // Önce iyzico 3D Secure Payment oluştur
       const [expMonth, expYear] = formData.expiryDate.split('/');
       const cardNumber = formData.cardNumber.replace(/\s/g, '');
       
@@ -280,87 +248,85 @@ export default function PaymentPage() {
 
       const paymentData = await paymentResponse.json();
 
-      if (!paymentResponse.ok) {
-        if (!paymentData.testMode) {
-          alert(paymentData.error || 'Ödeme işlemi başlatılamadı. Lütfen tekrar deneyin.');
-          setIsSubmitting(false);
-          return;
-        }
+      if (!paymentResponse.ok || paymentData.error) {
+        // Hata durumu - sipariş kaydetme, sadece hata sayfasına yönlendir
+        const errorParams = new URLSearchParams({
+          reason: paymentData.reason || 'general_error',
+          ...(paymentData.errorCode && { errorCode: paymentData.errorCode }),
+          ...(paymentData.error && { errorMessage: encodeURIComponent(paymentData.error) })
+        });
+        router.push(`/checkout/hata?${errorParams.toString()}`);
+        setIsSubmitting(false);
+        return;
       }
 
-      // Test modunda başarılı
-      if (paymentData.testMode) {
-        // Payment status'u paid yap
-        await supabase
+      // 3D Secure HTML content geldiyse (ödeme intent başarılı) siparişi kaydet
+      if (paymentData.threeDSHtmlContent) {
+        // Sipariş verisini hazırla
+        const orderData = {
+          order_number: orderNumber,
+          customer_name: `${formData.firstName} ${formData.lastName}`,
+          customer_email: formData.email,
+          customer_phone: formData.phone,
+          customer_address: `${formData.address}, ${formData.district}, ${formData.city} ${formData.postalCode}`,
+          items: cartItems.map(item => {
+            const price = typeof item.price === 'string' 
+              ? parseFloat(item.price.replace(/[₺,.]/g, ''))
+              : item.price;
+            
+            return {
+              id: item.id,
+              name: item.name,
+              price: price,
+              quantity: item.quantity,
+              image: item.image,
+              total: price * item.quantity
+            };
+          }),
+          subtotal: totalPrice,
+          shipping_cost: shippingCost,
+          tax: 0,
+          total: grandTotal,
+          payment_method: 'credit_card',
+          payment_status: 'pending',
+          order_status: 'pending',
+          customer_note: formData.orderNote || null,
+          admin_note: null,
+        };
+
+        // Supabase'e kaydet
+        const { error: orderError } = await supabase
           .from('orders')
-          .update({ payment_status: 'paid' })
-          .eq('order_number', orderNumber);
+          .insert([orderData]);
 
-        // Email gönder
-        try {
-          await fetch('/api/send-order-email', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              customerName: `${formData.firstName} ${formData.lastName}`,
-              customerEmail: formData.email,
-              orderNumber: orderNumber,
-              orderDate: new Date().toLocaleDateString('tr-TR', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              }),
-              items: orderData.items,
-              subtotal: orderData.subtotal,
-              shippingCost: orderData.shipping_cost,
-              total: orderData.total,
-              shippingAddress: orderData.customer_address,
-            }),
-          });
-        } catch (emailError) {
-          console.error('Email gönderilemedi:', emailError);
-        }
-
-        // Sepeti 2 saniye sonra boşalt
-        setTimeout(() => {
-          clearCart();
-        }, 2000);
-
-        // Onay sayfasına yönlendir
-        router.push(`/checkout/onay?order=${orderNumber}`);
-        return;
-      } else {
-        // Production modunda 3D Secure HTML content'i varsa state'e kaydet
-        if (paymentData.threeDSHtmlContent) {
-          let html = paymentData.threeDSHtmlContent || '';
-          
-          // Base64 decode kontrolü
-          try {
-            const looksBase64 = /^[A-Za-z0-9+/=\n\r]+$/.test(html) && !html.includes('<form');
-            if (looksBase64 && typeof atob !== 'undefined') {
-              const decoded = atob(html);
-              if (decoded.includes('<form')) {
-                html = decoded;
-              }
-            }
-          } catch {
-            console.warn('[3DS] Decode başarısız, raw içerik kullanılacak');
-          }
-          
-          setThreeDSContent(html);
-          // Clear sensitive fields
-          setFormData(prev => ({
-            ...prev,
-            cardNumber: '',
-            cardName: '',
-            expiryDate: '',
-            cvv: ''
-          }));
+        if (orderError) {
+          console.error('Sipariş kaydedilemedi:', orderError);
+          alert('Sipariş kaydedilirken bir hata oluştu!');
           setIsSubmitting(false);
           return;
         }
+
+        // 3DS HTML content'i decode et ve state'e yaz
+        let html = paymentData.threeDSHtmlContent || '';
+        try {
+          const looksBase64 = /^[A-Za-z0-9+/=\n\r]+$/.test(html) && !html.includes('<form');
+          if (looksBase64 && typeof atob !== 'undefined') {
+            const decoded = atob(html);
+            if (decoded.includes('<form')) html = decoded;
+          }
+        } catch {
+          console.warn('[3DS] Decode başarısız, raw içerik kullanılacak');
+        }
+        setThreeDSContent(html);
+        setFormData(prev => ({
+          ...prev,
+          cardNumber: '',
+          cardName: '',
+          expiryDate: '',
+          cvv: ''
+        }));
+        setIsSubmitting(false);
+        return;
       }
     } catch (error) {
       console.error('Beklenmeyen hata:', error);
@@ -499,14 +465,23 @@ export default function PaymentPage() {
                   </div>
                 </div>
 
-                {/* Test Kartı Doldur Butonu */}
-                <button
-                  type="button"
-                  onClick={fillTestCard}
-                  className="w-full mb-6 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition border border-gray-300"
-                >
-                  Test Kartı Doldur
-                </button>
+                {/* Test Kartı Doldur Butonları */}
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  <button
+                    type="button"
+                    onClick={fillTestCard}
+                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition border border-gray-300"
+                  >
+                    Test Kartı Doldur
+                  </button>
+                  <button
+                    type="button"
+                    onClick={fillFailedTestCard}
+                    className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-sm font-medium transition border border-red-300"
+                  >
+                    Başarısız Test Kartı Doldur
+                  </button>
+                </div>
 
                 <div className="space-y-5">
                   <div>
