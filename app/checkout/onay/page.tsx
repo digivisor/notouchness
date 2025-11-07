@@ -16,7 +16,7 @@ function OnayContent() {
   const searchParams = useSearchParams();
   const { clearCart } = useCart();
   const [isCartVisible, setIsCartVisible] = useState(false);
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
 
@@ -221,9 +221,10 @@ function OnayContent() {
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Sipariş Ürünleri</h3>
                 <div className="space-y-3">
-                  {items.map((item: any, idx: number) => (
+                  {items.map((item: { name: string; image?: string; quantity: number; total: number }, idx: number) => (
                     <div key={idx} className="flex gap-3 py-3 border-b border-gray-100 last:border-0">
                       <div className="relative w-16 h-16 bg-gray-100 rounded overflow-hidden shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={item.image || '/card-black.png'}
                           alt={item.name}

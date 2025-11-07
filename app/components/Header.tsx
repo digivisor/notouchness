@@ -27,6 +27,7 @@ export default function Header({ onCartClick }: HeaderProps) {
   // Sepet sayısı değiştiğinde animasyon göster
   useEffect(() => {
     if (cartCount > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCartAnimation(true);
       const timer = setTimeout(() => setCartAnimation(false), 600);
       return () => clearTimeout(timer);

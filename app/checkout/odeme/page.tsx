@@ -55,6 +55,7 @@ export default function PaymentPage() {
     if (savedFormData) {
       try {
         const parsed = JSON.parse(savedFormData);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFormData(prev => ({ ...prev, ...parsed }));
       } catch (e) {
         console.error('Form data parse error:', e);
@@ -344,7 +345,7 @@ export default function PaymentPage() {
                 html = decoded;
               }
             }
-          } catch (e) {
+          } catch {
             console.warn('[3DS] Decode başarısız, raw içerik kullanılacak');
           }
           
@@ -380,7 +381,7 @@ export default function PaymentPage() {
       if (form) {
         try {
           form.submit();
-        } catch (e) {
+        } catch {
           const submitBtn = form.querySelector('input[type="submit"], button[type="submit"]') as HTMLElement;
           if (submitBtn) {
             submitBtn.click();
@@ -636,6 +637,7 @@ export default function PaymentPage() {
                   return (
                     <div key={item.id} className="flex gap-3">
                       <div className="relative w-16 h-16 bg-gray-100 rounded overflow-hidden shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={item.image}
                           alt={item.name}

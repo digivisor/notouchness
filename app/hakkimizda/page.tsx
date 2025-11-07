@@ -168,13 +168,13 @@ export default function AboutPage() {
                   Her birimiz, müşterilerimize en iyi deneyimi sunmak için tutkuyla çalışıyoruz. 
                   Dijital dönüşüm yolculuğunuzda yanınızdayız.
                 </p>
-                <a 
+                <Link 
                   href="/iletisim" 
                   className="inline-flex items-center gap-2 text-black font-semibold hover:gap-3 transition-all group"
                 >
                   Bizimle İletişime Geçin
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </a>
+                </Link>
               </div>
             </div>
           </div>

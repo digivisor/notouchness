@@ -21,6 +21,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
   // Modal açıldığında render et ve animasyonu tetikle
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShouldRender(true);
       // Kısa bir delay ile animasyonu başlat (browser reflow için)
       const timer = setTimeout(() => {
@@ -31,6 +32,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
       setIsAnimating(false);
       // Animasyon bitene kadar bekle, sonra DOM'dan kaldır
       const timer = setTimeout(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setShouldRender(false);
       }, 300); // transition duration ile aynı
       return () => clearTimeout(timer);
@@ -73,7 +75,6 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
           </button>
         </div>
 
-        {/* Cart Content */}
         <div className="flex flex-col h-[calc(100%-80px)]">
           {cartItems.length === 0 ? (
             /* Empty Cart - Daha modern tasarım */

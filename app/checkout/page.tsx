@@ -34,6 +34,7 @@ export default function CheckoutPage() {
     if (savedFormData) {
       try {
         const parsed = JSON.parse(savedFormData);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFormData(prev => ({ ...prev, ...parsed }));
       } catch (e) {
         console.error('Form data parse error:', e);

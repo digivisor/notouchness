@@ -51,9 +51,9 @@ export default function StorePage() {
     setTimeout(() => setSelectedProduct(null), 300);
   };
 
-  const handleBuyNow = (product: Product, qty: number = 1) => {
+  const handleBuyNow = (product: ModalProduct, qty: number = 1) => {
     // Ürünü sepete ekle (zaten sepette varsa miktarı artırır)
-    addToCart(product, qty);
+    addToCart(product as unknown as Product, qty);
     // Modal'ı kapat
     closeProductModal();
     // Checkout sayfasına yönlendir

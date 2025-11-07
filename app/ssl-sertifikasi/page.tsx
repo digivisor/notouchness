@@ -69,7 +69,7 @@ export default function SSLCertificatePage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-gray-900 mt-1">•</span>
-                <span>URL adresi "https://" ile başlar</span>
+                <span>URL adresi &quot;https://&quot; ile başlar</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-gray-900 mt-1">•</span>
