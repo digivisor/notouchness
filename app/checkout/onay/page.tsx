@@ -193,7 +193,7 @@ function OnayContent() {
               </div>
               <h2 className="text-2xl font-bold mb-3 text-gray-900">Siparişiniz Tamamlandı</h2>
               <p className="text-gray-600 mb-6">
-                Sipariş onay maili <strong>{order.customer_email}</strong> adresinize gönderildi.
+                Sipariş onay maili <strong>{typeof order.customer_email === 'string' ? order.customer_email : ''}</strong> adresinize gönderildi.
               </p>
             </div>
 
@@ -203,11 +203,11 @@ function OnayContent() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-gray-600">Sipariş Numarası</span>
-                  <span className="font-mono font-semibold text-gray-900">{orderNumber || order.order_number}</span>
+                  <span className="font-mono font-semibold text-gray-900">{orderNumber || (typeof order.order_number === 'string' ? order.order_number : '')}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-gray-600">Toplam Tutar</span>
-                  <span className="font-semibold text-gray-900">₺{order.total.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="font-semibold text-gray-900">₺{typeof order.total === 'number' ? order.total.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-gray-600">Ödeme Durumu</span>
@@ -251,7 +251,7 @@ function OnayContent() {
                 Sipariş durumunuzu takip etmek için aşağıdaki sayfadan sipariş numaranızı girebilirsiniz.
               </p>
               <Link
-                href={`/siparis-takip?order=${orderNumber || order.order_number}`}
+                href={`/siparis-takip?order=${orderNumber || (typeof order.order_number === 'string' ? order.order_number : '')}`}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition"
               >
                 <Truck className="w-4 h-4" />
