@@ -173,7 +173,9 @@ export default function StorePage() {
   const handleAddToCart = (product: Product, qty: number = 1) => {
     addToCart(product, qty);
     setAddedToCart(product.id);
-    setTimeout(() => setAddedToCart(null), 2000);
+    // Sepeti otomatik aç
+    setIsCartVisible(true);
+    setTimeout(() => setAddedToCart(null), 2500);
   };
 
   return (
@@ -438,16 +440,17 @@ export default function StorePage() {
                     }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                       addedToCart === product.id
-                        ? 'bg-gray-900 text-white scale-105'
+                        ? 'text-white scale-110 shadow-lg animate-pulse'
                         : 'bg-black text-white hover:bg-gray-800'
                     }`}
+                    style={addedToCart === product.id ? { backgroundColor: '#325E5F' } : {}}
                   >
                     {addedToCart === product.id ? (
                       <>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
-                        <span className="text-sm font-medium">Eklendi!</span>
+                        <span className="text-sm font-bold">Eklendi!</span>
                       </>
                     ) : (
                       <ShoppingCart size={16} />
@@ -470,6 +473,7 @@ export default function StorePage() {
         onAddToCart={(p, qty) => {
           handleAddToCart(p as unknown as Product, qty);
         }}
+        onCartOpen={openCart}
         onBuyNow={handleBuyNow}
       />
 

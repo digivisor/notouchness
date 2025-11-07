@@ -26,6 +26,7 @@ interface CartContextType {
   cartCount: number;
   clearCart: () => void;
   isLoaded: boolean;
+  lastAddedProductId: number | null;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -33,6 +34,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [lastAddedProductId, setLastAddedProductId] = useState<number | null>(null);
 
   // LocalStorage'dan sepeti yükle
   useEffect(() => {
@@ -60,6 +62,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addToCart = (product: Product, quantity: number = 1) => {
     const existingItem = cartItems.find(item => item.id === product.id);
+    
+    // Son eklenen ürün ID'sini set et
+    setLastAddedProductId(product.id);
+    // 2 saniye sonra temizle
+    setTimeout(() => setLastAddedProductId(null), 1000);
     
     if (existingItem) {
       setCartItems(cartItems.map(item =>
@@ -118,7 +125,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       getTotalPrice,
       cartCount,
       clearCart,
-      isLoaded
+      isLoaded,
+      lastAddedProductId
     }}>
       {children}
     </CartContext.Provider>

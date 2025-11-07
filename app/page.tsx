@@ -156,7 +156,7 @@ export default function Home() {
       <HowItWorks />
 
       {/* Products Section */}
-      <Products />
+      <Products onCartOpen={openCart} />
 
       {/* Corporate CTA Section */}
       <CorporateCTA onOpenModal={() => setIsCorporateModalOpen(true)} />

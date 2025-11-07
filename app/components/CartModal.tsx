@@ -14,7 +14,7 @@ interface CartModalProps {
 
 export default function CartModal({ isOpen, onClose }: CartModalProps) {
   const router = useRouter();
-  const { cartItems, removeFromCart, updateQuantity, getTotalPrice, isLoaded } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, getTotalPrice, isLoaded, lastAddedProductId } = useCart();
   const [shouldRender, setShouldRender] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -99,7 +99,15 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
               {/* Cart Items */}
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {cartItems.map((item) => (
-                  <div key={item.id} className="flex gap-4 bg-gray-50 p-4 rounded-lg">
+                  <div 
+                    key={item.id} 
+                    className={`flex gap-4 p-4 rounded-lg transition-all duration-500 ${
+                      lastAddedProductId === item.id 
+                        ? 'shadow-lg scale-105' 
+                        : 'bg-gray-50'
+                    }`}
+                    style={lastAddedProductId === item.id ? { backgroundColor: '#f0f9f9', border: '2px solid #325E5F' } : {}}
+                  >
                     <div className="relative w-20 h-20 bg-white rounded overflow-hidden shrink-0">
                       <Image 
                         src={item.image}

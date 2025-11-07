@@ -21,7 +21,11 @@ interface Product {
   inStock?: boolean;
 }
 
-export default function Products() {
+interface ProductsProps {
+  onCartOpen?: () => void; // Sepet modal'ını açmak için callback
+}
+
+export default function Products({ onCartOpen }: ProductsProps = {}) {
   const router = useRouter();
   const { addToCart } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
@@ -170,20 +174,25 @@ export default function Products() {
                       e.stopPropagation(); 
                       addToCart(product); 
                       setAddedToCart(product.id);
-                      setTimeout(() => setAddedToCart(null), 2000);
+                      // Sepeti aç
+                      if (onCartOpen) {
+                        setTimeout(() => onCartOpen(), 300);
+                      }
+                      setTimeout(() => setAddedToCart(null), 2500);
                     }}
                     className={`w-full mt-auto py-3 font-semibold transition-all rounded-lg ${
                       addedToCart === product.id
-                        ? 'bg-gray-900 text-white scale-105'
+                        ? 'text-white scale-110 shadow-lg animate-pulse'
                         : 'bg-black text-white hover:bg-gray-800'
                     }`}
+                    style={addedToCart === product.id ? { backgroundColor: '#325E5F' } : {}}
                   >
                     {addedToCart === product.id ? (
                       <span className="flex items-center justify-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-6 h-6 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
-                        Eklendi!
+                        <span className="font-bold text-lg">Eklendi!</span>
                       </span>
                     ) : (
                       'Sepete Ekle'
@@ -234,8 +243,13 @@ export default function Products() {
         onAddToCart={(p, qty) => {
           addToCart(p as unknown as { id: number; name: string; price: string | number; image: string }, qty);
           setAddedToCart(p.id);
-          setTimeout(() => setAddedToCart(null), 2000);
+          // Sepeti aç
+          if (onCartOpen) {
+            setTimeout(() => onCartOpen(), 300);
+          }
+          setTimeout(() => setAddedToCart(null), 2500);
         }}
+        onCartOpen={onCartOpen}
         onBuyNow={(product, qty) => {
           // Ürünü sepete ekle (zaten sepette varsa miktarı artırır)
           addToCart(product as unknown as { id: number; name: string; price: string | number; image: string }, qty);

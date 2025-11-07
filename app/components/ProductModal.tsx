@@ -22,9 +22,10 @@ interface ProductModalProps {
   onClose: () => void;
   onAddToCart: (product: ModalProduct, qty: number) => void;
   onBuyNow: (product: ModalProduct, qty: number) => void;
+  onCartOpen?: () => void; // Sepet modal'ını açmak için callback
 }
 
-export default function ProductModal({ isOpen, product, onClose, onAddToCart, onBuyNow }: ProductModalProps) {
+export default function ProductModal({ isOpen, product, onClose, onAddToCart, onBuyNow, onCartOpen }: ProductModalProps) {
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
 
@@ -138,24 +139,29 @@ export default function ProductModal({ isOpen, product, onClose, onAddToCart, on
                       e.stopPropagation(); 
                       onAddToCart(product, quantity);
                       setIsAdded(true);
+                      // Sepeti aç
+                      if (onCartOpen) {
+                        setTimeout(() => onCartOpen(), 300);
+                      }
                       setTimeout(() => {
                         setIsAdded(false);
                         onClose();
-                      }, 1500);
+                      }, 2000);
                     }}
                     disabled={product.inStock === false || isAdded}
                     className={`flex-1 py-4 font-semibold text-lg rounded-lg transition-all border-2 flex items-center justify-center gap-2 ${
                       isAdded
-                        ? 'bg-gray-900 text-white border-gray-900 scale-105'
+                        ? 'text-white scale-110 shadow-lg animate-pulse'
                         : product.inStock !== false 
                           ? 'bg-white text-black border-black hover:bg-gray-50' 
                           : 'bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300'
                     }`}
+                    style={isAdded ? { backgroundColor: '#325E5F', borderColor: '#325E5F' } : {}}
                   >
                     {isAdded ? (
                       <>
-                        <Check size={20} />
-                        <span>Eklendi!</span>
+                        <Check size={24} className="animate-bounce" />
+                        <span className="text-xl font-bold">Eklendi!</span>
                       </>
                     ) : (
                       'Sepete Ekle'
