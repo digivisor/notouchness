@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f3f4f6;">
           <!-- Header with Logo -->
           <div style="background-color: #ffffff; padding: 30px; border-radius: 8px 8px 0 0; margin-bottom: 0; text-align: center; border-bottom: 2px solid #111827;">
-            <img src="${siteUrl}/notouchness3.png" alt="Notouchness" style="max-width: 200px; height: auto; margin-bottom: 20px;" />
+            <img src="${siteUrl}/notouchness2.png" alt="Notouchness" style="max-width: 200px; height: auto; margin-bottom: 20px;" />
             <h1 style="color: #111827; margin: 0 0 10px 0; font-size: 28px;">Siparişiniz Alındı!</h1>
             <p style="color: #6b7280; margin: 0; font-size: 16px;">Merhaba ${data.customerName},</p>
           </div>
@@ -109,19 +109,39 @@ export async function POST(request: NextRequest) {
               </tbody>
             </table>
 
-            <div style="border-top: 2px solid #e5e7eb; padding-top: 15px; margin-top: 20px;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                <span style="color: #6b7280;">Ara Toplam:</span>
-                <span style="font-weight: 600;">₺${data.subtotal.toFixed(2)}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                <span style="color: #6b7280;">Kargo:</span>
-                <span style="font-weight: 600;">${data.shippingCost === 0 ? 'Ücretsiz' : `₺${data.shippingCost.toFixed(2)}`}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 2px solid #111827;">
-                <span style="font-size: 18px; font-weight: bold; color: #111827;">Toplam:</span>
-                <span style="font-size: 20px; font-weight: bold; color: #111827;">₺${data.total.toFixed(2)}</span>
-              </div>
+            <div style="margin-top: 25px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 100%;">
+                <tr>
+                  <td style="padding-bottom: 12px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 100%;">
+                      <tr>
+                        <td style="color: #6b7280; font-size: 14px;">Ara Toplam:</td>
+                        <td style="text-align: right; font-weight: 600; font-size: 14px; color: #111827;">₺${data.subtotal.toFixed(2)}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-bottom: 12px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 100%;">
+                      <tr>
+                        <td style="color: #6b7280; font-size: 14px;">Kargo:</td>
+                        <td style="text-align: right; font-weight: 600; font-size: 14px; color: #111827;">${data.shippingCost === 0 ? 'Ücretsiz' : `₺${data.shippingCost.toFixed(2)}`}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 12px; padding-bottom: 12px; border-top: 2px solid #111827;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="width: 100%;">
+                      <tr>
+                        <td style="font-size: 18px; font-weight: bold; color: #111827;">Toplam:</td>
+                        <td style="text-align: right; font-size: 20px; font-weight: bold; color: #111827;">₺${data.total.toFixed(2)}</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
             </div>
 
             <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
