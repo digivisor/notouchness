@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ShoppingCart } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -11,6 +12,7 @@ import { useCart } from '../context/CartContext';
 import { supabase } from '@/lib/supabase';
 
 export default function StorePage() {
+  const router = useRouter();
   const { addToCart } = useCart();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isCartVisible, setIsCartVisible] = useState(false);
@@ -34,6 +36,7 @@ export default function StorePage() {
   const [minPrice, setMinPrice] = useState(149);
   const [maxPrice, setMaxPrice] = useState(1499);
   const [sortBy, setSortBy] = useState('recommended');
+  const [isLoading, setIsLoading] = useState(true);
 
   const openCart = () => {
     setIsCartVisible(true);
@@ -48,8 +51,13 @@ export default function StorePage() {
     setTimeout(() => setSelectedProduct(null), 300);
   };
 
-  const handleBuyNow = () => {
-    window.location.href = '/checkout';
+  const handleBuyNow = (product: Product, qty: number = 1) => {
+    // Ürünü sepete ekle (zaten sepette varsa miktarı artırır)
+    addToCart(product, qty);
+    // Modal'ı kapat
+    closeProductModal();
+    // Checkout sayfasına yönlendir
+    router.push('/checkout');
   };
 
   const handleMinPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,12 +108,14 @@ export default function StorePage() {
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
+      setIsLoading(true);
       const { data, error } = await supabase
         .from('sales_cards')
         .select('*')
         .order('created_at', { ascending: false });
       if (error) {
         console.error('Sales cards fetch error:', error.message);
+        setIsLoading(false);
         return;
       }
       if (!cancelled) {
@@ -122,6 +132,7 @@ export default function StorePage() {
           inStock: row.in_stock !== null ? row.in_stock : true,
         }));
         setProducts(mapped);
+        setIsLoading(false);
       }
     };
     void load();
@@ -296,7 +307,38 @@ export default function StorePage() {
               </div>
             </div>
             
-            {sortedProducts.length === 0 ? (
+            {isLoading ? (
+              // Skeleton Loader - Ürünler yüklenene kadar göster
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-8">
+                {[...Array(6)].map((_, idx) => (
+                  <div key={idx} className="bg-gray-50 flex flex-col animate-pulse">
+                    {/* Image Skeleton */}
+                    <div className="w-full h-80 bg-gray-200"></div>
+                    
+                    {/* Content Skeleton */}
+                    <div className="p-6 bg-white space-y-3 flex-1 flex flex-col">
+                      {/* Title Skeleton */}
+                      <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+                      
+                      {/* Price Skeleton */}
+                      <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                      
+                      {/* Description Skeleton */}
+                      <div className="space-y-2 flex-1">
+                        <div className="h-4 bg-gray-200 rounded"></div>
+                        <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                      </div>
+                      
+                      {/* Buttons Skeleton */}
+                      <div className="flex items-center justify-between pt-2">
+                        <div className="h-8 bg-gray-200 rounded w-24"></div>
+                        <div className="h-10 bg-gray-200 rounded w-32"></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : sortedProducts.length === 0 ? (
               <div className="px-8 py-20 text-center">
                 <div className="max-w-md mx-auto">
                   <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

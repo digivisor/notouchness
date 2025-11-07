@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { 
   LayoutDashboard, CreditCard, Users, Settings, 
-  LogOut, Home, ShoppingBag, MessageSquare, Package
+  LogOut, Home, ShoppingBag, MessageSquare, Package, Mail
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 
@@ -32,6 +32,7 @@ export default function AdminSidebar({ activePage }: AdminSidebarProps) {
     { icon: Package, label: 'Siparişler', href: '/admin/orders', key: 'orders' },
     { icon: ShoppingBag, label: 'Satış Kartları', href: '/admin/sales-cards', key: 'sales-cards' },
     { icon: MessageSquare, label: 'Kurumsal Mesajlar', href: '/admin/corporate-requests', key: 'corporate-requests' },
+    { icon: Mail, label: 'İletişim Mesajları', href: '/admin/contact-messages', key: 'contact-messages' },
     { icon: Users, label: 'Kullanıcılar', href: '/admin/users', key: 'users' },
     { icon: Settings, label: 'Ayarlar', href: '/admin/settings', key: 'settings' },
   ];

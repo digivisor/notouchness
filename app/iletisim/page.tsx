@@ -6,6 +6,7 @@ import CartModal from '../components/CartModal';
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { Mail, Phone, MapPin, Send, MessageSquare } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 export default function ContactPage() {
   const [isCartVisible, setIsCartVisible] = useState(false);
@@ -29,16 +30,34 @@ export default function ContactPage() {
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
-    // Simüle edilmiş form gönderimi (gerçek uygulamada API endpoint'e gönderilir)
-    setTimeout(() => {
+    try {
+      const { error } = await supabase
+        .from('contact_messages')
+        .insert({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || null,
+          subject: formData.subject,
+          message: formData.message,
+        });
+
+      if (error) {
+        console.error('Contact form error:', error);
+        setSubmitStatus('error');
+      } else {
+        setSubmitStatus('success');
+        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+        
+        setTimeout(() => {
+          setSubmitStatus('idle');
+        }, 3000);
+      }
+    } catch (err) {
+      console.error('Contact form error:', err);
+      setSubmitStatus('error');
+    } finally {
       setIsSubmitting(false);
-      setSubmitStatus('success');
-      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-      
-      setTimeout(() => {
-        setSubmitStatus('idle');
-      }, 3000);
-    }, 1000);
+    }
   };
 
   return (
@@ -49,9 +68,9 @@ export default function ContactPage() {
       {/* Hero Section */}
       <div className="bg-black text-white py-24 sm:py-32 px-6 mt-16 sm:mt-20">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+          {/* <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <MessageSquare className="w-10 h-10 text-white" />
-          </div>
+          </div> */}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6">İletişim</h1>
           <p className="text-gray-400 text-lg sm:text-xl max-w-2xl mx-auto">
             Sorularınız, önerileriniz veya destek talepleriniz için bizimle iletişime geçebilirsiniz.
@@ -93,8 +112,8 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">Telefon</h3>
-                  <a href="tel:+905551234567" className="text-gray-600 hover:text-black transition">
-                    +90 (555) 123 45 67
+                  <a href="tel:+905457845667" className="text-gray-600 hover:text-black transition">
+                  +90 545 784 56 67
                   </a>
                 </div>
               </div>

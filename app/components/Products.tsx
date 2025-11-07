@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
 import Toast from './Toast';
 import { useEffect, useState } from 'react';
@@ -21,6 +22,7 @@ interface Product {
 }
 
 export default function Products() {
+  const router = useRouter();
   const { addToCart } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -234,8 +236,13 @@ export default function Products() {
           setAddedToCart(p.id);
           setTimeout(() => setAddedToCart(null), 2000);
         }}
-        onBuyNow={() => {
-          window.location.href = '/checkout';
+        onBuyNow={(product, qty) => {
+          // Ürünü sepete ekle (zaten sepette varsa miktarı artırır)
+          addToCart(product as unknown as { id: number; name: string; price: string | number; image: string }, qty);
+          // Modal'ı kapat
+          setIsProductModalOpen(false);
+          // Checkout sayfasına yönlendir
+          router.push('/checkout');
         }}
       />
     </section>

@@ -25,6 +25,7 @@ interface CartContextType {
   getTotalPrice: () => number;
   cartCount: number;
   clearCart: () => void;
+  isLoaded: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -116,7 +117,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       updateQuantity,
       getTotalPrice,
       cartCount,
-      clearCart
+      clearCart,
+      isLoaded
     }}>
       {children}
     </CartContext.Provider>

@@ -1,6 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import { X, ShoppingCart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
@@ -11,20 +13,55 @@ interface CartModalProps {
 }
 
 export default function CartModal({ isOpen, onClose }: CartModalProps) {
-  const { cartItems, removeFromCart, updateQuantity, getTotalPrice } = useCart();
+  const router = useRouter();
+  const { cartItems, removeFromCart, updateQuantity, getTotalPrice, isLoaded } = useCart();
+  const [shouldRender, setShouldRender] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
-  if (!isOpen) return null;
+  // Modal açıldığında render et ve animasyonu tetikle
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      // Kısa bir delay ile animasyonu başlat (browser reflow için)
+      const timer = setTimeout(() => {
+        setIsAnimating(true);
+      }, 10);
+      return () => clearTimeout(timer);
+    } else {
+      setIsAnimating(false);
+      // Animasyon bitene kadar bekle, sonra DOM'dan kaldır
+      const timer = setTimeout(() => {
+        setShouldRender(false);
+      }, 300); // transition duration ile aynı
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  const handleCheckout = () => {
+    onClose(); // Modal'ı kapat
+    // Sepet yüklendikten sonra checkout'a git
+    if (isLoaded && cartItems.length > 0) {
+      router.push('/checkout');
+    }
+  };
+
+  // Modal render edilmiyorsa hiçbir şey gösterme
+  if (!shouldRender) return null;
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop - Fade in/out animasyonu */}
       <div 
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity duration-500"
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity duration-300 ${
+          isAnimating ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
         onClick={onClose}
       ></div>
       
-      {/* Cart Sidebar */}
-      <div className="fixed top-0 right-0 h-full w-full md:w-[450px] bg-white z-50 shadow-2xl transform transition-all duration-500 ease-in-out">
+      {/* Cart Sidebar - Sağdan slide-in animasyonu */}
+      <div className={`fixed top-0 right-0 h-full w-full md:w-[450px] bg-white z-50 shadow-2xl transform transition-transform duration-300 ease-out ${
+        isAnimating ? 'translate-x-0' : 'translate-x-full pointer-events-none'
+      }`}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-2xl font-semibold text-black">Sepetim</h2>
@@ -39,21 +76,22 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
         {/* Cart Content */}
         <div className="flex flex-col h-[calc(100%-80px)]">
           {cartItems.length === 0 ? (
-            /* Empty Cart */
+            /* Empty Cart - Daha modern tasarım */
             <div className="flex-1 flex flex-col items-center justify-center p-8">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <ShoppingCart size={40} className="text-gray-400" />
+              <div className="w-32 h-32 bg-gray-50 rounded-full flex items-center justify-center mb-6 border-2 border-gray-200">
+                <ShoppingCart size={48} className="text-gray-300" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Sepetiniz Boş</h3>
-              <p className="text-gray-500 text-center mb-6">
-                Henüz sepetinize ürün eklemediniz. Hemen alışverişe başlayın!
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Sepetiniz Boş</h3>
+              <p className="text-gray-600 text-center mb-8 max-w-sm">
+                Henüz sepetinize ürün eklemediniz. Hemen alışverişe başlayın ve profesyonel dijital kartvizit çözümlerimizi keşfedin!
               </p>
-              <button 
+              <Link 
+                href="/store"
                 onClick={onClose}
-                className="bg-black text-white px-8 py-3 rounded-full font-medium hover:bg-gray-800 transition"
+                className="inline-block bg-black text-white px-8 py-4 rounded-lg font-semibold hover:bg-gray-800 transition shadow-lg hover:shadow-xl text-center"
               >
-                Alışverişe Devam Et
-              </button>
+                Mağazaya Git
+              </Link>
             </div>
           ) : (
             <>
@@ -105,7 +143,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                   <span className="text-2xl font-bold text-black">₺{getTotalPrice().toLocaleString('tr-TR')}</span>
                 </div>
                 <button 
-                  onClick={() => window.location.href = '/checkout'}
+                  onClick={handleCheckout}
                   className="w-full bg-black text-white py-4 rounded-lg font-semibold hover:bg-gray-800 transition"
                 >
                   Siparişi Tamamla
