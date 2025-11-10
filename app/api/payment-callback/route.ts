@@ -196,6 +196,8 @@ async function handleCallback(request: NextRequest, method: 'POST' | 'GET') {
   let authResult: any;
   try {
     authResult = await complete3DSAuth(paymentId, conversationId);
+    // Payment success olduğunda authResult'u loglama
+    // console.log('Iyzico payment success authResult:', JSON.stringify(authResult, null, 2));
   } catch (e: any) {
     // Eğer sipariş varsa "failed" olarak güncelle
     if (conversationId) {
@@ -240,11 +242,15 @@ async function handleCallback(request: NextRequest, method: 'POST' | 'GET') {
   // 4) DB'de order'ı "paid" yap
   try {
     const { supabase } = await import('@/lib/supabase');
+    // Doğru transactionId: itemTransactions[0].paymentTransactionId
+    let transactionId = undefined;
+    if (authResult && Array.isArray(authResult.itemTransactions) && authResult.itemTransactions.length > 0) {
+      transactionId = authResult.itemTransactions[0].paymentTransactionId;
+    }
     const { error: updateError } = await supabase
       .from('orders')
-      .update({ payment_status: 'paid' })
+      .update({ payment_status: 'paid', payment_transaction_id: transactionId })
       .eq('order_number', conversationId);
-    
     if (updateError) {
       console.error('Order payment status update error:', updateError);
       // DB hatası ödeme başarısını değiştirmez; logla

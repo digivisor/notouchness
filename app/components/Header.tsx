@@ -53,11 +53,12 @@ export default function Header({ onCartClick }: HeaderProps) {
           {/* Desktop Menu - Center */}
           <div className="hidden lg:flex gap-8 xl:gap-12">
             <Link href="/" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Ana Sayfa</Link>
-            <a href="#how-it-works" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Nasıl Kullanılır?</a>
+            <Link href="/#how-it-works" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide" scroll>
+              Nasıl Kullanılır?
+            </Link>
             <Link href="/hakkimizda" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Hakkımızda</Link>
             <Link href="/store" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Mağaza</Link>
             <Link href="/iletisim" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">İletişim</Link>
-            <Link href="/card/login" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Giriş</Link>
           </div>
           
           {/* Right Side - Cart & Mobile Menu */}
@@ -77,6 +78,13 @@ export default function Header({ onCartClick }: HeaderProps) {
                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full"></span>
               )}
             </button>
+
+            <Link
+              href="/card/login"
+              className="hidden lg:inline-flex items-center px-4 py-2 bg-white text-black text-sm font-medium rounded-lg shadow-sm hover:bg-gray-100 transition"
+            >
+              Giriş
+            </Link>
 
             {/* Mobile Menu Button */}
             <button
@@ -128,13 +136,14 @@ export default function Header({ onCartClick }: HeaderProps) {
                 >
                   Ana Sayfa
                 </Link>
-                <a 
-                  href="#how-it-works" 
+                <Link 
+                  href="/#how-it-works" 
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="text-white hover:bg-white/5 transition px-6 py-4 border-b border-white/5"
+                  scroll
                 >
                   Nasıl Kullanılır?
-                </a>
+                </Link>
                 <Link 
                   href="/hakkimizda" 
                   onClick={() => setIsMobileMenuOpen(false)}

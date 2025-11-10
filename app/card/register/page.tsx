@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react';
 import { useCard } from '../../context/CardContext';
 import Image from 'next/image';
+import { X, FileText, ShieldCheck } from 'lucide-react';
 
 function CardRegisterContent() {
   const router = useRouter();
@@ -24,6 +25,7 @@ function CardRegisterContent() {
     lastName: '',
     acceptTerms: false,
   });
+  const [modalContent, setModalContent] = useState<'terms' | 'privacy' | null>(null);
 
   useEffect(() => {
     // Sadece form submit edilmediğinde kontrol et
@@ -266,8 +268,22 @@ function CardRegisterContent() {
                   required
                 />
                 <span className="text-sm text-gray-600">
-                  <a href="#" className="text-black hover:underline">Kullanım Koşulları</a> ve{' '}
-                  <a href="#" className="text-black hover:underline">Gizlilik Politikası</a>&apos;nı okudum, kabul ediyorum.
+                  <button
+                    type="button"
+                    onClick={() => setModalContent('terms')}
+                    className="text-black hover:underline"
+                  >
+                    Kullanım Koşulları
+                  </button>
+                  {' '}ve{' '}
+                  <button
+                    type="button"
+                    onClick={() => setModalContent('privacy')}
+                    className="text-black hover:underline"
+                  >
+                    Gizlilik Politikası
+                  </button>
+                  &apos;nı okudum, kabul ediyorum.
                 </span>
               </label>
             </div>
@@ -297,6 +313,93 @@ function CardRegisterContent() {
           </p>
         </div>
       </div>
+
+      {modalContent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setModalContent(null)}
+          />
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-6 sm:p-8 overflow-y-auto max-h-[90vh]">
+            <button
+              type="button"
+              onClick={() => setModalContent(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              aria-label="Kapat"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-black text-white flex items-center justify-center">
+                {modalContent === 'terms' ? <FileText size={24} /> : <ShieldCheck size={24} />}
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {modalContent === 'terms' ? 'Kullanım Koşulları' : 'Gizlilik Politikası'}
+                </h2>
+                <p className="text-sm text-gray-600">
+                  Kartını güvenle kullanman için bilmen gereken önemli bilgiler.
+                </p>
+              </div>
+            </div>
+
+            {modalContent === 'terms' ? (
+              <div className="space-y-4 text-sm text-gray-600 leading-relaxed">
+                <p>
+                  Notouchness dijital kartvizit hizmetini kullanarak, NFC ve QR kod teknolojileri üzerinden profil
+                  paylaşımını sağlar, fiziksel kartlara modern ve sürdürülebilir bir alternatif sunar. Hizmeti kullanman
+                  için oluşturduğun hesabın güvenliğinden sen sorumlusun; giriş bilgilerini üçüncü kişilerle paylaşmamalısın.
+                </p>
+                <p>
+                  Platformu kötüye kullanmak, izinsiz veri paylaşımı yapmak veya yanlış bilgi vermek hesabının askıya
+                  alınmasına neden olabilir. Sunulan içerik ve hizmetler zaman zaman güncellenebilir; önemli değişiklikler
+                  olduğunda sana haber verilir.
+                </p>
+                <p>
+                  Kartıyla yapılan paylaşımlardan doğan tüm etkileşimler kullanıcı sorumluluğundadır. Ürün ve servislerimizi
+                  en kaliteli şekilde sunmak için gereken bakımı yaparız; ancak sistem bakım veya üçüncü taraf kesintilerinde
+                  kısa süreli erişim sorunları yaşanabileceğini kabul etmiş olursun.
+                </p>
+                <p>
+                  Notouchness, <a href="/hakkimizda" className="text-black font-semibold hover:underline">hakkımızda </a>
+                  sayfasında paylaştığı misyon ve değerler doğrultusunda hizmet verir ve bu koşullara uyum sağlaman beklenir.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4 text-sm text-gray-600 leading-relaxed">
+                <p>
+                  Notouchness, kartını aktifleştirirken paylaştığın kişisel verileri (ad-soyad, iletişim bilgileri, profil
+                  içerikleri) sadece kart vizit hizmetini sunmak ve geliştirmek için kullanır. Verilerin, kartını paylaştığın
+                  kişilerle dilediğin ölçüde ortaya çıkar; profilinde hangi bilgileri göstereceğine sen karar verirsin.
+                </p>
+                <p>
+                  Hesabına ait bilgiler, yetkisiz erişimlere karşı SSL ve benzeri güvenlik önlemleriyle korunur. Yetkisiz
+                  giriş veya veri ihlali şüphesi olduğunda destek ekibimizle iletişime geçebilirsin; 7/24 destek sunuyoruz.
+                </p>
+                <p>
+                  Verilerini istediğin zaman güncelleyebilir veya hesabını kapatabilirsin. Hesap kapatma işlemlerinde yasal
+                  yükümlülükler nedeniyle bazı veriler belirli süre saklanabilir; bu süreçler ilgili mevzuata uygundur.
+                </p>
+                <p>
+                  Daha detaylı bilgi için <a href="/gizlilik-sozlesmesi" className="text-black font-semibold hover:underline">Gizlilik Sözleşmesi </a>
+                  sayfamızı ziyaret edebilirsin. Hizmeti kullanmaya devam ederek bu politikayı kabul etmiş sayılırsın.
+                </p>
+              </div>
+            )}
+
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setModalContent(null)}
+                className="px-5 py-2.5 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition"
+              >
+                Anladım
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

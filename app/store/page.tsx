@@ -35,6 +35,8 @@ export default function StorePage() {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [minPrice, setMinPrice] = useState(149);
   const [maxPrice, setMaxPrice] = useState(1499);
+  const [realMinPrice, setRealMinPrice] = useState(149);
+  const [realMaxPrice, setRealMaxPrice] = useState(1499);
   const [sortBy, setSortBy] = useState('recommended');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -132,6 +134,14 @@ export default function StorePage() {
           inStock: row.in_stock !== null ? row.in_stock : true,
         }));
         setProducts(mapped);
+        // Dinamik min/max fiyatı hesapla
+        const prices = mapped.map(p => typeof p.price === 'number' ? p.price : parseInt(p.price.replace(/[^0-9]/g, '')));
+        const min = prices.length ? Math.min(...prices) : 149;
+        const max = prices.length ? Math.max(...prices) : 1499;
+        setRealMinPrice(min);
+        setRealMaxPrice(max);
+        setMinPrice(min);
+        setMaxPrice(max);
         setIsLoading(false);
       }
     };
@@ -236,14 +246,14 @@ export default function StorePage() {
                       <div 
                         className="absolute h-2 bg-black rounded-full" 
                         style={{ 
-                          left: `${((minPrice - 149) / (1499 - 149)) * 100}%`,
-                          right: `${100 - ((maxPrice - 149) / (1499 - 149)) * 100}%`
+                          left: `${((minPrice - realMinPrice) / (realMaxPrice - realMinPrice)) * 100}%`,
+                          right: `${100 - ((maxPrice - realMinPrice) / (realMaxPrice - realMinPrice)) * 100}%`
                         }}
                       ></div>
                       <input 
                         type="range" 
-                        min="149" 
-                        max="1499" 
+                        min={realMinPrice}
+                        max={realMaxPrice}
                         value={minPrice}
                         onChange={handleMinPriceChange}
                         className="absolute w-full h-2 bg-transparent appearance-none cursor-pointer range-slider"
@@ -251,8 +261,8 @@ export default function StorePage() {
                       />
                       <input 
                         type="range" 
-                        min="149" 
-                        max="1499" 
+                        min={realMinPrice}
+                        max={realMaxPrice}
                         value={maxPrice}
                         onChange={handleMaxPriceChange}
                         className="absolute w-full h-2 bg-transparent appearance-none cursor-pointer range-slider"
@@ -261,8 +271,8 @@ export default function StorePage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-sm font-medium text-gray-900">
-                    <span>₺{minPrice}</span>
-                    <span>₺{maxPrice.toLocaleString('tr-TR')}</span>
+                    <span>₺{realMinPrice}</span>
+                    <span>₺{realMaxPrice.toLocaleString('tr-TR')}</span>
                   </div>
                 </div>
               </div>

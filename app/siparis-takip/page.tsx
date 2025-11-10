@@ -52,6 +52,7 @@ function OrderTrackingContent() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelOrderNumber, setCancelOrderNumber] = useState('');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [showCancelSuccessModal, setShowCancelSuccessModal] = useState(false);
   const lastSearchedOrderRef = useRef<string | null>(null);
 
   const handleSearch = async (orderNum?: string) => {
@@ -118,25 +119,21 @@ function OrderTrackingContent() {
     setIsCancelling(true);
 
     try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ 
-          order_status: 'cancelled',
-          updated_at: new Date().toISOString()
-        })
-        .eq('order_number', order.order_number);
-
-      if (error) {
-        console.error('Sipariş iptal edilemedi:', error);
-        setToast({ message: 'Sipariş iptal edilirken bir hata oluştu!', type: 'error' });
+      const res = await fetch('/api/cancel-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_number: order.order_number })
+      });
+      const result = await res.json();
+      if (!result.success) {
+        setToast({ message: result.message || 'Sipariş iptal edilirken bir hata oluştu!', type: 'error' });
         setIsCancelling(false);
         return;
       }
-
-      // Sipariş durumunu güncelle
       setOrder({ ...order, order_status: 'cancelled' });
       setShowCancelModal(false);
       setCancelOrderNumber('');
+      setShowCancelSuccessModal(true);
       setIsCancelling(false);
     } catch (error) {
       console.error('Beklenmeyen hata:', error);
@@ -511,6 +508,21 @@ function OrderTrackingContent() {
                 )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* İptal Başarı Modalı */}
+      {showCancelSuccessModal && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
+            <CheckCircle className="mx-auto mb-4 text-green-600" size={48} />
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Siparişiniz Başarıyla İptal Edildi</h3>
+            <p className="text-gray-700 mb-4">İade işleminiz başlatıldı. Bankanızın süreçlerine göre tutar genellikle 1-3 iş günü içinde hesabınıza yansır. Detaylar için bankanızla iletişime geçebilirsiniz.</p>
+            <button
+              onClick={() => setShowCancelSuccessModal(false)}
+              className="mt-4 px-6 py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition"
+            >Tamam</button>
           </div>
         </div>
       )}
