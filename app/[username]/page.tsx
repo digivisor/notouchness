@@ -64,6 +64,27 @@ export default function UserProfilePage() {
   const textColor = card.textColor || '#111827';
   const gridCols = card.gridCols || 3;
   const avatarPos = card.avatarPosition || 'above';
+  
+  // Editor settings
+  const avatarShape = (card as any).avatarShape || 'round';
+  const avatarSize = (card as any).avatarSize || '128';
+  const avatarBorderWidth = (card as any).avatarBorderWidth || '4';
+  const avatarBorderColor = (card as any).avatarBorderColor || '#ffffff';
+  const coverUrl = card.coverUrl || '';
+  const coverHeight = (card as any).coverHeight || '200';
+  const containerBorderRadius = (card as any).containerBorderRadius || '24';
+  const containerShadow = (card as any).containerShadow || '2xl';
+  const iconSize = (card as any).iconSize || '24';
+  const iconColor = (card as any).iconColor || textColor;
+  const iconSpacing = (card as any).iconSpacing || '12';
+  const iconBorderRadius = (card as any).iconBorderRadius || '12';
+  const iconBackground = (card as any).iconBackground || 'transparent';
+  const fontFamily = (card as any).fontFamily || 'Inter';
+  const headingFontSize = (card as any).headingFontSize || '2rem';
+  const bodyFontSize = (card as any).bodyFontSize || '1rem';
+  const headingWeight = (card as any).headingWeight || '700';
+  const lineHeight = (card as any).lineHeight || '1.5';
+  const letterSpacing = (card as any).letterSpacing || '0';
 
 
 
@@ -129,67 +150,198 @@ export default function UserProfilePage() {
     });
   }
 
+  // Shadow mapping
+  const getShadowStyle = (shadow: string) => {
+    switch (shadow) {
+      case 'none': return 'none';
+      case 'sm': return '0 1px 2px 0 rgb(0 0 0 / 0.05)';
+      case 'md': return '0 4px 6px -1px rgb(0 0 0 / 0.1)';
+      case 'lg': return '0 10px 15px -3px rgb(0 0 0 / 0.1)';
+      case 'xl': return '0 20px 25px -5px rgb(0 0 0 / 0.1)';
+      case '2xl': return '0 25px 50px -12px rgb(0 0 0 / 0.25)';
+      default: return '0 25px 50px -12px rgb(0 0 0 / 0.25)';
+    }
+  };
+
   return (
     <div 
       className="min-h-screen flex items-center justify-center p-4"
       style={{ backgroundColor: bgColor }}
     >
       <div className="relative w-full max-w-md">
-        {/* Avatar - Above position (taşan profil resmi) */}
+        {/* Avatar - Above position (taşan profil resmi) - kapak resmi varsa da çalışır */}
         {card.profileImage && avatarPos === 'above' && (
           <div className="flex justify-center mb-[-60px] relative z-10">
-            <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl">
+            <div 
+              className="relative overflow-hidden shadow-xl"
+              style={{
+                width: `${avatarSize}px`,
+                height: `${avatarSize}px`,
+                borderRadius: avatarShape === 'round' ? '50%' :
+                             avatarShape === 'square' ? '0' :
+                             '16px',
+                border: `${avatarBorderWidth}px solid ${avatarBorderColor}`,
+              }}
+            >
               <Image
                 src={card.profileImage}
                 alt={card.fullName || 'Profile'}
-                fill
+                width={parseInt(avatarSize)}
+                height={parseInt(avatarSize)}
                 unoptimized
-                className="object-cover"
+                className="object-cover w-full h-full"
               />
             </div>
           </div>
         )}
 
         <div 
-          className="w-full rounded-3xl shadow-2xl overflow-hidden"
-          style={{ backgroundColor: containerBg }}
+          className="w-full overflow-hidden"
+          style={{ 
+            backgroundColor: containerBg,
+            borderRadius: `${containerBorderRadius}px`,
+            boxShadow: getShadowStyle(containerShadow),
+          }}
         >
-          {/* Avatar Section */}
-          <div className={`relative ${avatarPos === 'above' ? 'pt-20' : avatarPos === 'top' ? 'pt-8' : 'py-12'} px-6 text-center`}>
-            {/* Avatar - Top or Center position */}
-            {card.profileImage && avatarPos !== 'above' && (
-              <div className="mb-4 flex justify-center">
-                <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-lg">
+          {/* Kapak Resmi */}
+          {coverUrl && (
+            <div 
+              className="w-full relative overflow-hidden"
+              style={{ height: `${coverHeight}px` }}
+            >
+              <Image
+                src={coverUrl}
+                alt="Cover"
+                fill
+                unoptimized
+                className="object-cover"
+              />
+            </div>
+          )}
+
+          {/* Avatar Section - Kapak resmi varsa ve cover pozisyonları seçiliyse */}
+          {coverUrl && (avatarPos === 'cover-left' || avatarPos === 'cover-center' || avatarPos === 'cover-right') && card.profileImage && (
+            <div 
+              className="relative px-6"
+              style={{ 
+                marginTop: `-${parseInt(avatarSize) / 2}px`,
+                marginBottom: `${parseInt(avatarSize) / 2}px`,
+              }}
+            >
+              <div 
+                className={`flex ${avatarPos === 'cover-left' ? 'justify-start' : avatarPos === 'cover-center' ? 'justify-center' : 'justify-end'}`}
+              >
+                <div 
+                  className="relative overflow-hidden shadow-xl"
+                  style={{
+                    width: `${avatarSize}px`,
+                    height: `${avatarSize}px`,
+                    borderRadius: avatarShape === 'round' ? '50%' :
+                                 avatarShape === 'square' ? '0' :
+                                 '16px',
+                    border: `${avatarBorderWidth}px solid ${avatarBorderColor}`,
+                  }}
+                >
                   <Image
                     src={card.profileImage}
                     alt={card.fullName || 'Profile'}
-                    fill
+                    width={parseInt(avatarSize)}
+                    height={parseInt(avatarSize)}
                     unoptimized
-                    className="object-cover"
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Avatar Section */}
+          <div className={`relative ${
+            coverUrl && (avatarPos === 'cover-left' || avatarPos === 'cover-center' || avatarPos === 'cover-right')
+              ? 'pt-0'
+              : avatarPos === 'above' 
+                ? (coverUrl ? 'pt-8' : 'pt-20') 
+                : avatarPos === 'top' 
+                  ? 'pt-8' 
+                  : 'py-12'
+          } px-6 text-center`}>
+            {/* Avatar - Top or Center position (kapak resmi yoksa veya cover pozisyonları değilse) */}
+            {card.profileImage && avatarPos !== 'above' && !(coverUrl && (avatarPos === 'cover-left' || avatarPos === 'cover-center' || avatarPos === 'cover-right')) && (
+              <div className="mb-4 flex justify-center">
+                <div 
+                  className="relative overflow-hidden shadow-lg"
+                  style={{
+                    width: `${avatarSize}px`,
+                    height: `${avatarSize}px`,
+                    borderRadius: avatarShape === 'round' ? '50%' :
+                                 avatarShape === 'square' ? '0' :
+                                 '16px',
+                    border: `${avatarBorderWidth}px solid ${avatarBorderColor}`,
+                  }}
+                >
+                  <Image
+                    src={card.profileImage}
+                    alt={card.fullName || 'Profile'}
+                    width={parseInt(avatarSize)}
+                    height={parseInt(avatarSize)}
+                    unoptimized
+                    className="object-cover w-full h-full"
                   />
                 </div>
               </div>
             )}
           
           {/* User Info */}
-          <h1 className="text-2xl font-bold mb-1" style={{ color: textColor }}>
+          <h1 
+            className="text-2xl font-bold mb-1" 
+            style={{ 
+              color: textColor,
+              fontSize: headingFontSize,
+              fontWeight: headingWeight,
+              fontFamily: fontFamily,
+              lineHeight: lineHeight,
+              letterSpacing: `${letterSpacing}px`,
+            }}
+          >
             {card.fullName || 'Kullanıcı'}
           </h1>
           
           {card.username && (
-            <p className="text-sm opacity-60 mb-2" style={{ color: textColor }}>
+            <p 
+              className="text-sm opacity-60 mb-2" 
+              style={{ 
+                color: textColor,
+                fontSize: bodyFontSize,
+                fontFamily: fontFamily,
+              }}
+            >
               @{card.username}
             </p>
           )}
           
           {card.title && (
-            <p className="text-sm font-medium mb-1" style={{ color: textColor }}>
+            <p 
+              className="text-sm font-medium mb-1" 
+              style={{ 
+                color: textColor,
+                fontSize: bodyFontSize,
+                fontFamily: fontFamily,
+              }}
+            >
               {card.title}{card.company && ` - ${card.company}`}
             </p>
           )}
           
           {card.bio && (
-            <p className="text-sm opacity-75 mt-3 mb-4" style={{ color: textColor }}>
+            <p 
+              className="text-sm opacity-75 mt-3 mb-4" 
+              style={{ 
+                color: textColor,
+                fontSize: bodyFontSize,
+                fontFamily: fontFamily,
+                lineHeight: lineHeight,
+              }}
+            >
               {card.bio}
             </p>
           )}
@@ -256,22 +408,50 @@ export default function UserProfilePage() {
         {socialLinks.length > 0 && (
           <div className="px-6 pb-6">
             <div 
-              className={`grid gap-3`}
-              style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))` }}
+              className="grid"
+              style={{ 
+                gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`,
+                gap: `${iconSpacing}px`,
+              }}
             >
               {socialLinks.map((link, idx) => {
                 const Icon = link.icon;
+                const iconBgStyle = iconBackground === 'circle' ? 'rounded-full' :
+                                  iconBackground === 'square' ? 'rounded-none' :
+                                  iconBackground === 'rounded' ? '' :
+                                  '';
                 return (
                   <a
                     key={idx}
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-black/5 hover:bg-black/10 transition-all"
+                    className={`flex flex-col items-center justify-center gap-2 p-4 bg-black/5 hover:bg-black/10 transition-all ${
+                      iconBackground !== 'transparent' ? iconBgStyle : ''
+                    }`}
+                    style={{
+                      backgroundColor: iconBackground !== 'transparent' 
+                        ? `${iconColor}15` 
+                        : undefined,
+                      borderRadius: iconBackground === 'rounded' 
+                        ? `${iconBorderRadius}px`
+                        : iconBgStyle === 'rounded-full' 
+                        ? '50%'
+                        : iconBgStyle === 'rounded-none'
+                        ? '0'
+                        : `${iconBorderRadius}px`,
+                    }}
                   >
-                    <Icon size={24} style={{ color: textColor }} />
+                    <Icon size={parseInt(iconSize)} style={{ color: iconColor || textColor }} />
                     {card.layoutStyle === 'icons-with-title' && (
-                      <span className="text-xs font-medium capitalize" style={{ color: textColor }}>
+                      <span 
+                        className="text-xs font-medium capitalize" 
+                        style={{ 
+                          color: textColor,
+                          fontSize: bodyFontSize,
+                          fontFamily: fontFamily,
+                        }}
+                      >
                         {link.platform}
                       </span>
                     )}
@@ -284,7 +464,14 @@ export default function UserProfilePage() {
 
         {/* Footer */}
         <div className="px-6 pb-6 text-center">
-          <p className="text-xs opacity-50" style={{ color: textColor }}>
+          <p 
+            className="text-xs opacity-50" 
+            style={{ 
+              color: textColor,
+              fontSize: bodyFontSize,
+              fontFamily: fontFamily,
+            }}
+          >
             Powered by <span className="font-semibold">notouchness</span>
           </p>
         </div>

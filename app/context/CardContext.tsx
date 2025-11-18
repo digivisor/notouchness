@@ -5,6 +5,7 @@ import { cardDb } from '../../lib/supabase-cards';
 
 // NFC Kart Profil Interface
 export interface CardProfile {
+  accentColor: string;
   id: string; // Benzersiz hash (örn: dwferwqferver)
   username: string; // Kullanıcı adı (örn: fazilcanakbas)
   
@@ -123,7 +124,7 @@ export interface CardProfile {
   containerBackgroundColor?: string; // Container arka plan rengi
   textColor?: string; // Yazı rengi
   gridCols?: number; // İkon grid sütun sayısı (3 veya 4)
-  avatarPosition?: 'top' | 'center' | 'above'; // Profil resmi pozisyonu
+  avatarPosition?: 'top' | 'center' | 'above' | 'cover-left' | 'cover-center' | 'cover-right'; // Profil resmi pozisyonu
   
   // Platform Açıklamaları
   platformDescriptions: {

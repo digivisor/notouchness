@@ -123,6 +123,29 @@ const cardToDbFormat = (card: CardProfile): DbCard => {
     grid_cols: card.gridCols || 3,
     avatar_position: card.avatarPosition || 'above',
     
+    // Editor Ayarları
+    avatar_shape: (card as any).avatarShape || null,
+    avatar_size: (card as any).avatarSize || null,
+    avatar_border_width: (card as any).avatarBorderWidth || null,
+    avatar_border_color: (card as any).avatarBorderColor || null,
+    cover_height: (card as any).coverHeight || null,
+    container_border_radius: (card as any).containerBorderRadius || null,
+    container_shadow: (card as any).containerShadow || null,
+    icon_size: (card as any).iconSize || null,
+    icon_color: (card as any).iconColor || null,
+    icon_spacing: (card as any).iconSpacing || null,
+    icon_border_radius: (card as any).iconBorderRadius || null,
+    icon_background: (card as any).iconBackground || null,
+    font_family: (card as any).fontFamily || null,
+    heading_font_size: (card as any).headingFontSize || null,
+    body_font_size: (card as any).bodyFontSize || null,
+    heading_weight: (card as any).headingWeight || null,
+    line_height: (card as any).lineHeight || null,
+    letter_spacing: (card as any).letterSpacing || null,
+    background_type: (card as any).backgroundType || null,
+    background_gradient: (card as any).backgroundGradient || null,
+    background_image: (card as any).backgroundImage || null,
+    
     // Meta
     owner_email: card.ownerEmail || null,
     hashed_password: card.hashedPassword || null,
@@ -255,7 +278,30 @@ const dbToCardFormat = (row: DbCard): CardProfile => {
     containerBackgroundColor: row.container_background_color ? String(row.container_background_color) : undefined,
     textColor: row.text_color ? String(row.text_color) : undefined,
     gridCols: typeof row.grid_cols === 'number' ? row.grid_cols : 3,
-    avatarPosition: (row.avatar_position || 'above') as 'top' | 'center' | 'above',
+    avatarPosition: (row.avatar_position || 'above') as 'top' | 'center' | 'above' | 'cover-left' | 'cover-center' | 'cover-right',
+    
+    // Editor Ayarları
+    avatarShape: row.avatar_shape ? String(row.avatar_shape) : undefined,
+    avatarSize: row.avatar_size ? String(row.avatar_size) : undefined,
+    avatarBorderWidth: row.avatar_border_width ? String(row.avatar_border_width) : undefined,
+    avatarBorderColor: row.avatar_border_color ? String(row.avatar_border_color) : undefined,
+    coverHeight: row.cover_height ? String(row.cover_height) : undefined,
+    containerBorderRadius: row.container_border_radius ? String(row.container_border_radius) : undefined,
+    containerShadow: row.container_shadow ? String(row.container_shadow) : undefined,
+    iconSize: row.icon_size ? String(row.icon_size) : undefined,
+    iconColor: row.icon_color ? String(row.icon_color) : undefined,
+    iconSpacing: row.icon_spacing ? String(row.icon_spacing) : undefined,
+    iconBorderRadius: row.icon_border_radius ? String(row.icon_border_radius) : undefined,
+    iconBackground: row.icon_background ? String(row.icon_background) : undefined,
+    fontFamily: row.font_family ? String(row.font_family) : undefined,
+    headingFontSize: row.heading_font_size ? String(row.heading_font_size) : undefined,
+    bodyFontSize: row.body_font_size ? String(row.body_font_size) : undefined,
+    headingWeight: row.heading_weight ? String(row.heading_weight) : undefined,
+    lineHeight: row.line_height ? String(row.line_height) : undefined,
+    letterSpacing: row.letter_spacing ? String(row.letter_spacing) : undefined,
+    backgroundType: row.background_type ? String(row.background_type) : undefined,
+    backgroundGradient: row.background_gradient ? String(row.background_gradient) : undefined,
+    backgroundImage: row.background_image ? String(row.background_image) : undefined,
     
     // Meta
     ownerEmail: String(row.owner_email || ''),
@@ -342,6 +388,8 @@ export const cardDb = {
     
     if (error || !data) {
       console.error('Update error:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      console.error('Attempted update data keys:', Object.keys(dbCard));
       return null;
     }
     return dbToCardFormat(data);

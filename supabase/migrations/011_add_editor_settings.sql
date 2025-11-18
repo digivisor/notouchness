@@ -1,0 +1,46 @@
+-- Add editor settings columns to cards table
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS avatar_shape TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS avatar_size TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS avatar_border_width TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS avatar_border_color TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS cover_height TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS container_border_radius TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS container_shadow TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS icon_size TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS icon_color TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS icon_spacing TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS icon_border_radius TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS icon_background TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS font_family TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS heading_font_size TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS body_font_size TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS heading_weight TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS line_height TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS letter_spacing TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS background_type TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS background_gradient TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS background_image TEXT;
+
+-- Add comments
+COMMENT ON COLUMN cards.avatar_shape IS 'Avatar shape: round, square, rounded-square';
+COMMENT ON COLUMN cards.avatar_size IS 'Avatar size in pixels';
+COMMENT ON COLUMN cards.avatar_border_width IS 'Avatar border width in pixels';
+COMMENT ON COLUMN cards.avatar_border_color IS 'Avatar border color';
+COMMENT ON COLUMN cards.cover_height IS 'Cover image height in pixels';
+COMMENT ON COLUMN cards.container_border_radius IS 'Container border radius in pixels';
+COMMENT ON COLUMN cards.container_shadow IS 'Container shadow: none, sm, md, lg, xl, 2xl';
+COMMENT ON COLUMN cards.icon_size IS 'Icon size in pixels';
+COMMENT ON COLUMN cards.icon_color IS 'Icon color';
+COMMENT ON COLUMN cards.icon_spacing IS 'Icon spacing in pixels';
+COMMENT ON COLUMN cards.icon_border_radius IS 'Icon border radius in pixels';
+COMMENT ON COLUMN cards.icon_background IS 'Icon background: transparent, circle, square, rounded';
+COMMENT ON COLUMN cards.font_family IS 'Font family name';
+COMMENT ON COLUMN cards.heading_font_size IS 'Heading font size';
+COMMENT ON COLUMN cards.body_font_size IS 'Body font size';
+COMMENT ON COLUMN cards.heading_weight IS 'Heading font weight';
+COMMENT ON COLUMN cards.line_height IS 'Line height';
+COMMENT ON COLUMN cards.letter_spacing IS 'Letter spacing';
+COMMENT ON COLUMN cards.background_type IS 'Background type: solid, gradient, image';
+COMMENT ON COLUMN cards.background_gradient IS 'Background gradient CSS';
+COMMENT ON COLUMN cards.background_image IS 'Background image URL';
+
