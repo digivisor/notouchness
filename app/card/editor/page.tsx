@@ -21,6 +21,7 @@ export default function EditorPage() {
   const [activeTab, setActiveTab] = useState('layout');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
 
   // Editor state
   const [editorSettings, setEditorSettings] = useState({
@@ -1403,13 +1404,38 @@ export default function EditorPage() {
           </div>
 
           {/* Sağ - Canlı Önizleme (Gerçek Kart Yapısı) */}
-          <div className="hidden lg:block fixed top-[64px] right-0 w-[650px] bg-gray-100 h-[calc(100vh-64px)] overflow-y-auto z-20">
-            <div className="p-2">
-              <div
-                className="min-h-screen flex items-center justify-center p-4"
-                style={{ backgroundColor: bgColor }}
+          <div className="hidden lg:block fixed top-[64px] right-0 w-[650px] bg-gray-100 h-[calc(100vh-64px)] overflow-y-auto z-20 flex flex-col">
+            {/* Preview Mode Tabs */}
+            <div className="flex gap-2 p-3 border-b border-gray-200 bg-white">
+              <button
+                onClick={() => setPreviewMode('desktop')}
+                className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  previewMode === 'desktop'
+                    ? 'bg-black text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
               >
-                <div className="relative w-full max-w-md">
+                Masaüstü Görünüm
+              </button>
+              <button
+                onClick={() => setPreviewMode('mobile')}
+                className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  previewMode === 'mobile'
+                    ? 'bg-black text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Mobil Görünüm
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto">
+              <div className={`${previewMode === 'mobile' ? 'flex items-center justify-center p-4' : 'p-2'}`}>
+                <div
+                  className={`min-h-screen flex items-center justify-center ${previewMode === 'mobile' ? 'w-full max-w-[375px] p-2' : 'p-4'}`}
+                  style={{ backgroundColor: bgColor }}
+                >
+                <div className={`relative w-full ${previewMode === 'mobile' ? 'max-w-[375px]' : 'max-w-md'}`}>
                   {/* Avatar - Above position (taşan profil resmi) - kapak resmi varsa da çalışır */}
                   {card.profileImage && avatarPos === 'above' && (
                     <div className="flex justify-center mb-[-60px] relative z-10">
@@ -1909,6 +1935,7 @@ export default function EditorPage() {
                       </div>
                     </div>
                   </div>
+                </div>
                 </div>
               </div>
             </div>
