@@ -1,253 +1,121 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCard } from '../../context/CardContext';
-import { Save, Eye, User, LogOut, Home, Palette, Sparkles } from 'lucide-react';
+import { Save, Eye, User, LogOut, Home, Palette, Sparkles, X } from 'lucide-react';
+import Image from 'next/image';
+import { Mail, Phone, Globe, Instagram, Linkedin, Twitter, Facebook, Youtube, MessageCircle, Send, Github, Link2, Music, Video, MoreVertical } from 'lucide-react';
+
+type ThemeType = {
+  id: string;
+  name: string;
+  description: string;
+  backgroundColor: string;
+  containerBackgroundColor: string;
+  primaryColor: string;
+  secondaryColor: string;
+  textColor: string;
+  accentColor: string;
+  layoutStyle: 'icons-only' | 'icons-with-title' | 'full-description' | 'full-width-buttons';
+  gridCols: number;
+  hasCover: boolean;
+  coverUrl?: string;
+  coverHeight?: string;
+  avatarPosition: 'top' | 'center' | 'above' | 'cover-left' | 'cover-center' | 'cover-right';
+};
 
 export default function AppearancePage() {
   const router = useRouter();
   const { currentCard, isOwner, updateCard } = useCard();
-
-  type ThemeType = 'dark' | 'light' | 'gradient' | 'minimal' | 'lawyer' | 'ceo' | 'sales' | 'developer' | 'retail' | 'creative' | 'designer' | 'tech' | 'medical' | 'educator' | 'realestate' | 'marketing' | 'consultant' | 'artist' | 'fitness' | 'photographer' | 'writer' | 'chef' | 'ocean' | 'forest' | 'sunset' | 'neon' | 'royal' | 'mint' | 'lavender' | 'midnight';
-  
-  const [theme, setTheme] = useState<ThemeType>('sales');
-  const [layoutStyle, setLayoutStyle] = useState<'icons-only' | 'icons-with-title' | 'full-description'>('icons-with-title');
-  const [gridCols, setGridCols] = useState<number>(3);
-  const [avatarPosition, setAvatarPosition] = useState<'top' | 'center' | 'above'>('above');
-
-  // Modal state
+  const [selectedTheme, setSelectedTheme] = useState<ThemeType | null>(null);
+  const [showModal, setShowModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  // Hazır Temalar - Uyumlu Renk Paletleri (Her biri gerçekten farklı!)
-  const presetThemes: Array<{
-    id: ThemeType;
-    name: string;
-    description: string;
-    backgroundColor: string;
-    containerBackgroundColor: string;
-    primaryColor: string;
-    secondaryColor: string;
-    textColor: string;
-    accentColor: string;
-    layoutStyle: 'icons-only' | 'icons-with-title' | 'full-description';
-  }> = [
+  // 4-5 Farklı Tema
+  const themes: ThemeType[] = [
     {
-      id: 'sales',
-      name: 'Satış Danışmanı',
-      description: 'Enerjik ve samimi tasarım',
+      id: 'theme-1',
+      name: 'Modern Profesyonel',
+      description: 'Kapak fotoğrafı ile 4\'lü düzen',
       backgroundColor: '#dc2626',
       containerBackgroundColor: '#ffffff',
       primaryColor: '#dc2626',
       secondaryColor: '#fef2f2',
       textColor: '#111827',
       accentColor: '#991b1b',
-      layoutStyle: 'icons-with-title' as const,
+      layoutStyle: 'icons-with-title',
+      gridCols: 4,
+      hasCover: true,
+      coverUrl: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=800',
+      coverHeight: '200',
+      avatarPosition: 'cover-center',
     },
     {
-      id: 'lawyer',
-      name: 'Avukat / Hukuk',
-      description: 'Profesyonel ve güven veren',
-      backgroundColor: '#1e3a8a',
-      containerBackgroundColor: '#ffffff',
-      primaryColor: '#1e40af',
-      secondaryColor: '#dbeafe',
-      textColor: '#1e293b',
-      accentColor: '#3b82f6',
-      layoutStyle: 'full-description' as const,
-    },
-    {
-      id: 'ceo',
-      name: 'CEO / Yönetici',
-      description: 'Lüks ve modern executive',
-      backgroundColor: '#0f172a',
-      containerBackgroundColor: '#fefce8',
-      primaryColor: '#d4af37',
-      secondaryColor: '#fef9c3',
-      textColor: '#0f172a',
-      accentColor: '#fde047',
-      layoutStyle: 'icons-with-title' as const,
-    },
-    {
-      id: 'developer',
-      name: 'Developer / Teknoloji',
-      description: 'Minimal ve teknik',
-      backgroundColor: '#0c4a6e',
-      containerBackgroundColor: '#111827',
-      primaryColor: '#06b6d4',
-      secondaryColor: '#1e293b',
-      textColor: '#ecfeff',
-      accentColor: '#22d3ee',
-      layoutStyle: 'icons-only' as const,
-    },
-    {
-      id: 'retail',
-      name: 'E-ticaret / Satış',
-      description: 'Canlı ve dikkat çekici',
-      backgroundColor: '#7c3aed',
-      containerBackgroundColor: '#faf5ff',
-      primaryColor: '#9333ea',
-      secondaryColor: '#f3e8ff',
-      textColor: '#581c87',
-      accentColor: '#a855f7',
-      layoutStyle: 'full-description' as const,
-    },
-    {
-      id: 'creative',
-      name: 'Kreatif / Sanatçı',
-      description: 'Renkli ve yaratıcı',
-      backgroundColor: '#ec4899',
-      containerBackgroundColor: '#fff1f2',
-      primaryColor: '#f472b6',
-      secondaryColor: '#fce7f3',
-      textColor: '#831843',
-      accentColor: '#f9a8d4',
-      layoutStyle: 'icons-with-title' as const,
-    },
-    {
-      id: 'minimal',
-      name: 'Minimal',
-      description: 'Sade ve şık',
+      id: 'theme-2',
+      name: 'Minimalist',
+      description: 'Kapak fotoğrafı olmadan 4\'lü düzen',
       backgroundColor: '#f3f4f6',
       containerBackgroundColor: '#ffffff',
       primaryColor: '#4b5563',
       secondaryColor: '#f9fafb',
       textColor: '#374151',
       accentColor: '#6b7280',
-      layoutStyle: 'icons-only' as const,
+      layoutStyle: 'icons-with-title',
+      gridCols: 4,
+      hasCover: false,
+      avatarPosition: 'above',
     },
     {
-      id: 'gradient',
-      name: 'Gradient / Modern',
-      description: 'Canlı gradient efektleri',
-      backgroundColor: '#f97316',
-      containerBackgroundColor: '#fff7ed',
-      primaryColor: '#fb923c',
-      secondaryColor: '#ffedd5',
-      textColor: '#9a3412',
-      accentColor: '#fdba74',
-      layoutStyle: 'icons-with-title' as const,
-    },
-    {
-      id: 'dark',
-      name: 'Koyu Tema',
-      description: 'Karanlık ve modern',
-      backgroundColor: '#111827',
-      containerBackgroundColor: '#1f2937',
-      primaryColor: '#60a5fa',
-      secondaryColor: '#374151',
-      textColor: '#e5e7eb',
-      accentColor: '#93c5fd',
-      layoutStyle: 'icons-with-title' as const,
-    },
-    {
-      id: 'light',
-      name: 'Açık Tema',
-      description: 'Temiz ve profesyonel',
-      backgroundColor: '#e0e7ff',
+      id: 'theme-3',
+      name: 'Yatay Butonlar',
+      description: 'Kapak fotoğrafı ile yatay buton düzeni',
+      backgroundColor: '#1e3a8a',
       containerBackgroundColor: '#ffffff',
-      primaryColor: '#2563eb',
-      secondaryColor: '#eef2ff',
-      textColor: '#1e40af',
+      primaryColor: '#1e40af',
+      secondaryColor: '#dbeafe',
+      textColor: '#1e293b',
       accentColor: '#3b82f6',
-      layoutStyle: 'icons-with-title' as const,
+      layoutStyle: 'full-width-buttons',
+      gridCols: 3,
+      hasCover: true,
+      coverUrl: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=800',
+      coverHeight: '200',
+      avatarPosition: 'cover-center',
     },
     {
-      id: 'ocean',
-      name: 'Okyanus',
-      description: 'Sakin ve ferah',
-      backgroundColor: '#06b6d4',
-      containerBackgroundColor: '#cffafe',
-      primaryColor: '#0891b2',
-      secondaryColor: '#a5f3fc',
-      textColor: '#155e75',
-      accentColor: '#22d3ee',
-      layoutStyle: 'icons-with-title' as const,
+      id: 'theme-4',
+      name: 'Sade Yatay',
+      description: 'Kapak fotoğrafı olmadan yatay buton düzeni',
+      backgroundColor: '#0f172a',
+      containerBackgroundColor: '#fefce8',
+      primaryColor: '#d4af37',
+      secondaryColor: '#fef9c3',
+      textColor: '#0f172a',
+      accentColor: '#fde047',
+      layoutStyle: 'full-width-buttons',
+      gridCols: 3,
+      hasCover: false,
+      avatarPosition: 'above',
     },
     {
-      id: 'forest',
-      name: 'Orman',
-      description: 'Doğal ve sakin',
-      backgroundColor: '#059669',
-      containerBackgroundColor: '#d1fae5',
-      primaryColor: '#047857',
-      secondaryColor: '#a7f3d0',
-      textColor: '#064e3b',
-      accentColor: '#10b981',
-      layoutStyle: 'full-description' as const,
+      id: 'theme-5',
+      name: 'Kreatif',
+      description: 'Kapak fotoğrafı ile ikon + başlık düzeni',
+      backgroundColor: '#ec4899',
+      containerBackgroundColor: '#fff1f2',
+      primaryColor: '#f472b6',
+      secondaryColor: '#fce7f3',
+      textColor: '#831843',
+      accentColor: '#f9a8d4',
+      layoutStyle: 'icons-with-title',
+      gridCols: 3,
+      hasCover: true,
+      coverUrl: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=800',
+      coverHeight: '200',
+      avatarPosition: 'cover-left',
     },
-    {
-      id: 'sunset',
-      name: 'Gün Batımı',
-      description: 'Sıcak ve samimi',
-      backgroundColor: '#f59e0b',
-      containerBackgroundColor: '#fef3c7',
-      primaryColor: '#d97706',
-      secondaryColor: '#fde68a',
-      textColor: '#92400e',
-      accentColor: '#fbbf24',
-      layoutStyle: 'icons-with-title' as const,
-    },
-    {
-      id: 'neon',
-      name: 'Neon',
-      description: 'Parlak ve dikkat çekici',
-      backgroundColor: '#111827',
-      containerBackgroundColor: '#065f46',
-      primaryColor: '#10b981',
-      secondaryColor: '#064e3b',
-      textColor: '#6ee7b7',
-      accentColor: '#34d399',
-      layoutStyle: 'icons-only' as const,
-    },
-    {
-      id: 'royal',
-      name: 'Kraliyet',
-      description: 'Zarif ve lüks',
-      backgroundColor: '#7c2d12',
-      containerBackgroundColor: '#fed7aa',
-      primaryColor: '#92400e',
-      secondaryColor: '#fdba74',
-      textColor: '#78350f',
-      accentColor: '#fb923c',
-      layoutStyle: 'icons-with-title' as const,
-    },
-    {
-      id: 'mint',
-      name: 'Nane',
-      description: 'Taze ve canlı',
-      backgroundColor: '#10b981',
-      containerBackgroundColor: '#d1fae5',
-      primaryColor: '#059669',
-      secondaryColor: '#a7f3d0',
-      textColor: '#064e3b',
-      accentColor: '#34d399',
-      layoutStyle: 'icons-with-title' as const,
-    },
-    {
-      id: 'lavender',
-      name: 'Lavanta',
-      description: 'Sakin ve zarif',
-      backgroundColor: '#a78bfa',
-      containerBackgroundColor: '#f3e8ff',
-      primaryColor: '#8b5cf6',
-      secondaryColor: '#e9d5ff',
-      textColor: '#6b21a8',
-      accentColor: '#c084fc',
-      layoutStyle: 'full-description' as const,
-    },
-    {
-      id: 'midnight',
-      name: 'Gece Yarısı',
-      description: 'Koyu ve gizemli',
-      backgroundColor: '#1e293b',
-      containerBackgroundColor: '#334155',
-      primaryColor: '#60a5fa',
-      secondaryColor: '#475569',
-      textColor: '#cbd5e1',
-      accentColor: '#93c5fd',
-      layoutStyle: 'icons-with-title' as const,
-    }
   ];
 
   useEffect(() => {
@@ -255,53 +123,107 @@ export default function AppearancePage() {
       router.push('/card/login');
       return;
     }
-    
-    // Initialize state from currentCard
-    const initializeState = () => {
-      setTheme((currentCard.theme || 'sales') as ThemeType);
-      setLayoutStyle(currentCard.layoutStyle || 'icons-with-title');
-      setGridCols(currentCard.gridCols || 3);
-      setAvatarPosition(currentCard.avatarPosition || 'above');
-    };
-    
-    initializeState();
   }, [currentCard, isOwner, router]);
 
-  const applyPresetTheme = (preset: typeof presetThemes[0]) => {
-    setTheme(preset.id as ThemeType);
-    setLayoutStyle(preset.layoutStyle);
+  const handleThemeClick = (theme: ThemeType) => {
+    setSelectedTheme(theme);
+    setShowModal(true);
   };
 
-  const getSelectedTheme = () => {
-    return presetThemes.find(t => t.id === theme) || presetThemes[0];
-  };
-
-  const selectedTheme = getSelectedTheme();
-
-  const handleSave = async () => {
-    if (!currentCard) return;
+  const handleApplyTheme = async () => {
+    if (!currentCard || !selectedTheme) return;
 
     const success = await updateCard({
       ...currentCard,
-      theme,
-      layoutStyle,
+      theme: selectedTheme.id as any,
+      layoutStyle: selectedTheme.layoutStyle,
       primaryColor: selectedTheme.primaryColor,
       secondaryColor: selectedTheme.secondaryColor,
       backgroundColor: selectedTheme.backgroundColor,
       containerBackgroundColor: selectedTheme.containerBackgroundColor,
       textColor: selectedTheme.textColor,
-      gridCols,
-      avatarPosition,
+      gridCols: selectedTheme.gridCols,
+      avatarPosition: selectedTheme.avatarPosition,
+      coverUrl: selectedTheme.hasCover ? selectedTheme.coverUrl || '' : '',
+      coverHeight: selectedTheme.hasCover ? selectedTheme.coverHeight || '200' : '',
     });
 
     if (success) {
-      alert('✅ Görünüm ayarları kaydedildi!');
+      setShowModal(false);
+      alert('✅ Tema başarıyla uygulandı!');
     } else {
-      alert('❌ Kaydetme başarısız!');
+      alert('❌ Tema uygulanamadı!');
     }
   };
 
   if (!currentCard) return null;
+
+  // Platform icon mapping
+  const getPlatformIcon = (platform: string) => {
+    const icons: Record<string, any> = {
+      instagram: Instagram,
+      linkedin: Linkedin,
+      twitter: Twitter,
+      facebook: Facebook,
+      youtube: Youtube,
+      whatsapp: MessageCircle,
+      telegram: Send,
+      github: Github,
+      tiktok: Music,
+      spotify: Music,
+      twitch: Video,
+      discord: MessageCircle,
+    };
+    return icons[platform.toLowerCase()] || Link2;
+  };
+
+  // Collect social links for preview
+  const getSocialLinks = (card: any) => {
+    const links: Array<{ platform: string; url: string; icon: any }> = [];
+    const platforms = [
+      { key: 'instagram', value: card.instagram },
+      { key: 'linkedin', value: card.linkedin },
+      { key: 'twitter', value: card.twitter },
+      { key: 'facebook', value: card.facebook },
+      { key: 'youtube', value: card.youtube },
+      { key: 'github', value: card.github },
+    ];
+    platforms.forEach(p => {
+      if (p.value && p.value.trim()) {
+        links.push({
+          platform: p.key,
+          url: '#',
+          icon: getPlatformIcon(p.key)
+        });
+      }
+    });
+    // Add some demo links if no social links exist
+    if (links.length === 0) {
+      links.push(
+        { platform: 'instagram', url: '#', icon: Instagram },
+        { platform: 'linkedin', url: '#', icon: Linkedin },
+        { platform: 'twitter', url: '#', icon: Twitter },
+      );
+    }
+    return links;
+  };
+
+  // Modal için önizleme verileri
+  const previewCard = selectedTheme ? {
+    ...currentCard,
+    backgroundColor: selectedTheme.backgroundColor,
+    containerBackgroundColor: selectedTheme.containerBackgroundColor,
+    primaryColor: selectedTheme.primaryColor,
+    secondaryColor: selectedTheme.secondaryColor,
+    textColor: selectedTheme.textColor,
+    layoutStyle: selectedTheme.layoutStyle,
+    gridCols: selectedTheme.gridCols,
+    avatarPosition: selectedTheme.avatarPosition,
+    coverUrl: selectedTheme.hasCover ? selectedTheme.coverUrl || '' : '',
+    coverHeight: selectedTheme.hasCover ? selectedTheme.coverHeight || '200' : '',
+  } : null;
+
+  const previewSocialLinks = previewCard ? getSocialLinks(previewCard) : [];
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -325,7 +247,7 @@ export default function AppearancePage() {
             className="w-full flex items-center gap-3 px-4 py-3 bg-white text-black rounded-lg transition mb-2"
           >
             <Palette size={20} />
-            <span>Görünüm & Tema</span>
+            <span>Tema</span>
           </button>
           
           <button
@@ -366,258 +288,470 @@ export default function AppearancePage() {
 
       {/* Ana İçerik */}
       <div className="flex-1 overflow-auto">
-        <div className="max-w-5xl mx-auto p-8">
+        <div className="max-w-6xl mx-auto p-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Görünüm & Tema</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Tema</h1>
             <p className="text-gray-600">Profilinin görünümünü özelleştir ve hazır temalardan seç</p>
           </div>
 
-          {/* Hazır Temalar */}
-          <div className="bg-gray-50 rounded-xl border border-gray-200 p-6 mb-6">
+          {/* Tema Seçimi */}
+          <div className="bg-gray-50 rounded-xl border border-gray-200 p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-5">Tema Seçimi</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {presetThemes.map((preset) => (
+              {themes.map((theme) => (
                 <button
-                  key={preset.id}
-                  onClick={() => applyPresetTheme(preset)}
-                  className={`p-0 rounded-xl border-2 transition overflow-hidden hover:shadow-lg ${
-                    theme === preset.id
-                      ? 'border-black shadow-lg scale-105'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  key={theme.id}
+                  onClick={() => handleThemeClick(theme)}
+                  className="p-0 rounded-xl border-2 border-gray-200 hover:border-gray-300 transition overflow-hidden hover:shadow-lg text-left"
                 >
-                  {/* Önizleme */}
-                  <div className="relative h-32" style={{ backgroundColor: preset.backgroundColor }}>
+                  {/* Önizleme - Gerçekçi Kart */}
+                  <div className="relative" style={{ backgroundColor: theme.backgroundColor, minHeight: '320px', padding: '8px' }}>
+                    {/* Container */}
                     <div 
-                      className="absolute bottom-0 left-0 right-0 rounded-t-2xl p-4"
-                      style={{ backgroundColor: preset.containerBackgroundColor }}
+                      className="w-full rounded-2xl overflow-hidden shadow-lg"
+                      style={{ backgroundColor: theme.containerBackgroundColor }}
                     >
-                      <div className="flex items-center gap-2 mb-2">
-                        <div 
-                          className="w-10 h-10 rounded-full border-2"
-                          style={{ 
-                            backgroundColor: preset.backgroundColor,
-                            borderColor: preset.containerBackgroundColor
-                          }}
-                        />
-                        <div className="flex-1">
-                          <div 
-                            className="h-2 rounded mb-1"
-                            style={{ backgroundColor: preset.textColor, opacity: 0.3 }}
-                          />
-                          <div 
-                            className="h-2 rounded w-2/3"
-                            style={{ backgroundColor: preset.textColor, opacity: 0.2 }}
+                      {/* Kapak Resmi */}
+                      {theme.hasCover && theme.coverUrl && (
+                        <div className="w-full h-24 relative overflow-hidden">
+                          <Image
+                            src={theme.coverUrl}
+                            alt="Cover"
+                            fill
+                            unoptimized
+                            className="object-cover"
                           />
                         </div>
-                      </div>
-                      <div className="flex gap-1.5">
-                        {[1, 2, 3].map((i) => (
-                          <div
-                            key={i}
-                            className="flex-1 h-8 rounded-lg border"
-                            style={{ 
-                              backgroundColor: preset.secondaryColor,
-                              borderColor: preset.primaryColor + '40'
+                      )}
+                      
+                      {/* Avatar */}
+                      {currentCard.profileImage && (
+                        <div className={`flex relative ${theme.hasCover && theme.avatarPosition === 'cover-center' ? 'justify-center -mt-10 mb-2' : theme.hasCover && theme.avatarPosition === 'cover-left' ? 'justify-start px-4 -mt-10 mb-2' : theme.hasCover && theme.avatarPosition === 'cover-right' ? 'justify-end px-4 -mt-10 mb-2' : 'justify-center pt-6 pb-2'}`}>
+                          <div 
+                            className="relative overflow-hidden shadow-xl rounded-full border-2"
+                            style={{
+                              width: '64px',
+                              height: '64px',
+                              borderColor: theme.containerBackgroundColor,
+                              backgroundColor: theme.containerBackgroundColor
                             }}
-                          />
-                        ))}
+                          >
+                            <Image
+                              src={currentCard.profileImage}
+                              alt="Avatar"
+                              width={64}
+                              height={64}
+                              unoptimized
+                              className="object-cover w-full h-full"
+                            />
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* User Info */}
+                      <div className={`px-4 pb-3 ${theme.hasCover && (theme.avatarPosition === 'cover-left' || theme.avatarPosition === 'cover-right') ? 'text-left' : 'text-center'}`}>
+                        <div 
+                          className="font-bold text-sm mb-1"
+                          style={{ color: theme.textColor }}
+                        >
+                          {currentCard.fullName || currentCard.username}
+                        </div>
+                        {currentCard.title && (
+                          <div 
+                            className="text-xs opacity-70"
+                            style={{ color: theme.textColor }}
+                          >
+                            {currentCard.title}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Social Links */}
+                      <div className="px-4 pb-4">
+                        {theme.layoutStyle === 'full-width-buttons' ? (
+                          <div className="space-y-2">
+                            {['Instagram', 'LinkedIn'].map((platform) => {
+                              const Icon = getPlatformIcon(platform.toLowerCase());
+                              return (
+                                <div
+                                  key={platform}
+                                  className="flex items-center gap-2 w-full p-2 rounded-full"
+                                  style={{ backgroundColor: theme.primaryColor }}
+                                >
+                                  <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <Icon size={12} className="text-white" />
+                                  </div>
+                                  <span className="flex-1 text-xs font-semibold text-white capitalize text-center">{platform}</span>
+                                  <MoreVertical size={12} className="text-white opacity-70 flex-shrink-0" />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div 
+                            className="grid gap-2"
+                            style={{ gridTemplateColumns: `repeat(${theme.gridCols}, minmax(0, 1fr))` }}
+                          >
+                            {['Instagram', 'LinkedIn', 'Twitter', 'Facebook'].slice(0, theme.gridCols).map((platform) => {
+                              const Icon = getPlatformIcon(platform.toLowerCase());
+                              return (
+                                <div
+                                  key={platform}
+                                  className="flex flex-col items-center justify-center gap-1 p-2 rounded-lg"
+                                  style={{ backgroundColor: theme.secondaryColor }}
+                                >
+                                  <Icon 
+                                    size={16} 
+                                    style={{ color: theme.primaryColor }} 
+                                  />
+                                  {theme.layoutStyle === 'icons-with-title' && (
+                                    <div 
+                                      className="text-[8px] font-medium capitalize text-center leading-tight"
+                                      style={{ color: theme.textColor }}
+                                    >
+                                      {platform}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
                   <div className="p-4 bg-white">
-                    <h3 className="font-bold text-gray-900 mb-1">{preset.name}</h3>
-                    <p className="text-xs text-gray-600">{preset.description}</p>
+                    <h3 className="font-bold text-gray-900 mb-1">{theme.name}</h3>
+                    <p className="text-xs text-gray-600">{theme.description}</p>
                   </div>
                 </button>
               ))}
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Layout Düzeni */}
-          <div className="bg-gray-50 rounded-xl border border-gray-200 p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-5">Profil Düzeni</h2>
-            <div className="grid md:grid-cols-3 gap-4">
-              <button
-                onClick={() => setLayoutStyle('icons-only')}
-                className={`p-5 rounded-lg border-2 transition text-center ${
-                  layoutStyle === 'icons-only'
-                    ? 'border-black bg-white shadow-md'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
-                }`}
-              >
-                <div className="text-3xl mb-3">🔷</div>
-                <h3 className="font-bold text-gray-900 mb-1">Sadece İkonlar</h3>
-                <p className="text-xs text-gray-600">Minimalist görünüm</p>
-              </button>
-
-              <button
-                onClick={() => setLayoutStyle('icons-with-title')}
-                className={`p-5 rounded-lg border-2 transition text-center ${
-                  layoutStyle === 'icons-with-title'
-                    ? 'border-black bg-white shadow-md'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
-                }`}
-              >
-                <div className="text-3xl mb-3">📋</div>
-                <h3 className="font-bold text-gray-900 mb-1">İkon + Başlık</h3>
-                <p className="text-xs text-gray-600">Dengeli görünüm</p>
-              </button>
-
-              <button
-                onClick={() => setLayoutStyle('full-description')}
-                className={`p-5 rounded-lg border-2 transition text-center ${
-                  layoutStyle === 'full-description'
-                    ? 'border-black bg-white shadow-md'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
-                }`}
-              >
-                <div className="text-3xl mb-3">📝</div>
-                <h3 className="font-bold text-gray-900 mb-1">Tam Açıklama</h3>
-                <p className="text-xs text-gray-600">Detaylı görünüm</p>
-              </button>
-            </div>
-          </div>
-
-          {/* Seçili Tema Renk Paleti */}
-          <div className="bg-gray-50 rounded-xl border border-gray-200 p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-5">Seçili Tema Renk Paleti</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <div 
-                  className="w-full h-16 rounded-lg mb-2"
-                  style={{ backgroundColor: selectedTheme.backgroundColor }}
-                />
-                <p className="text-xs font-medium text-gray-700 mb-1">Sayfa Arka Plan</p>
-                <p className="text-xs text-gray-500 font-mono">{selectedTheme.backgroundColor}</p>
-              </div>
-              <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <div 
-                  className="w-full h-16 rounded-lg mb-2 border-2 border-gray-300"
-                  style={{ backgroundColor: selectedTheme.containerBackgroundColor }}
-                />
-                <p className="text-xs font-medium text-gray-700 mb-1">Container</p>
-                <p className="text-xs text-gray-500 font-mono">{selectedTheme.containerBackgroundColor}</p>
-              </div>
-              <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <div 
-                  className="w-full h-16 rounded-lg mb-2"
-                  style={{ backgroundColor: selectedTheme.primaryColor }}
-                />
-                <p className="text-xs font-medium text-gray-700 mb-1">Ana Renk</p>
-                <p className="text-xs text-gray-500 font-mono">{selectedTheme.primaryColor}</p>
-              </div>
-              <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <div 
-                  className="w-full h-16 rounded-lg mb-2 border-2 border-gray-300"
-                  style={{ backgroundColor: selectedTheme.textColor }}
-                />
-                <p className="text-xs font-medium text-gray-700 mb-1">Yazı Rengi</p>
-                <p className="text-xs text-gray-500 font-mono">{selectedTheme.textColor}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Layout Ayarları */}
-          <div className="bg-gray-50 rounded-xl border border-gray-200 p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-5">Görünüm Ayarları</h2>
-            
-            <div className="space-y-6">
-              {/* Grid Sütun Sayısı */}
+      {/* Tema Önizleme Modal */}
+      {showModal && selectedTheme && previewCard && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  İkon Grid Sütun Sayısı
-                </label>
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => setGridCols(3)}
-                    className={`flex-1 p-4 rounded-lg border-2 transition text-center ${
-                      gridCols === 3
-                        ? 'border-black bg-white shadow-md'
-                        : 'border-gray-200 bg-white hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="text-2xl mb-2">3 Sütun</div>
-                    <p className="text-xs text-gray-600">Mobil için ideal</p>
-                  </button>
-                  <button
-                    onClick={() => setGridCols(4)}
-                    className={`flex-1 p-4 rounded-lg border-2 transition text-center ${
-                      gridCols === 4
-                        ? 'border-black bg-white shadow-md'
-                        : 'border-gray-200 bg-white hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="text-2xl mb-2">4 Sütun</div>
-                    <p className="text-xs text-gray-600">Desktop için ideal</p>
-                  </button>
+                <h2 className="text-2xl font-bold text-gray-900">{selectedTheme.name}</h2>
+                <p className="text-sm text-gray-600 mt-1">{selectedTheme.description}</p>
+              </div>
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition"
+              >
+                <X size={24} className="text-gray-600" />
+              </button>
+            </div>
+
+            {/* Modal Content - Önizleme */}
+            <div className="flex-1 overflow-y-auto p-6" style={{ backgroundColor: selectedTheme.backgroundColor }}>
+              <div className="max-w-md mx-auto">
+                {/* Avatar - Above position */}
+                {previewCard.profileImage && selectedTheme.avatarPosition === 'above' && (
+                  <div className="flex justify-center mb-[-60px] relative z-10">
+                    <div 
+                      className="relative overflow-hidden shadow-xl rounded-full border-2"
+                      style={{
+                        width: '128px',
+                        height: '128px',
+                        borderColor: selectedTheme.containerBackgroundColor,
+                      }}
+                    >
+                      <Image
+                        src={previewCard.profileImage}
+                        alt={previewCard.fullName || 'Profile'}
+                        width={128}
+                        height={128}
+                        unoptimized
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Önizleme Kartı */}
+                <div 
+                  className="w-full overflow-hidden shadow-2xl"
+                  style={{ 
+                    backgroundColor: selectedTheme.containerBackgroundColor,
+                    borderRadius: '24px',
+                  }}
+                >
+                  {/* Kapak Resmi */}
+                  {selectedTheme.hasCover && previewCard.coverUrl && (
+                    <div 
+                      className="w-full relative overflow-hidden"
+                      style={{ height: `${selectedTheme.coverHeight || 200}px` }}
+                    >
+                      <Image
+                        src={previewCard.coverUrl}
+                        alt="Cover"
+                        fill
+                        unoptimized
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+
+                  {/* Avatar Section - Cover positions */}
+                  {selectedTheme.hasCover && (selectedTheme.avatarPosition === 'cover-left' || selectedTheme.avatarPosition === 'cover-center' || selectedTheme.avatarPosition === 'cover-right') && previewCard.profileImage ? (
+                    <>
+                      {selectedTheme.avatarPosition === 'cover-center' && (
+                        <div className="relative px-6 -mt-16 mb-2">
+                          <div className="flex justify-center">
+                            <div 
+                              className="relative overflow-hidden shadow-xl rounded-full border-2"
+                              style={{
+                                width: '128px',
+                                height: '128px',
+                                borderColor: selectedTheme.containerBackgroundColor,
+                              }}
+                            >
+                              <Image
+                                src={previewCard.profileImage}
+                                alt={previewCard.fullName || 'Profile'}
+                                width={128}
+                                height={128}
+                                unoptimized
+                                className="object-cover w-full h-full"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="relative pt-4">
+                        {(selectedTheme.avatarPosition === 'cover-right' || selectedTheme.avatarPosition === 'cover-left') && (
+                          <div 
+                            className={`absolute top-0 ${selectedTheme.avatarPosition === 'cover-right' ? 'right-6' : 'left-6'}`}
+                            style={{ marginTop: '-64px' }}
+                          >
+                            <div 
+                              className="relative overflow-hidden shadow-xl rounded-full border-2"
+                              style={{
+                                width: '128px',
+                                height: '128px',
+                                borderColor: selectedTheme.containerBackgroundColor,
+                              }}
+                            >
+                              <Image
+                                src={previewCard.profileImage}
+                                alt={previewCard.fullName || 'Profile'}
+                                width={128}
+                                height={128}
+                                unoptimized
+                                className="object-cover w-full h-full"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* User Info */}
+                        <div 
+                          className={`px-6 ${selectedTheme.avatarPosition === 'cover-center' ? 'text-center' : selectedTheme.avatarPosition === 'cover-left' ? 'text-left pl-40' : 'text-left pr-40'}`}
+                        >
+                          <h1 
+                            className="text-2xl font-bold mb-1" 
+                            style={{ color: selectedTheme.textColor }}
+                          >
+                            {previewCard.fullName || previewCard.username}
+                          </h1>
+                          {previewCard.username && (
+                            <p 
+                              className="text-sm opacity-60 mb-2" 
+                              style={{ color: selectedTheme.textColor }}
+                            >
+                              @{previewCard.username}
+                            </p>
+                          )}
+                          {previewCard.title && (
+                            <p 
+                              className="text-sm font-medium mb-1" 
+                              style={{ color: selectedTheme.textColor }}
+                            >
+                              {previewCard.title}
+                            </p>
+                          )}
+                          {previewCard.bio && (
+                            <p 
+                              className="text-sm opacity-75 mt-3 mb-4" 
+                              style={{ color: selectedTheme.textColor }}
+                            >
+                              {previewCard.bio}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    /* Normal Avatar Positions */
+                    <div className={`relative ${selectedTheme.avatarPosition === 'above' ? 'pt-20' : selectedTheme.avatarPosition === 'top' ? 'pt-8' : 'py-12'} px-6 text-center`}>
+                      {previewCard.profileImage && selectedTheme.avatarPosition !== 'above' && (
+                        <div className="mb-4 flex justify-center">
+                          <div 
+                            className="relative overflow-hidden shadow-lg rounded-full border-2"
+                            style={{
+                              width: '128px',
+                              height: '128px',
+                              borderColor: selectedTheme.containerBackgroundColor,
+                            }}
+                          >
+                            <Image
+                              src={previewCard.profileImage}
+                              alt={previewCard.fullName || 'Profile'}
+                              width={128}
+                              height={128}
+                              unoptimized
+                              className="object-cover w-full h-full"
+                            />
+                          </div>
+                        </div>
+                      )}
+                      
+                      <h1 
+                        className="text-2xl font-bold mb-1" 
+                        style={{ color: selectedTheme.textColor }}
+                      >
+                        {previewCard.fullName || previewCard.username}
+                      </h1>
+                      {previewCard.username && (
+                        <p 
+                          className="text-sm opacity-60 mb-2" 
+                          style={{ color: selectedTheme.textColor }}
+                        >
+                          @{previewCard.username}
+                        </p>
+                      )}
+                      {previewCard.title && (
+                        <p 
+                          className="text-sm font-medium mb-1" 
+                          style={{ color: selectedTheme.textColor }}
+                        >
+                          {previewCard.title}
+                        </p>
+                      )}
+                      {previewCard.bio && (
+                        <p 
+                          className="text-sm opacity-75 mt-3 mb-4" 
+                          style={{ color: selectedTheme.textColor }}
+                        >
+                          {previewCard.bio}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Contact Info */}
+                  {(previewCard.email || previewCard.phone || previewCard.website) && (
+                    <div className="px-6 pb-4 space-y-2">
+                      {previewCard.phone && (
+                        <div className="flex items-center gap-3 p-2 rounded-xl" style={{ backgroundColor: `${selectedTheme.textColor}08` }}>
+                          <Phone size={16} style={{ color: selectedTheme.textColor, opacity: 0.7 }} />
+                          <p className="text-xs font-medium" style={{ color: selectedTheme.textColor }}>{previewCard.phone}</p>
+                        </div>
+                      )}
+                      {previewCard.email && (
+                        <div className="flex items-center gap-3 p-2 rounded-xl" style={{ backgroundColor: `${selectedTheme.textColor}08` }}>
+                          <Mail size={16} style={{ color: selectedTheme.textColor, opacity: 0.7 }} />
+                          <p className="text-xs font-medium" style={{ color: selectedTheme.textColor }}>{previewCard.email}</p>
+                        </div>
+                      )}
+                      {previewCard.website && (
+                        <div className="flex items-center gap-3 p-2 rounded-xl" style={{ backgroundColor: `${selectedTheme.textColor}08` }}>
+                          <Globe size={16} style={{ color: selectedTheme.textColor, opacity: 0.7 }} />
+                          <p className="text-xs font-medium" style={{ color: selectedTheme.textColor }}>{previewCard.website}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Social Links Preview */}
+                  {previewSocialLinks.length > 0 && (
+                    <div className="px-6 pb-6">
+                      {selectedTheme.layoutStyle === 'full-width-buttons' ? (
+                        <div className="space-y-2">
+                          {previewSocialLinks.slice(0, 3).map((link, idx) => {
+                            const Icon = link.icon;
+                            return (
+                              <div
+                                key={idx}
+                                className="flex items-center gap-3 w-full p-3 rounded-full"
+                                style={{ backgroundColor: selectedTheme.primaryColor }}
+                              >
+                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                                  <Icon size={14} className="text-white" />
+                                </div>
+                                <span 
+                                  className="flex-1 text-sm font-semibold capitalize text-white" 
+                                >
+                                  {link.platform}
+                                </span>
+                                <MoreVertical size={14} className="text-white opacity-70" />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div 
+                          className="grid gap-2"
+                          style={{ gridTemplateColumns: `repeat(${selectedTheme.gridCols}, minmax(0, 1fr))` }}
+                        >
+                          {previewSocialLinks.slice(0, selectedTheme.gridCols * 2).map((link, idx) => {
+                            const Icon = link.icon;
+                            return (
+                              <div
+                                key={idx}
+                                className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-lg"
+                                style={{ backgroundColor: selectedTheme.secondaryColor }}
+                              >
+                                <Icon 
+                                  size={20} 
+                                  style={{ color: selectedTheme.primaryColor }} 
+                                />
+                                {selectedTheme.layoutStyle === 'icons-with-title' && (
+                                  <span 
+                                    className="text-xs font-medium capitalize"
+                                    style={{ color: selectedTheme.textColor }}
+                                  >
+                                    {link.platform}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {/* Profil Resmi Pozisyonu */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Profil Resmi Pozisyonu
-                </label>
-                <div className="grid grid-cols-3 gap-4">
-                  <button
-                    onClick={() => setAvatarPosition('top')}
-                    className={`p-4 rounded-lg border-2 transition text-center ${
-                      avatarPosition === 'top'
-                        ? 'border-black bg-white shadow-md'
-                        : 'border-gray-200 bg-white hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="text-2xl mb-2">⬆️</div>
-                    <p className="text-xs font-medium text-gray-900">Üst</p>
-                  </button>
-                  <button
-                    onClick={() => setAvatarPosition('center')}
-                    className={`p-4 rounded-lg border-2 transition text-center ${
-                      avatarPosition === 'center'
-                        ? 'border-black bg-white shadow-md'
-                        : 'border-gray-200 bg-white hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="text-2xl mb-2">⏹️</div>
-                    <p className="text-xs font-medium text-gray-900">Ortada</p>
-                  </button>
-                  <button
-                    onClick={() => setAvatarPosition('above')}
-                    className={`p-4 rounded-lg border-2 transition text-center ${
-                      avatarPosition === 'above'
-                        ? 'border-black bg-white shadow-md'
-                        : 'border-gray-200 bg-white hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="text-2xl mb-2">🔝</div>
-                    <p className="text-xs font-medium text-gray-900">Üstte Taşan</p>
-                  </button>
-                </div>
-              </div>
             </div>
-          </div>
 
-          {/* Kaydet Butonu */}
-          <div className="sticky bottom-0 bg-white border-t border-gray-200 py-4">
-            <div className="flex justify-end gap-4">
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-gray-200 flex justify-end gap-4">
               <button
-                onClick={() => router.push(`/${currentCard.username}`)}
+                onClick={() => setShowModal(false)}
                 className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium"
               >
-                Önizle
+                İptal
               </button>
               <button
-                onClick={handleSave}
+                onClick={handleApplyTheme}
                 className="flex items-center gap-2 px-8 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition font-medium"
               >
                 <Save size={20} />
-                Kaydet
+                Temayı Uygula
               </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Logout Modal */}
       {showLogoutModal && (

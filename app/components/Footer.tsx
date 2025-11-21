@@ -35,6 +35,7 @@ export default function Footer() {
             <h4 className="text-lg font-semibold mb-4 text-black">Şirket</h4>
             <ul className="space-y-2">
               <li><Link href="/hakkimizda" className="text-gray-600 hover:text-black transition text-sm">Hakkımızda</Link></li>
+              <li><Link href="/surdurulebilirlik" className="text-gray-600 hover:text-black transition text-sm">Sürdürülebilirlik</Link></li>
               <li><Link href="/iletisim" className="text-gray-600 hover:text-black transition text-sm">İletişim</Link></li>
             </ul>
           </div>

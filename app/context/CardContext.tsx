@@ -5,7 +5,7 @@ import { cardDb } from '../../lib/supabase-cards';
 
 // NFC Kart Profil Interface
 export interface CardProfile {
-  accentColor: string;
+  accentColor?: string;
   id: string; // Benzersiz hash (örn: dwferwqferver)
   username: string; // Kullanıcı adı (örn: fazilcanakbas)
   
@@ -111,7 +111,7 @@ export interface CardProfile {
   
   // Profil Görünümü
   theme: 'dark' | 'light' | 'gradient' | 'minimal' | 'lawyer' | 'ceo' | 'sales' | 'developer' | 'retail' | 'creative' | 'designer' | 'tech' | 'medical' | 'educator' | 'realestate' | 'marketing' | 'consultant' | 'artist' | 'fitness' | 'photographer' | 'writer' | 'chef' | 'ocean' | 'forest' | 'sunset' | 'neon' | 'royal' | 'mint' | 'lavender' | 'midnight';
-  layoutStyle: 'icons-only' | 'icons-with-title' | 'full-description';
+  layoutStyle: 'icons-only' | 'icons-with-title' | 'full-description' | 'full-width-buttons';
   avatarUrl: string;
   coverUrl: string;
   primaryColor: string;
@@ -120,11 +120,38 @@ export interface CardProfile {
   customLinks: Array<{ id: string; title: string; url: string; icon?: string; description?: string }>;
   
   // Gelişmiş Görünüm Ayarları
-  backgroundColor?: string; // Sayfa arka plan rengi
-  containerBackgroundColor?: string; // Container arka plan rengi
-  textColor?: string; // Yazı rengi
-  gridCols?: number; // İkon grid sütun sayısı (3 veya 4)
-  avatarPosition?: 'top' | 'center' | 'above' | 'cover-left' | 'cover-center' | 'cover-right'; // Profil resmi pozisyonu
+  backgroundColor?: string;
+  containerBackgroundColor?: string;
+  textColor?: string;
+  gridCols?: number;
+  avatarPosition?: 'top' | 'center' | 'above' | 'cover-left' | 'cover-center' | 'cover-right';
+  avatarShape?: string;
+  avatarSize?: string;
+  avatarBorderWidth?: string;
+  avatarBorderColor?: string;
+  avatarVerticalOffset?: string;
+  coverHeight?: string;
+  logoUrl?: string;
+  logoSize?: string;
+  containerBorderRadius?: string;
+  containerShadow?: string;
+  iconSize?: string;
+  iconColor?: string;
+  iconSpacing?: string;
+  iconBorderRadius?: string;
+  iconBackground?: string;
+  fontFamily?: string;
+  headingFontSize?: string;
+  bodyFontSize?: string;
+  buttonFontSize?: string;
+  headingWeight?: string;
+  lineHeight?: string;
+  letterSpacing?: string;
+  backgroundType?: string;
+  backgroundGradient?: string;
+  backgroundImage?: string;
+  buttonBackgroundColor?: string;
+  buttonBorderRadius?: string;
   
   // Platform Açıklamaları
   platformDescriptions: {

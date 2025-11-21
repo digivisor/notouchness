@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useCard } from '../../context/CardContext';
 import Image from 'next/image';
 import { X, FileText, ShieldCheck } from 'lucide-react';
@@ -362,7 +362,7 @@ function CardRegisterContent() {
                   kısa süreli erişim sorunları yaşanabileceğini kabul etmiş olursun.
                 </p>
                 <p>
-                  Notouchness, <a href="/hakkimizda" className="text-black font-semibold hover:underline">hakkımızda </a>
+                  Notouchness, <Link href="/hakkimizda" className="text-black font-semibold hover:underline">hakkımızda </Link>
                   sayfasında paylaştığı misyon ve değerler doğrultusunda hizmet verir ve bu koşullara uyum sağlaman beklenir.
                 </p>
               </div>
@@ -382,7 +382,7 @@ function CardRegisterContent() {
                   yükümlülükler nedeniyle bazı veriler belirli süre saklanabilir; bu süreçler ilgili mevzuata uygundur.
                 </p>
                 <p>
-                  Daha detaylı bilgi için <a href="/gizlilik-sozlesmesi" className="text-black font-semibold hover:underline">Gizlilik Sözleşmesi </a>
+                  Daha detaylı bilgi için <Link href="/gizlilik-sozlesmesi" className="text-black font-semibold hover:underline">Gizlilik Sözleşmesi </Link>
                   sayfamızı ziyaret edebilirsin. Hizmeti kullanmaya devam ederek bu politikayı kabul etmiş sayılırsın.
                 </p>
               </div>

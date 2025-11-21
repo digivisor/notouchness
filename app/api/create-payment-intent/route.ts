@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // app/api/create-payment-intent/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';

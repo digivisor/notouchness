@@ -39,6 +39,7 @@ export default function StorePage() {
   const [realMaxPrice, setRealMaxPrice] = useState(1499);
   const [sortBy, setSortBy] = useState('recommended');
   const [isLoading, setIsLoading] = useState(true);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   const openCart = () => {
     setIsCartVisible(true);
@@ -207,10 +208,50 @@ export default function StorePage() {
       </div>
 
       {/* Main Content with Sidebar */}
-      <div className="flex">
-        {/* Left Sidebar - Filters (Full Height, Sticky) */}
-        <div className="w-80 shrink-0 bg-white border-r border-gray-200 min-h-screen sticky top-20 overflow-y-auto">
-          <div className="p-6 space-y-6">
+      <div className="flex flex-col lg:flex-row">
+        
+        {/* Mobile Filter Button */}
+        <div className="lg:hidden px-4 py-4 border-b border-gray-200 flex items-center justify-between sticky top-16 bg-white z-30">
+          <button 
+            onClick={() => setIsMobileFiltersOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg text-sm font-medium text-gray-900"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" x2="4" y1="21" y2="14"/>
+              <line x1="4" x2="4" y1="10" y2="3"/>
+              <line x1="12" x2="12" y1="21" y2="12"/>
+              <line x1="12" x2="12" y1="8" y2="3"/>
+              <line x1="20" x2="20" y1="21" y2="16"/>
+              <line x1="20" x2="20" y1="12" y2="3"/>
+              <line x1="1" x2="7" y1="14" y2="14"/>
+              <line x1="9" x2="15" y1="8" y2="8"/>
+              <line x1="17" x2="23" y1="16" y2="16"/>
+            </svg>
+            Filtrele
+          </button>
+          <span className="text-sm text-gray-500">{sortedProducts.length} ürün</span>
+        </div>
+
+        {/* Sidebar - Filters */}
+        <div className={`
+          fixed inset-0 z-50 bg-white lg:static lg:z-auto lg:w-80 lg:shrink-0 lg:border-r lg:border-gray-200 lg:min-h-screen lg:sticky lg:top-20 lg:block
+          ${isMobileFiltersOpen ? 'block' : 'hidden'}
+        `}>
+          {/* Mobile Filter Header */}
+          <div className="lg:hidden flex items-center justify-between p-4 border-b border-gray-200">
+            <h2 className="text-lg font-bold text-gray-900">Filtreler</h2>
+            <button 
+              onClick={() => setIsMobileFiltersOpen(false)}
+              className="p-2 hover:bg-gray-100 rounded-full"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6 6 18"/>
+                <path d="m6 6 12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <div className="p-6 space-y-6 h-full overflow-y-auto pb-24 lg:pb-6">
             <div className="border-b border-gray-200 pb-6">
               {/* Categories */}
               <div className="mb-6">
@@ -298,16 +339,16 @@ export default function StorePage() {
         {/* Right Content - Products */}
         <div className="flex-1">
             {/* Product Count & Sort */}
-            <div className="mb-8 px-8 py-6 flex items-center justify-between">
-              <p className="text-gray-600">
+            <div className="mb-8 px-4 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-gray-600 hidden lg:block">
                 <span className="font-semibold text-gray-900">{sortedProducts.length}</span> ürün gösteriliyor
               </p>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Sıralama:</span>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <span className="text-sm text-gray-600 whitespace-nowrap">Sıralama:</span>
                 <select 
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-900 bg-white text-sm text-gray-900"
+                  className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-900 bg-white text-sm text-gray-900"
                 >
                   <option value="recommended" className="text-gray-900">Önerilen</option>
                   <option value="price-asc" className="text-gray-900">Fiyat: Düşükten Yükseğe</option>
@@ -321,7 +362,7 @@ export default function StorePage() {
             
             {isLoading ? (
               // Skeleton Loader - Ürünler yüklenene kadar göster
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 lg:px-8">
                 {[...Array(6)].map((_, idx) => (
                   <div key={idx} className="bg-gray-50 flex flex-col animate-pulse">
                     {/* Image Skeleton */}
@@ -377,7 +418,7 @@ export default function StorePage() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 lg:px-8 pb-12">
                 {sortedProducts.map((product) => (
                   <button
                     key={product.id}

@@ -58,6 +58,7 @@ export default function Header({ onCartClick }: HeaderProps) {
             </Link>
             <Link href="/hakkimizda" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Hakkımızda</Link>
             <Link href="/store" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Mağaza</Link>
+            <Link href="/surdurulebilirlik" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">Sürdürülebilirlik</Link>
             <Link href="/iletisim" className="text-white/70 hover:text-white transition text-sm font-light tracking-wide">İletişim</Link>
           </div>
           
@@ -157,6 +158,13 @@ export default function Header({ onCartClick }: HeaderProps) {
                   className="text-white hover:bg-white/5 transition px-6 py-4 border-b border-white/5"
                 >
                   Mağaza
+                </Link>
+                <Link 
+                  href="/surdurulebilirlik" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-white hover:bg-white/5 transition px-6 py-4 border-b border-white/5"
+                >
+                  Sürdürülebilirlik
                 </Link>
                 <Link 
                   href="/iletisim" 

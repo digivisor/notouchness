@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Wifi } from 'lucide-react';
 import About from './components/About';
 import Products from './components/Products';
 import HowItWorks from './components/HowItWorks';
@@ -45,14 +46,15 @@ export default function Home() {
         <div className="absolute top-1/4 right-1/4 w-72 h-72 bg-gradient-to-br from-white/10 to-transparent blur-2xl"></div>
         <div className="absolute bottom-1/4 right-1/3 w-56 h-56 bg-white/8 blur-xl rotate-45"></div>
       </div>
-      <section className="relative min-h-screen flex items-center justify-center px-6 pt-24 sm:pt-28 pb-12 sm:pb-16 lg:pt-0 lg:pb-0" style="background-image: url(&quot;https://i.hizliresim.com/cx8uhmq.png&quot;);">
+      <section className="relative min-h-screen flex items-center justify-center px-6 pt-24 sm:pt-28 pb-12 sm:pb-16 lg:pt-0 lg:pb-0" style={{ backgroundImage: 'url("https://i.hizliresim.com/cx8uhmq.png")' }}>
         <div className="max-w-7xl mx-auto w-full">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Left Content - Text */}
             <div className="text-center lg:text-left space-y-8">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white leading-tight">
                 Profesyonel kimliğin notouchness ile{' '}
-                <span className="inline-block px-4 py-1 rounded-full text-white" style={{ backgroundColor: '#4BA3A2' }}>
+                <br />
+                <span className="inline-block px-6 py-2 mt-2 rounded-xl text-white font-normal" style={{ backgroundColor: '#00a0c6' }}>
                   artık dijital.
                 </span>
               </h1>
@@ -62,14 +64,14 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
                 <Link 
                   href="/store"
-                  className="text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-medium transition hover:opacity-90 text-sm sm:text-base text-center"
-                  style={{ backgroundColor: '#4BA3A2' }}
+                  className="text-white px-8 py-3 rounded-xl font-medium transition hover:opacity-90 text-base text-center shadow-lg"
+                  style={{ backgroundColor: '#00a0c6' }}
                 >
                   Mağaza
                 </Link>
                 <button 
                   onClick={() => setIsCorporateModalOpen(true)}
-                  className="border border-white/30 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-medium hover:bg-white/10 transition text-sm sm:text-base"
+                  className="border border-white/30 text-white px-8 py-3 rounded-xl font-medium hover:bg-white/10 transition text-base uppercase tracking-wider"
                 >
                   KURUMSALA ÖZEL
                 </button>
@@ -98,14 +100,27 @@ export default function Home() {
 
                 {/* NFC Card - Desktop */}
                 <div className="absolute top-1/2 right-0 -translate-y-1/2 translate-x-8 z-20">
-                  <div className="w-72 h-44 bg-gradient-to-br from-gray-800 to-black rounded-2xl shadow-2xl p-6 flex flex-col justify-between transform rotate-12 hover:rotate-6 transition-transform duration-300">
-                    <div className="flex justify-between items-start">
-                      <div className="w-12 h-12 border-2 border-white/20 rounded-lg"></div>
-                    </div>
-                    <div>
-                      <Image src="/notouchness3.png" alt="Logo" width={180} height={90} />
-                     
-                    </div>
+                  <div className="w-72 h-44 bg-gradient-to-br from-[#001f3f] via-[#003366] to-[#000000] rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.6)] border border-white/10 flex flex-col justify-between p-6 overflow-hidden transform rotate-12 hover:rotate-6 transition-transform duration-300">
+                      {/* Shine Effect */}
+                      <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-cyan-400/10 to-white/0 w-[200%]"></div>
+                      
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/20 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                      
+                      <div className="flex justify-between items-start">
+                        <div></div>
+                        <div className="flex items-center gap-1 text-white/80">
+                            <span className="text-[10px] font-medium tracking-widest">NFC</span>
+                            <Wifi className="rotate-90 w-5 h-5" />
+                        </div>
+                      </div>
+                      
+                      <div className="text-center z-10 flex justify-center items-center">
+                        <Image src="/notouchness3.png" alt="notouchness" width={180} height={60} className="object-contain" />
+                      </div>
+                      
+                      <div className="text-center z-10">
+                        <p className="text-[10px] text-gray-400 tracking-wider">www.notouchness.com</p>
+                      </div>
                   </div>
                 </div>
               </div>
@@ -134,13 +149,27 @@ export default function Home() {
 
                 {/* NFC Card - Mobile */}
                 <div className="absolute top-1/2 right-0 -translate-y-1/2 translate-x-4 z-20">
-                  <div className="w-48 h-32 bg-gradient-to-br from-gray-800 to-black rounded-xl shadow-xl p-4 flex flex-col justify-between transform rotate-12">
-                    <div className="flex justify-between items-start">
-                      <div className="w-8 h-8 border-2 border-white/20 rounded-lg"></div>
-                    </div>
-                    <div>
-                      <Image src="/notouchness3.png" alt="Logo" width={120} height={60} />
-                    </div>
+                  <div className="w-48 h-32 bg-gradient-to-br from-[#001f3f] via-[#003366] to-[#000000] rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.6)] border border-white/10 flex flex-col justify-between p-3 overflow-hidden transform rotate-12">
+                      {/* Shine Effect */}
+                      <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-cyan-400/10 to-white/0 w-[200%]"></div>
+                      
+                      <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-500/20 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                      
+                      <div className="flex justify-between items-start">
+                        <div></div>
+                        <div className="flex items-center gap-1 text-white/80">
+                            <span className="text-[8px] font-medium tracking-widest">NFC</span>
+                            <Wifi className="rotate-90 w-3 h-3" />
+                        </div>
+                      </div>
+                      
+                      <div className="text-center z-10 flex justify-center items-center">
+                        <Image src="/notouchness3.png" alt="notouchness" width={120} height={40} className="object-contain" />
+                      </div>
+                      
+                      <div className="text-center z-10">
+                        <p className="text-[8px] text-gray-400 tracking-wider">www.notouchness.com</p>
+                      </div>
                   </div>
                 </div>
               </div>

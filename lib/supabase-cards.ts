@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from './supabase';
 import { CardProfile } from '../app/context/CardContext';
 
@@ -128,7 +129,10 @@ const cardToDbFormat = (card: CardProfile): DbCard => {
     avatar_size: (card as any).avatarSize || null,
     avatar_border_width: (card as any).avatarBorderWidth || null,
     avatar_border_color: (card as any).avatarBorderColor || null,
+    avatar_vertical_offset: (card as any).avatarVerticalOffset || null,
     cover_height: (card as any).coverHeight || null,
+    logo_url: (card as any).logoUrl || null,
+    logo_size: (card as any).logoSize || null,
     container_border_radius: (card as any).containerBorderRadius || null,
     container_shadow: (card as any).containerShadow || null,
     icon_size: (card as any).iconSize || null,
@@ -139,12 +143,15 @@ const cardToDbFormat = (card: CardProfile): DbCard => {
     font_family: (card as any).fontFamily || null,
     heading_font_size: (card as any).headingFontSize || null,
     body_font_size: (card as any).bodyFontSize || null,
+    button_font_size: (card as any).buttonFontSize || null,
     heading_weight: (card as any).headingWeight || null,
     line_height: (card as any).lineHeight || null,
     letter_spacing: (card as any).letterSpacing || null,
     background_type: (card as any).backgroundType || null,
     background_gradient: (card as any).backgroundGradient || null,
     background_image: (card as any).backgroundImage || null,
+    button_background_color: (card as any).buttonBackgroundColor || null,
+    button_border_radius: (card as any).buttonBorderRadius || null,
     
     // Meta
     owner_email: card.ownerEmail || null,
@@ -285,7 +292,10 @@ const dbToCardFormat = (row: DbCard): CardProfile => {
     avatarSize: row.avatar_size ? String(row.avatar_size) : undefined,
     avatarBorderWidth: row.avatar_border_width ? String(row.avatar_border_width) : undefined,
     avatarBorderColor: row.avatar_border_color ? String(row.avatar_border_color) : undefined,
+    avatarVerticalOffset: row.avatar_vertical_offset ? String(row.avatar_vertical_offset) : undefined,
     coverHeight: row.cover_height ? String(row.cover_height) : undefined,
+    logoUrl: row.logo_url ? String(row.logo_url) : undefined,
+    logoSize: row.logo_size ? String(row.logo_size) : undefined,
     containerBorderRadius: row.container_border_radius ? String(row.container_border_radius) : undefined,
     containerShadow: row.container_shadow ? String(row.container_shadow) : undefined,
     iconSize: row.icon_size ? String(row.icon_size) : undefined,
@@ -296,12 +306,15 @@ const dbToCardFormat = (row: DbCard): CardProfile => {
     fontFamily: row.font_family ? String(row.font_family) : undefined,
     headingFontSize: row.heading_font_size ? String(row.heading_font_size) : undefined,
     bodyFontSize: row.body_font_size ? String(row.body_font_size) : undefined,
+    buttonFontSize: row.button_font_size ? String(row.button_font_size) : undefined,
     headingWeight: row.heading_weight ? String(row.heading_weight) : undefined,
     lineHeight: row.line_height ? String(row.line_height) : undefined,
     letterSpacing: row.letter_spacing ? String(row.letter_spacing) : undefined,
     backgroundType: row.background_type ? String(row.background_type) : undefined,
     backgroundGradient: row.background_gradient ? String(row.background_gradient) : undefined,
     backgroundImage: row.background_image ? String(row.background_image) : undefined,
+    buttonBackgroundColor: row.button_background_color ? String(row.button_background_color) : undefined,
+    buttonBorderRadius: row.button_border_radius ? String(row.button_border_radius) : undefined,
     
     // Meta
     ownerEmail: String(row.owner_email || ''),

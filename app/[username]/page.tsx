@@ -1,6 +1,6 @@
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { cardDb } from '@/lib/supabase-cards';
 import Image from 'next/image';
@@ -9,6 +9,7 @@ import {
   Instagram, Linkedin, Twitter, Facebook, Youtube,
   MessageCircle, Send, Github, Link2,
   Music, Video,
+  MoreVertical,
   type LucideIcon
 } from 'lucide-react';
 import type { CardProfile } from '@/app/context/CardContext';
@@ -70,6 +71,7 @@ export default function UserProfilePage() {
   const avatarSize = (card as any).avatarSize || '128';
   const avatarBorderWidth = (card as any).avatarBorderWidth || '4';
   const avatarBorderColor = (card as any).avatarBorderColor || '#ffffff';
+  const avatarVerticalOffset = (card as any).avatarVerticalOffset || '50';
   const coverUrl = card.coverUrl || '';
   const coverHeight = (card as any).coverHeight || '200';
   const containerBorderRadius = (card as any).containerBorderRadius || '24';
@@ -79,12 +81,15 @@ export default function UserProfilePage() {
   const iconSpacing = (card as any).iconSpacing || '12';
   const iconBorderRadius = (card as any).iconBorderRadius || '12';
   const iconBackground = (card as any).iconBackground || 'transparent';
-  const fontFamily = (card as any).fontFamily || 'Inter';
+  const fontFamily = (card as any).fontFamily || 'Poppins';
   const headingFontSize = (card as any).headingFontSize || '2rem';
   const bodyFontSize = (card as any).bodyFontSize || '1rem';
   const headingWeight = (card as any).headingWeight || '700';
   const lineHeight = (card as any).lineHeight || '1.5';
   const letterSpacing = (card as any).letterSpacing || '0';
+  const logoUrl = (card as any).logoUrl || '';
+  const logoSize = (card as any).logoSize || '80';
+  
 
 
 
@@ -107,6 +112,11 @@ export default function UserProfilePage() {
     };
     return icons[platform.toLowerCase()] || Link2;
   };
+
+  // Buton arka plan rengi, font boyutu ve border radius
+  const buttonBackgroundColor = (card as any).buttonBackgroundColor || '#000000';
+  const buttonFontSize = (card as any).buttonFontSize || '0.95rem';
+  const buttonBorderRadius = (card as any).buttonBorderRadius || '999';
 
   // Collect all social links
   const socialLinks: Array<{ platform: string; url: string; icon: IconType }> = [];
@@ -220,132 +230,265 @@ export default function UserProfilePage() {
           )}
 
           {/* Avatar Section - Kapak resmi varsa ve cover pozisyonları seçiliyse */}
-          {coverUrl && (avatarPos === 'cover-left' || avatarPos === 'cover-center' || avatarPos === 'cover-right') && card.profileImage && (
-            <div 
-              className="relative px-6"
-              style={{ 
-                marginTop: `-${parseInt(avatarSize) / 2}px`,
-                marginBottom: `${parseInt(avatarSize) / 2}px`,
-              }}
-            >
-              <div 
-                className={`flex ${avatarPos === 'cover-left' ? 'justify-start' : avatarPos === 'cover-center' ? 'justify-center' : 'justify-end'}`}
-              >
+          {coverUrl && (avatarPos === 'cover-left' || avatarPos === 'cover-center' || avatarPos === 'cover-right') && card.profileImage ? (
+            <>
+              {/* Avatar - Kapak resminin üzerine çıkabilir - sadece center için */}
+              {avatarPos === 'cover-center' && (
                 <div 
-                  className="relative overflow-hidden shadow-xl"
-                  style={{
-                    width: `${avatarSize}px`,
-                    height: `${avatarSize}px`,
-                    borderRadius: avatarShape === 'round' ? '50%' :
-                                 avatarShape === 'square' ? '0' :
-                                 '16px',
-                    border: `${avatarBorderWidth}px solid ${avatarBorderColor}`,
+                  className="relative px-6"
+                  style={{ 
+                    marginTop: `-${parseInt(avatarSize) * parseInt(avatarVerticalOffset) / 100}px`,
+                    marginBottom: 0,
                   }}
                 >
-                  <Image
-                    src={card.profileImage}
-                    alt={card.fullName || 'Profile'}
-                    width={parseInt(avatarSize)}
-                    height={parseInt(avatarSize)}
-                    unoptimized
-                    className="object-cover w-full h-full"
-                  />
+                  <div className="flex justify-center">
+                    <div 
+                      className="relative overflow-hidden shadow-xl flex-shrink-0"
+                      style={{
+                        width: `${avatarSize}px`,
+                        height: `${avatarSize}px`,
+                        borderRadius: avatarShape === 'round' ? '50%' :
+                                     avatarShape === 'square' ? '0' :
+                                     '16px',
+                        border: `${avatarBorderWidth}px solid ${avatarBorderColor}`,
+                      }}
+                    >
+                      <Image
+                        src={card.profileImage}
+                        alt={card.fullName || 'Profile'}
+                        width={parseInt(avatarSize)}
+                        height={parseInt(avatarSize)}
+                        unoptimized
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* User Info - Kapak resminin altında */}
+              <div 
+                className="relative"
+                style={{ 
+                  paddingTop: '16px',
+                }}
+              >
+                {/* Avatar absolute position - sağda veya solda */}
+                {avatarPos === 'cover-right' && (
+                  <div 
+                    className="absolute top-0 right-6"
+                    style={{
+                      marginTop: `-${parseInt(avatarSize) * parseInt(avatarVerticalOffset) / 100}px`,
+                    }}
+                  >
+                    <div 
+                      className="relative overflow-hidden shadow-xl"
+                      style={{
+                        width: `${avatarSize}px`,
+                        height: `${avatarSize}px`,
+                        borderRadius: avatarShape === 'round' ? '50%' :
+                                     avatarShape === 'square' ? '0' :
+                                     '16px',
+                        border: `${avatarBorderWidth}px solid ${avatarBorderColor}`,
+                      }}
+                    >
+                      <Image
+                        src={card.profileImage}
+                        alt={card.fullName || 'Profile'}
+                        width={parseInt(avatarSize)}
+                        height={parseInt(avatarSize)}
+                        unoptimized
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {avatarPos === 'cover-left' && (
+                  <div 
+                    className="absolute top-0 left-6"
+                    style={{
+                      marginTop: `-${parseInt(avatarSize) * parseInt(avatarVerticalOffset) / 100}px`,
+                    }}
+                  >
+                    <div 
+                      className="relative overflow-hidden shadow-xl"
+                      style={{
+                        width: `${avatarSize}px`,
+                        height: `${avatarSize}px`,
+                        borderRadius: avatarShape === 'round' ? '50%' :
+                                     avatarShape === 'square' ? '0' :
+                                     '16px',
+                        border: `${avatarBorderWidth}px solid ${avatarBorderColor}`,
+                      }}
+                    >
+                      <Image
+                        src={card.profileImage}
+                        alt={card.fullName || 'Profile'}
+                        width={parseInt(avatarSize)}
+                        height={parseInt(avatarSize)}
+                        unoptimized
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* User Info */}
+                <div 
+                  className={`px-6 ${avatarPos === 'cover-center' ? 'text-center' : 'text-left'}`}
+                  style={{
+                    paddingRight: avatarPos === 'cover-right' ? `${parseInt(avatarSize) + 48}px` : undefined,
+                    paddingLeft: avatarPos === 'cover-left' ? `${parseInt(avatarSize) + 48}px` : undefined,
+                  }}
+                >
+                  <h1 
+                    className="text-2xl font-bold mb-1" 
+                    style={{ 
+                      color: textColor,
+                      fontSize: headingFontSize,
+                      fontWeight: headingWeight,
+                      fontFamily: fontFamily,
+                      lineHeight: lineHeight,
+                      letterSpacing: `${letterSpacing}px`,
+                    }}
+                  >
+                    {card.fullName || 'Kullanıcı'}
+                  </h1>
+                  
+                  {card.username && (
+                    <p 
+                      className="text-sm opacity-60 mb-2" 
+                      style={{ 
+                        color: textColor,
+                        fontSize: bodyFontSize,
+                        fontFamily: fontFamily,
+                      }}
+                    >
+                      @{card.username}
+                    </p>
+                  )}
+                  
+                  {card.title && (
+                    <p 
+                      className="text-sm font-medium mb-1" 
+                      style={{ 
+                        color: textColor,
+                        fontSize: bodyFontSize,
+                        fontFamily: fontFamily,
+                      }}
+                    >
+                      {card.title}{card.company && ` - ${card.company}`}
+                    </p>
+                  )}
+                  
+                  {card.bio && (
+                    <p 
+                      className="text-sm opacity-75 mt-3 mb-4" 
+                      style={{ 
+                        color: textColor,
+                        fontSize: bodyFontSize,
+                        fontFamily: fontFamily,
+                        lineHeight: lineHeight,
+                      }}
+                    >
+                      {card.bio}
+                    </p>
+                  )}
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Avatar Section */}
-          <div className={`relative ${
-            coverUrl && (avatarPos === 'cover-left' || avatarPos === 'cover-center' || avatarPos === 'cover-right')
-              ? 'pt-0'
-              : avatarPos === 'above' 
+            </>
+          ) : (
+            /* Avatar Section - Normal pozisyonlar */
+            <div className={`relative ${
+              avatarPos === 'above' 
                 ? (coverUrl ? 'pt-8' : 'pt-20') 
                 : avatarPos === 'top' 
                   ? 'pt-8' 
                   : 'py-12'
-          } px-6 text-center`}>
-            {/* Avatar - Top or Center position (kapak resmi yoksa veya cover pozisyonları değilse) */}
-            {card.profileImage && avatarPos !== 'above' && !(coverUrl && (avatarPos === 'cover-left' || avatarPos === 'cover-center' || avatarPos === 'cover-right')) && (
-              <div className="mb-4 flex justify-center">
-                <div 
-                  className="relative overflow-hidden shadow-lg"
-                  style={{
-                    width: `${avatarSize}px`,
-                    height: `${avatarSize}px`,
-                    borderRadius: avatarShape === 'round' ? '50%' :
-                                 avatarShape === 'square' ? '0' :
-                                 '16px',
-                    border: `${avatarBorderWidth}px solid ${avatarBorderColor}`,
+            } px-6 text-center`}>
+              {/* Avatar - Top or Center position */}
+              {card.profileImage && avatarPos !== 'above' && (
+                <div className="mb-4 flex justify-center">
+                  <div 
+                    className="relative overflow-hidden shadow-lg"
+                    style={{
+                      width: `${avatarSize}px`,
+                      height: `${avatarSize}px`,
+                      borderRadius: avatarShape === 'round' ? '50%' :
+                                   avatarShape === 'square' ? '0' :
+                                   '16px',
+                      border: `${avatarBorderWidth}px solid ${avatarBorderColor}`,
+                    }}
+                  >
+                    <Image
+                      src={card.profileImage}
+                      alt={card.fullName || 'Profile'}
+                      width={parseInt(avatarSize)}
+                      height={parseInt(avatarSize)}
+                      unoptimized
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                </div>
+              )}
+            
+              {/* User Info */}
+              <h1 
+                className="text-2xl font-bold mb-1" 
+                style={{ 
+                  color: textColor,
+                  fontSize: headingFontSize,
+                  fontWeight: headingWeight,
+                  fontFamily: fontFamily,
+                  lineHeight: lineHeight,
+                  letterSpacing: `${letterSpacing}px`,
+                }}
+              >
+                {card.fullName || 'Kullanıcı'}
+              </h1>
+              
+              {card.username && (
+                <p 
+                  className="text-sm opacity-60 mb-2" 
+                  style={{ 
+                    color: textColor,
+                    fontSize: bodyFontSize,
+                    fontFamily: fontFamily,
                   }}
                 >
-                  <Image
-                    src={card.profileImage}
-                    alt={card.fullName || 'Profile'}
-                    width={parseInt(avatarSize)}
-                    height={parseInt(avatarSize)}
-                    unoptimized
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-              </div>
-            )}
-          
-          {/* User Info */}
-          <h1 
-            className="text-2xl font-bold mb-1" 
-            style={{ 
-              color: textColor,
-              fontSize: headingFontSize,
-              fontWeight: headingWeight,
-              fontFamily: fontFamily,
-              lineHeight: lineHeight,
-              letterSpacing: `${letterSpacing}px`,
-            }}
-          >
-            {card.fullName || 'Kullanıcı'}
-          </h1>
-          
-          {card.username && (
-            <p 
-              className="text-sm opacity-60 mb-2" 
-              style={{ 
-                color: textColor,
-                fontSize: bodyFontSize,
-                fontFamily: fontFamily,
-              }}
-            >
-              @{card.username}
-            </p>
+                  @{card.username}
+                </p>
+              )}
+              
+              {card.title && (
+                <p 
+                  className="text-sm font-medium mb-1" 
+                  style={{ 
+                    color: textColor,
+                    fontSize: bodyFontSize,
+                    fontFamily: fontFamily,
+                  }}
+                >
+                  {card.title}{card.company && ` - ${card.company}`}
+                </p>
+              )}
+              
+              {card.bio && (
+                <p 
+                  className="text-sm opacity-75 mt-3 mb-4" 
+                  style={{ 
+                    color: textColor,
+                    fontSize: bodyFontSize,
+                    fontFamily: fontFamily,
+                    lineHeight: lineHeight,
+                  }}
+                >
+                  {card.bio}
+                </p>
+              )}
+            </div>
           )}
-          
-          {card.title && (
-            <p 
-              className="text-sm font-medium mb-1" 
-              style={{ 
-                color: textColor,
-                fontSize: bodyFontSize,
-                fontFamily: fontFamily,
-              }}
-            >
-              {card.title}{card.company && ` - ${card.company}`}
-            </p>
-          )}
-          
-          {card.bio && (
-            <p 
-              className="text-sm opacity-75 mt-3 mb-4" 
-              style={{ 
-                color: textColor,
-                fontSize: bodyFontSize,
-                fontFamily: fontFamily,
-                lineHeight: lineHeight,
-              }}
-            >
-              {card.bio}
-            </p>
-          )}
-        </div>
 
         {/* Contact Info */}
         <div className="px-6 pb-4 space-y-3">
@@ -407,73 +550,144 @@ export default function UserProfilePage() {
         {/* Social Links */}
         {socialLinks.length > 0 && (
           <div className="px-6 pb-6">
-            <div 
-              className="grid"
-              style={{ 
-                gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`,
-                gap: `${iconSpacing}px`,
-              }}
-            >
-              {socialLinks.map((link, idx) => {
-                const Icon = link.icon;
-                const iconBgStyle = iconBackground === 'circle' ? 'rounded-full' :
-                                  iconBackground === 'square' ? 'rounded-none' :
-                                  iconBackground === 'rounded' ? '' :
-                                  '';
-                return (
-                  <a
-                    key={idx}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`flex flex-col items-center justify-center gap-2 p-4 bg-black/5 hover:bg-black/10 transition-all ${
-                      iconBackground !== 'transparent' ? iconBgStyle : ''
-                    }`}
-                    style={{
-                      backgroundColor: iconBackground !== 'transparent' 
-                        ? `${iconColor}15` 
-                        : undefined,
-                      borderRadius: iconBackground === 'rounded' 
-                        ? `${iconBorderRadius}px`
-                        : iconBgStyle === 'rounded-full' 
-                        ? '50%'
-                        : iconBgStyle === 'rounded-none'
-                        ? '0'
-                        : `${iconBorderRadius}px`,
-                    }}
-                  >
-                    <Icon size={parseInt(iconSize)} style={{ color: iconColor || textColor }} />
-                    {card.layoutStyle === 'icons-with-title' && (
+            {card.layoutStyle === 'full-width-buttons' ? (
+              /* Tam Genişlik Buton Layout */
+              <div className="space-y-3">
+                {socialLinks.map((link, idx) => {
+                  const Icon = link.icon;
+                  return (
+                    <a
+                      key={idx}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-4 w-full p-4 shadow-md hover:shadow-lg transition-all group"
+                      style={{
+                        backgroundColor: buttonBackgroundColor,
+                        borderRadius: `${buttonBorderRadius}px`,
+                      }}
+                    >
+                      <div 
+                        className="flex items-center justify-center shrink-0"
+                        style={{
+                          width: `${parseInt(iconSize) + 16}px`,
+                          height: `${parseInt(iconSize) + 16}px`,
+                          backgroundColor: iconBackground !== 'transparent'
+                            ? `${iconColor}15`
+                            : 'rgba(255, 255, 255, 0.2)',
+                          backdropFilter: iconBackground === 'transparent' ? 'blur(4px)' : 'none',
+                          borderRadius: iconBackground === 'circle' ? '50%' :
+                            iconBackground === 'square' ? '0' :
+                              iconBackground === 'rounded' ? `${iconBorderRadius}px` :
+                                '50%',
+                        }}
+                      >
+                        <Icon 
+                          size={parseInt(iconSize)} 
+                          style={{ color: iconColor }} 
+                        />
+                      </div>
                       <span 
-                        className="text-xs font-medium capitalize" 
+                        className="flex-1 text-center font-semibold capitalize text-white" 
                         style={{ 
-                          color: textColor,
-                          fontSize: bodyFontSize,
+                          fontSize: buttonFontSize,
                           fontFamily: fontFamily,
                         }}
                       >
                         {link.platform}
                       </span>
-                    )}
-                  </a>
-                );
-              })}
-            </div>
+                      <div className="w-6 h-6 flex items-center justify-center shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
+                        <MoreVertical size={16} style={{ color: iconColor }} />
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            ) : (
+              /* Grid Layout (Mevcut) */
+              <div 
+                className="grid"
+                style={{ 
+                  gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`,
+                  gap: `${iconSpacing}px`,
+                }}
+              >
+                {socialLinks.map((link, idx) => {
+                  const Icon = link.icon;
+                  const iconBgStyle = iconBackground === 'circle' ? 'rounded-full' :
+                                    iconBackground === 'square' ? 'rounded-none' :
+                                    iconBackground === 'rounded' ? '' :
+                                    '';
+                  return (
+                    <a
+                      key={idx}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`flex flex-col items-center justify-center gap-2 p-4 bg-black/5 hover:bg-black/10 transition-all ${
+                        iconBackground !== 'transparent' ? iconBgStyle : ''
+                      }`}
+                      style={{
+                        backgroundColor: iconBackground !== 'transparent' 
+                          ? `${iconColor}15` 
+                          : undefined,
+                        borderRadius: iconBackground === 'rounded' 
+                          ? `${iconBorderRadius}px`
+                          : iconBgStyle === 'rounded-full' 
+                          ? '50%'
+                          : iconBgStyle === 'rounded-none'
+                          ? '0'
+                          : `${iconBorderRadius}px`,
+                      }}
+                    >
+                      <Icon size={parseInt(iconSize)} style={{ color: iconColor || textColor }} />
+                      {card.layoutStyle === 'icons-with-title' && (
+                        <span 
+                          className="text-xs font-medium capitalize" 
+                          style={{ 
+                            color: textColor,
+                            fontSize: bodyFontSize,
+                            fontFamily: fontFamily,
+                          }}
+                        >
+                          {link.platform}
+                        </span>
+                      )}
+                    </a>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
         {/* Footer */}
-        <div className="px-6 pb-6 text-center">
-          <p 
-            className="text-xs opacity-50" 
-            style={{ 
-              color: textColor,
-              fontSize: bodyFontSize,
-              fontFamily: fontFamily,
-            }}
-          >
-            Powered by <span className="font-semibold">notouchness</span>
-          </p>
+        <div className="px-6 pb-6">
+          <div className="flex items-center justify-between">
+            {logoUrl && (
+              <div className="flex-shrink-0">
+                <Image
+                  src={logoUrl}
+                  alt="Logo"
+                  width={parseInt(logoSize)}
+                  height={parseInt(logoSize)}
+                  className="object-contain"
+                  unoptimized
+                />
+              </div>
+            )}
+            <div className={`text-xs opacity-50 ${logoUrl ? 'text-right ml-auto' : 'text-center w-full'}`}>
+              <p 
+                style={{ 
+                  color: textColor,
+                  fontSize: bodyFontSize,
+                  fontFamily: fontFamily,
+                }}
+              >
+                Powered by <span className="font-semibold">notouchness</span>
+              </p>
+            </div>
+          </div>
         </div>
         </div>
       </div>
