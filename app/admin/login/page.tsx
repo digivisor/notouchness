@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
@@ -14,6 +14,30 @@ export default function AdminLoginPage() {
     email: '',
     password: '',
   });
+
+  // Eğer zaten giriş yapmışsa dashboard'a yönlendir
+  useEffect(() => {
+    const session = localStorage.getItem('admin_session');
+    if (session) {
+      try {
+        const parsed = JSON.parse(session);
+        const timestamp = parsed.timestamp || 0;
+        const now = Date.now();
+        const sessionTimeout = 24 * 60 * 60 * 1000; // 24 saat
+
+        // Session geçerliyse dashboard'a yönlendir
+        if (parsed.loggedIn && parsed.email && (now - timestamp < sessionTimeout)) {
+          router.push('/admin/dashboard');
+        } else {
+          // Session süresi dolmuş, temizle
+          localStorage.removeItem('admin_session');
+        }
+      } catch (e) {
+        // Session geçersiz, temizle
+        localStorage.removeItem('admin_session');
+      }
+    }
+  }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
