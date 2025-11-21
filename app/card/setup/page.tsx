@@ -168,7 +168,7 @@ export default function CardSetupPage() {
     bolt: '',
     // Görünüm
     theme: 'dark' as CardProfile['theme'],
-    layoutStyle: 'icons-with-title' as 'icons-only' | 'icons-with-title' | 'full-description',
+    layoutStyle: 'icons-with-title' as 'icons-only' | 'icons-with-title' | 'full-description' | 'full-width-buttons',
     primaryColor: '#000000',
     secondaryColor: '#ffffff',
   });
