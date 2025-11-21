@@ -45,7 +45,7 @@ export default function Home() {
         <div className="absolute top-1/4 right-1/4 w-72 h-72 bg-gradient-to-br from-white/10 to-transparent blur-2xl"></div>
         <div className="absolute bottom-1/4 right-1/3 w-56 h-56 bg-white/8 blur-xl rotate-45"></div>
       </div>
-      <section className="relative min-h-screen flex items-center justify-center px-6 pt-24 sm:pt-28 pb-12 sm:pb-16 lg:pt-0 lg:pb-0">
+      <section className="relative min-h-screen flex items-center justify-center px-6 pt-24 sm:pt-28 pb-12 sm:pb-16 lg:pt-0 lg:pb-0" style="background-image: url(&quot;https://i.hizliresim.com/cx8uhmq.png&quot;);">
         <div className="max-w-7xl mx-auto w-full">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Left Content - Text */}
