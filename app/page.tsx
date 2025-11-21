@@ -106,7 +106,7 @@ export default function Home() {
                       
                       <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/20 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
                       
-                      <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start">
                         <div></div>
                         <div className="flex items-center gap-1 text-white/80">
                             <span className="text-[10px] font-medium tracking-widest">NFC</span>
@@ -116,11 +116,11 @@ export default function Home() {
                       
                       <div className="text-center z-10 flex justify-center items-center">
                         <Image src="/notouchness3.png" alt="notouchness" width={180} height={60} className="object-contain" />
-                      </div>
-                      
+                    </div>
+                     
                       <div className="text-center z-10">
                         <p className="text-[10px] text-gray-400 tracking-wider">www.notouchness.com</p>
-                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -155,7 +155,7 @@ export default function Home() {
                       
                       <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-500/20 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
                       
-                      <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start">
                         <div></div>
                         <div className="flex items-center gap-1 text-white/80">
                             <span className="text-[8px] font-medium tracking-widest">NFC</span>
@@ -165,11 +165,11 @@ export default function Home() {
                       
                       <div className="text-center z-10 flex justify-center items-center">
                         <Image src="/notouchness3.png" alt="notouchness" width={120} height={40} className="object-contain" />
-                      </div>
+                    </div>
                       
                       <div className="text-center z-10">
                         <p className="text-[8px] text-gray-400 tracking-wider">www.notouchness.com</p>
-                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

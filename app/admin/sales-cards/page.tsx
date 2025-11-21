@@ -4,14 +4,14 @@ import { useEffect, useMemo, useState } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
 import AdminHeader from '../components/AdminHeader';
 import { supabase } from '@/lib/supabase';
-import { Plus, Save, Trash2, Edit2, Upload, ImageOff, RefreshCcw, CreditCard } from 'lucide-react';
+import { Plus, Save, Trash2, Edit2, Upload, ImageOff, RefreshCcw, CreditCard, X } from 'lucide-react';
 
 type SalesCard = {
   id?: string;
   name: string;
   price: number;
   currency?: string; // TRY, USD, etc
-  category: 'metal' | 'wood' | 'premium' | 'accessories' | 'other';
+  category: string; // Dynamic category name
   badge?: string | null;
   description?: string | null;
   features?: string[]; // array of feature strings
@@ -23,11 +23,17 @@ type SalesCard = {
   updated_at?: string;
 };
 
+type Category = {
+  id: string;
+  name: string;
+  created_at?: string;
+};
+
 const emptyCard: SalesCard = {
   name: '',
   price: 0,
   currency: 'TRY',
-  category: 'metal',
+  category: '',
   badge: null,
   description: '',
   features: [],
@@ -47,6 +53,9 @@ export default function AdminSalesCardsPage() {
   const [error, setError] = useState<string | null>(null);
   const [uploadingFront, setUploadingFront] = useState(false);
   const [uploadingBack, setUploadingBack] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [loadingCategories, setLoadingCategories] = useState(false);
 
   const model = editing ?? emptyCard;
 
@@ -62,8 +71,71 @@ export default function AdminSalesCardsPage() {
     setLoading(false);
   };
 
+  const loadCategories = async () => {
+    setLoadingCategories(true);
+    const { data, error } = await supabase
+      .from('sales_categories')
+      .select('*')
+      .order('name', { ascending: true });
+    if (error) {
+      console.error('Categories fetch error:', error.message);
+    } else {
+      setCategories((data as Category[]) || []);
+      // Set default category if none selected and categories exist
+      if (!model.category && (data as Category[])?.[0]) {
+        setField({ category: (data as Category[])[0].name });
+      }
+    }
+    setLoadingCategories(false);
+  };
+
+  const addCategory = async () => {
+    const name = newCategoryName.trim();
+    if (!name) return;
+    
+    const { error } = await supabase
+      .from('sales_categories')
+      .insert({ name });
+    
+    if (error) {
+      if (error.code === '23505') { // Unique constraint violation
+        setError('Bu kategori zaten mevcut!');
+      } else {
+        setError(error.message);
+      }
+    } else {
+      setNewCategoryName('');
+      await loadCategories();
+      // Auto-select the newly added category
+      setField({ category: name });
+    }
+  };
+
+  const removeCategory = async (id: string, name: string) => {
+    if (!confirm(`"${name}" kategorisini silmek istediğine emin misin? Bu kategoriye ait kartlar etkilenebilir.`)) return;
+    
+    const { error } = await supabase
+      .from('sales_categories')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      setError(error.message);
+    } else {
+      await loadCategories();
+      // If deleted category was selected, select first available
+      if (model.category === name && categories.length > 1) {
+        const remaining = categories.filter(c => c.id !== id);
+        if (remaining[0]) {
+          setField({ category: remaining[0].name });
+        }
+      }
+    }
+  };
+
   useEffect(() => {
     void loadCards();
+    void loadCategories();
   }, []);
 
   // Cloudinary unsigned upload helper
@@ -211,7 +283,7 @@ export default function AdminSalesCardsPage() {
       name: string;
       price: number;
       currency: string;
-      category: SalesCard['category'];
+      category: string;
       badge: string | null;
       description: string | null;
       features: string[];
@@ -347,17 +419,64 @@ export default function AdminSalesCardsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
-                  <select
-                    value={model.category}
-                    onChange={(e) => setField({ category: e.target.value as SalesCard['category'] })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                  >
-                    <option value="metal">Metal Kartlar</option>
-                    <option value="wood">Ahşap Kartlar</option>
-                    <option value="premium">Premium</option>
-                    <option value="accessories">Aksesuarlar</option>
-                    <option value="other">Diğer</option>
-                  </select>
+                  <div className="space-y-2">
+                    <select
+                      value={model.category}
+                      onChange={(e) => setField({ category: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                      disabled={loadingCategories || categories.length === 0}
+                    >
+                      {categories.length === 0 ? (
+                        <option value="">Kategori yok</option>
+                      ) : (
+                        categories.map((cat) => (
+                          <option key={cat.id} value={cat.name}>
+                            {cat.name}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            void addCategory();
+                          }
+                        }}
+                        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                        placeholder="Yeni kategori adı"
+                      />
+                      <button
+                        onClick={() => void addCategory()}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 text-sm font-medium"
+                      >
+                        <Plus size={16} /> Ekle
+                      </button>
+                    </div>
+                    {categories.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {categories.map((cat) => (
+                          <span
+                            key={cat.id}
+                            className="px-3 py-1.5 bg-gray-100 text-gray-800 rounded-full text-sm flex items-center gap-2 border border-gray-200"
+                          >
+                            {cat.name}
+                            <button
+                              onClick={() => void removeCategory(cat.id, cat.name)}
+                              className="text-red-600 hover:text-red-800 transition-colors"
+                              title="Kategoriyi Sil"
+                            >
+                              <X size={14} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="xl:col-span-3">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Etiket (Badge)</label>

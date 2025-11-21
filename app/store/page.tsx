@@ -82,13 +82,9 @@ export default function StorePage() {
     setIsProductModalOpen(true);
   };
 
-  const categories = [
-    { id: 'all', name: 'Tümü' },
-    { id: 'metal', name: 'Metal Kartlar' },
-    { id: 'wood', name: 'Ahşap Kartlar' },
-    { id: 'premium', name: 'Premium' },
-    { id: 'accessories', name: 'Aksesuarlar' }
-  ];
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([
+    { id: 'all', name: 'Tümü' }
+  ]);
 
   // DB row type for sales_cards
   type SalesCardRow = {
@@ -106,6 +102,29 @@ export default function StorePage() {
     in_stock?: boolean | null;
     created_at?: string;
   };
+
+  // Load categories from Supabase
+  useEffect(() => {
+    const loadCategories = async () => {
+      const { data, error } = await supabase
+        .from('sales_categories')
+        .select('*')
+        .order('name', { ascending: true });
+      if (error) {
+        console.error('Categories fetch error:', error.message);
+      } else {
+        const categoryList = [
+          { id: 'all', name: 'Tümü' },
+          ...((data || []).map((cat: { id: string; name: string }) => ({
+            id: cat.name,
+            name: cat.name,
+          })))
+        ];
+        setCategories(categoryList);
+      }
+    };
+    void loadCategories();
+  }, []);
 
   // Load products from Supabase sales_cards
   useEffect(() => {

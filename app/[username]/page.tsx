@@ -605,58 +605,58 @@ export default function UserProfilePage() {
               </div>
             ) : (
               /* Grid Layout (Mevcut) */
-              <div 
-                className="grid"
-                style={{ 
-                  gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`,
-                  gap: `${iconSpacing}px`,
-                }}
-              >
-                {socialLinks.map((link, idx) => {
-                  const Icon = link.icon;
-                  const iconBgStyle = iconBackground === 'circle' ? 'rounded-full' :
-                                    iconBackground === 'square' ? 'rounded-none' :
-                                    iconBackground === 'rounded' ? '' :
-                                    '';
-                  return (
-                    <a
-                      key={idx}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`flex flex-col items-center justify-center gap-2 p-4 bg-black/5 hover:bg-black/10 transition-all ${
-                        iconBackground !== 'transparent' ? iconBgStyle : ''
-                      }`}
-                      style={{
-                        backgroundColor: iconBackground !== 'transparent' 
-                          ? `${iconColor}15` 
-                          : undefined,
-                        borderRadius: iconBackground === 'rounded' 
-                          ? `${iconBorderRadius}px`
-                          : iconBgStyle === 'rounded-full' 
-                          ? '50%'
-                          : iconBgStyle === 'rounded-none'
-                          ? '0'
-                          : `${iconBorderRadius}px`,
-                      }}
-                    >
-                      <Icon size={parseInt(iconSize)} style={{ color: iconColor || textColor }} />
-                      {card.layoutStyle === 'icons-with-title' && (
-                        <span 
-                          className="text-xs font-medium capitalize" 
-                          style={{ 
-                            color: textColor,
-                            fontSize: bodyFontSize,
-                            fontFamily: fontFamily,
-                          }}
-                        >
-                          {link.platform}
-                        </span>
-                      )}
-                    </a>
-                  );
-                })}
-              </div>
+            <div 
+              className="grid"
+              style={{ 
+                gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`,
+                gap: `${iconSpacing}px`,
+              }}
+            >
+              {socialLinks.map((link, idx) => {
+                const Icon = link.icon;
+                const iconBgStyle = iconBackground === 'circle' ? 'rounded-full' :
+                                  iconBackground === 'square' ? 'rounded-none' :
+                                  iconBackground === 'rounded' ? '' :
+                                  '';
+                return (
+                  <a
+                    key={idx}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`flex flex-col items-center justify-center gap-2 p-4 bg-black/5 hover:bg-black/10 transition-all ${
+                      iconBackground !== 'transparent' ? iconBgStyle : ''
+                    }`}
+                    style={{
+                      backgroundColor: iconBackground !== 'transparent' 
+                        ? `${iconColor}15` 
+                        : undefined,
+                      borderRadius: iconBackground === 'rounded' 
+                        ? `${iconBorderRadius}px`
+                        : iconBgStyle === 'rounded-full' 
+                        ? '50%'
+                        : iconBgStyle === 'rounded-none'
+                        ? '0'
+                        : `${iconBorderRadius}px`,
+                    }}
+                  >
+                    <Icon size={parseInt(iconSize)} style={{ color: iconColor || textColor }} />
+                    {card.layoutStyle === 'icons-with-title' && (
+                      <span 
+                        className="text-xs font-medium capitalize" 
+                        style={{ 
+                          color: textColor,
+                          fontSize: bodyFontSize,
+                          fontFamily: fontFamily,
+                        }}
+                      >
+                        {link.platform}
+                      </span>
+                    )}
+                  </a>
+                );
+              })}
+            </div>
             )}
           </div>
         )}
