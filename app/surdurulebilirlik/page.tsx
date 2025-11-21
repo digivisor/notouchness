@@ -34,16 +34,16 @@ import {
 
 export default function SustainabilityPage() {
   const [isCartVisible, setIsCartVisible] = useState(false);
-  const [employees, setEmployees] = useState(100);
-  const [cardsPerEmployee, setCardsPerEmployee] = useState(1000);
+  const [employees, setEmployees] = useState(10);
+  const [cardsPerEmployee, setCardsPerEmployee] = useState(100);
   const [activeAccordion, setActiveAccordion] = useState<number | null>(null);
 
   // Hesaplamalar
   const totalCards = employees * cardsPerEmployee;
-  const paperCardCost = totalCards * 1.5; 
-  const digitalCardCost = employees * 324.5; 
+  const paperCardCost = totalCards * 3; // Kağıt kartvizit maliyeti: 3 TL/kart
+  const digitalCardCost = employees * 700; // Notouchness dijital kart maliyeti: 700 TL/kart
   const annualSavings = paperCardCost - digitalCardCost;
-  const potentialCustomers = Math.floor(employees * 0.1); 
+  const potentialCustomers = employees * 3; // Çalışan başına +3 potansiyel müşteri 
   
   // Çevresel etki hesaplamaları
   const treesSaved = Math.floor(totalCards / 10000); 
@@ -54,7 +54,7 @@ export default function SustainabilityPage() {
   const closeCart = () => setIsCartVisible(false);
 
   const handleShare = (platform: 'linkedin' | 'email') => {
-    const text = `Şirketimiz ${employees} çalışan için dijital kartvizit kullanarak yılda €${annualSavings.toLocaleString('tr-TR')} tasarruf ediyor ve ${treesSaved} ağaç kurtarıyor!`;
+    const text = `Şirketimiz ${employees} çalışan için dijital kartvizit kullanarak yılda ₺${annualSavings.toLocaleString('tr-TR')} tasarruf ediyor ve ${treesSaved} ağaç kurtarıyor!`;
     if (platform === 'linkedin') {
       window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`, '_blank');
     } else {
@@ -224,17 +224,27 @@ export default function SustainabilityPage() {
                 <div className="space-y-10">
                   {/* Employees Input */}
                   <div className="group">
-                    <div className="flex justify-between mb-4">
-                      <label className="text-sm font-semibold text-gray-600">Çalışan Sayısı</label>
-                      <div className="px-3 py-1 bg-white border border-gray-200 rounded-lg shadow-sm text-sm font-bold text-green-700 min-w-[60px] text-center">
-                        {employees}
-                      </div>
+                    <div className="flex justify-between items-center mb-4">
+                      <label className="text-sm font-semibold text-gray-600">Şirketinizde kaç çalışan var?</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="10000"
+                        value={employees}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          if (val >= 1 && val <= 10000) {
+                            setEmployees(val);
+                          }
+                        }}
+                        className="w-20 px-3 py-1 bg-white border border-gray-200 rounded-lg shadow-sm text-sm font-bold text-green-700 text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
                     </div>
                     <input
                       type="range"
-                      min="10"
+                      min="1"
                       max="10000"
-                      step="10"
+                      step="1"
                       value={employees}
                       onChange={(e) => setEmployees(Number(e.target.value))}
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600 hover:accent-green-500 transition-all"
@@ -243,17 +253,27 @@ export default function SustainabilityPage() {
 
                   {/* Cards Input */}
                   <div className="group">
-                    <div className="flex justify-between mb-4">
-                      <label className="text-sm font-semibold text-gray-600">Yıllık Kartvizit/Kişi</label>
-                      <div className="px-3 py-1 bg-white border border-gray-200 rounded-lg shadow-sm text-sm font-bold text-green-700 min-w-[60px] text-center">
-                        {cardsPerEmployee}
-                      </div>
+                    <div className="flex justify-between items-center mb-4">
+                      <label className="text-sm font-semibold text-gray-600">Her çalışan için yılda kaç kartvizit sipariş ediyorsunuz?</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="5000"
+                        value={cardsPerEmployee}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          if (val >= 1 && val <= 5000) {
+                            setCardsPerEmployee(val);
+                          }
+                        }}
+                        className="w-20 px-3 py-1 bg-white border border-gray-200 rounded-lg shadow-sm text-sm font-bold text-green-700 text-center focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
                     </div>
                     <input
                       type="range"
-                      min="100"
+                      min="1"
                       max="5000"
-                      step="50"
+                      step="1"
                       value={cardsPerEmployee}
                       onChange={(e) => setCardsPerEmployee(Number(e.target.value))}
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600 hover:accent-green-500 transition-all"
@@ -268,7 +288,7 @@ export default function SustainabilityPage() {
                     <span>Potansiyel Etki</span>
                   </div>
                   <p className="text-3xl font-bold text-gray-900 relative z-10">+{potentialCustomers}</p>
-                  <p className="text-xs text-gray-500 mt-1 relative z-10">Yeni müşteri etkileşimi</p>
+                  <p className="text-xs text-gray-500 mt-1 relative z-10">Çalışan başına +3 potansiyel müşteri</p>
                 </div>
               </div>
 
@@ -277,19 +297,15 @@ export default function SustainabilityPage() {
                 {/* Background Pattern */}
                 <div className="absolute top-0 right-0 w-full h-full opacity-[0.02] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
 
-                <div className="flex items-center justify-between mb-10">
+                <div className="mb-10">
                     <h3 className="text-xl font-bold text-gray-900">Yıllık Tasarruf Tablosu</h3>
-                    <span className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 text-[10px] font-bold tracking-wider uppercase rounded-full border border-green-100">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                        Canlı Analiz
-                    </span>
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
                   <div className="relative p-6 rounded-2xl bg-[#0f2e20] text-white shadow-xl overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl transform translate-x-10 -translate-y-10 group-hover:bg-white/10 transition-colors"></div>
                     <p className="text-sm text-green-200 font-medium mb-2 relative z-10">Toplam Yıllık Tasarruf</p>
-                    <p className="text-4xl font-bold relative z-10">€{annualSavings > 0 ? annualSavings.toLocaleString('tr-TR') : 0}</p>
+                    <p className="text-4xl font-bold relative z-10">₺{annualSavings > 0 ? annualSavings.toLocaleString('tr-TR') : 0}</p>
                     <div className="mt-4 flex items-center gap-2 text-xs text-green-300/80 relative z-10">
                         <TrendingUp className="w-3 h-3" />
                         <span>Sektör ortalamasına göre</span>
@@ -297,8 +313,13 @@ export default function SustainabilityPage() {
                   </div>
                   <div className="p-6 rounded-2xl bg-white border border-gray-100 shadow-sm hover:border-gray-200 transition-colors">
                     <p className="text-sm text-gray-500 font-medium mb-2">Geleneksel Maliyet</p>
-                    <p className="text-3xl font-bold text-gray-900">€{paperCardCost.toLocaleString('tr-TR')}</p>
-                    <p className="text-xs text-gray-400 mt-2">Kağıt, baskı ve lojistik dahil</p>
+                    <p className="text-3xl font-bold text-gray-900">₺{paperCardCost.toLocaleString('tr-TR')}</p>
+                    <p className="text-xs text-gray-400 mt-2">Kağıt kartvizit maliyeti (3 TL/kart)</p>
+                  </div>
+                  <div className="p-6 rounded-2xl bg-white border border-gray-100 shadow-sm hover:border-gray-200 transition-colors sm:col-span-2">
+                    <p className="text-sm text-gray-500 font-medium mb-2">Dijital Kart Maliyeti</p>
+                    <p className="text-3xl font-bold text-gray-900">₺{digitalCardCost.toLocaleString('tr-TR')}</p>
+                    <p className="text-xs text-gray-400 mt-2">Notouchness dijital kart maliyeti (700 TL/kart)</p>
                   </div>
                 </div>
 
