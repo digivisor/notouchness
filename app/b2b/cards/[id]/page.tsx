@@ -176,7 +176,6 @@ export default function B2BCardDetailPage() {
               name: currentPurchase.dealer.name,
               subtitle: currentPurchase.sales_card.name,
               logo: currentPurchase.dealer.logo_url || '/notouchness1.png',
-              qrCode: undefined,
             })
           );
 
@@ -348,7 +347,6 @@ export default function B2BCardDetailPage() {
             name: purchase.dealer.name,
             subtitle: purchase.sales_card.name,
             logo: purchase.dealer.logo_url || '/notouchness1.png',
-            qrCode: undefined, // QR kod sonra eklenecek
           })
         );
 
