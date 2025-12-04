@@ -37,7 +37,12 @@ function getIyziEnv() {
 }
 
 function getSiteBaseUrl(req: NextRequest) {
-  return process.env.NEXT_PUBLIC_SITE_URL || `${req.nextUrl.protocol}//${req.nextUrl.host}`;
+  // Callback her zaman gelen isteğin host'u üzerinden dönsün
+  const host = req.headers.get('host') || req.nextUrl.host;
+  const protocol = req.nextUrl.protocol || 'http:';
+  const url = `${protocol}//${host}`;
+  console.log('[payment-callback] Site base URL:', url);
+  return url;
 }
 
 /** ---- IYZWSv2 imzalı request helper ---- */
@@ -89,6 +94,10 @@ async function complete3DSAuth(paymentId: string, conversationId: string) {
 
 /** ---- Ortak callback handler ---- */
 async function handleCallback(request: NextRequest, method: 'POST' | 'GET') {
+  console.log('[handleCallback] Method:', method);
+  console.log('[handleCallback] Request URL:', request.url);
+  console.log('[handleCallback] Host header:', request.headers.get('host'));
+  
   // Body/Query parse
   let conversationId: string | null = null;
   let paymentId: string | null = null;
@@ -328,18 +337,28 @@ async function handleCallback(request: NextRequest, method: 'POST' | 'GET') {
 // Ama bazı bankalar/arayüzler GET de gönderebildiğinden destekliyoruz.
 
 export async function POST(request: NextRequest) {
+  console.log('[payment-callback] POST request received at:', new Date().toISOString());
+  console.log('[payment-callback] URL:', request.url);
   try {
-    return await handleCallback(request, 'POST');
+    const result = await handleCallback(request, 'POST');
+    console.log('[payment-callback] POST result:', result.status);
+    return result;
   } catch (e: any) {
+    console.error('[payment-callback] POST error:', e);
     const siteUrl = getSiteBaseUrl(request);
     return NextResponse.redirect(`${siteUrl}/checkout/hata?reason=server_error`, { status: 303 });
   }
 }
 
 export async function GET(request: NextRequest) {
+  console.log('[payment-callback] GET request received at:', new Date().toISOString());
+  console.log('[payment-callback] URL:', request.url);
   try {
-    return await handleCallback(request, 'GET');
+    const result = await handleCallback(request, 'GET');
+    console.log('[payment-callback] GET result:', result.status);
+    return result;
   } catch (e: any) {
+    console.error('[payment-callback] GET error:', e);
     const siteUrl = getSiteBaseUrl(request);
     return NextResponse.redirect(`${siteUrl}/checkout/hata?reason=server_error`, { status: 303 });
   }

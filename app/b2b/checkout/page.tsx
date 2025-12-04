@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { CreditCard, Shield, ArrowLeft } from 'lucide-react';
+import B2BSidebar from '../components/B2BSidebar';
 
 type Dealer = {
   id: string;
@@ -343,17 +344,40 @@ export default function B2BCheckoutPage() {
     );
   }
 
+
+  if (!dealer) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto px-6 py-12">
-        <button
-          type="button"
-          onClick={() => router.push('/b2b/dashboard')}
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition mb-8"
-        >
-          <ArrowLeft size={20} />
-          Geri
-        </button>
+    <div className="h-screen bg-gray-50 flex overflow-hidden">
+      <B2BSidebar dealer={dealer} />
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col ml-64 min-w-0">
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b border-gray-200 relative z-[60]">
+          <div className="px-6 py-4">
+            <button
+              type="button"
+              onClick={() => router.push('/b2b/dashboard')}
+              className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition mb-2"
+            >
+              <ArrowLeft size={20} />
+              Geri
+            </button>
+            <h1 className="text-2xl font-bold text-gray-900">Ödeme</h1>
+            <p className="text-sm text-gray-600 mt-1">Sepetinizdeki kartları satın alın</p>
+          </div>
+        </header>
+
+        {/* Content */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-5xl mx-auto px-6 py-12">
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left - Payment Form */}
@@ -631,9 +655,10 @@ export default function B2BCheckoutPage() {
             </div>
           </div>
         </div>
+          </div>
+        </main>
       </div>
     </div>
+
   );
 }
-
-

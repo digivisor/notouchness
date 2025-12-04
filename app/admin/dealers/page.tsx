@@ -78,6 +78,7 @@ export default function AdminDealersPage() {
   const [showDealerCardsModal, setShowDealerCardsModal] = useState(false);
   const [cardPrices, setCardPrices] = useState<Record<string, number>>({});
   const [dealerPurchases, setDealerPurchases] = useState<DealerPurchase[]>([]);
+  const [orderSearchTerm, setOrderSearchTerm] = useState('');
 
   const model = editing ?? emptyDealer;
 
@@ -659,16 +660,31 @@ export default function AdminDealersPage() {
 
           {/* Bayi Siparişleri */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold">Bayi Siparişleri</h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  Bayilerin verdiği siparişleri görüntüleyin.
-                </p>
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold">Bayi Siparişleri</h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Bayilerin verdiği siparişleri görüntüleyin.
+                  </p>
+                </div>
+              </div>
+              <div className="flex-1 max-w-md">
+                <input
+                  type="text"
+                  placeholder="Bayi adına göre ara..."
+                  value={orderSearchTerm}
+                  onChange={(e) => setOrderSearchTerm(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
             </div>
 
-            {dealerPurchases.length === 0 ? (
+            {dealerPurchases.filter((p) => 
+              orderSearchTerm.trim() === '' || 
+              p.dealer.name.toLowerCase().includes(orderSearchTerm.toLowerCase()) ||
+              p.dealer.username.toLowerCase().includes(orderSearchTerm.toLowerCase())
+            ).length === 0 ? (
               <div className="p-6 text-center text-gray-500">
                 Henüz bayi siparişi yok.
               </div>
@@ -687,7 +703,13 @@ export default function AdminDealersPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {dealerPurchases.map((p) => (
+                    {dealerPurchases
+                      .filter((p) => 
+                        orderSearchTerm.trim() === '' || 
+                        p.dealer.name.toLowerCase().includes(orderSearchTerm.toLowerCase()) ||
+                        p.dealer.username.toLowerCase().includes(orderSearchTerm.toLowerCase())
+                      )
+                      .map((p) => (
                       <tr key={p.id} className="hover:bg-gray-50">
                         <td className="px-4 py-3 text-sm text-gray-700">
                           {new Date(p.purchase_date).toLocaleString('tr-TR')}

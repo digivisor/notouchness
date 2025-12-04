@@ -28,6 +28,7 @@ export default function AdminDashboardPage() {
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [groups, setGroups] = useState<Array<{ name: string; count: number }>>([]);
+  const [groupSearchTerm, setGroupSearchTerm] = useState('');
   const [isCreatingCards, setIsCreatingCards] = useState(false);
   const [creatingProgress, setCreatingProgress] = useState({ current: 0, total: 0 });
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -425,10 +426,23 @@ export default function AdminDashboardPage() {
                 )}
               </div>
               
-              <div className="flex gap-2 overflow-x-auto pb-2">
+              {/* Grup Arama */}
+              {groups.length > 0 && (
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    placeholder="Grup adına göre ara..."
+                    value={groupSearchTerm}
+                    onChange={(e) => setGroupSearchTerm(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              )}
+              
+              <div className="flex flex-wrap gap-2 pb-2">
                 <button
                   onClick={() => setSelectedGroup(null)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center gap-2 ${
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
                     selectedGroup === null
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -438,20 +452,41 @@ export default function AdminDashboardPage() {
                   Tümü ({stats.total})
                 </button>
                 
-                {groups.map((group) => (
-                  <button
-                    key={group.name}
-                    onClick={() => setSelectedGroup(group.name)}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap flex items-center gap-2 ${
-                      selectedGroup === group.name
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    <Folder size={16} />
-                    {group.name} ({group.count})
-                  </button>
-                ))}
+                {groups
+                  .filter((group) => {
+                    if (groupSearchTerm.trim() === '') return true;
+                    const parts = group.name.split('/');
+                    const displayName = parts.length > 1 ? parts[parts.length - 1] : group.name;
+                    const parentName = parts.length > 1 ? parts[0] : null;
+                    return (
+                      displayName.toLowerCase().includes(groupSearchTerm.toLowerCase()) ||
+                      (parentName && parentName.toLowerCase().includes(groupSearchTerm.toLowerCase())) ||
+                      group.name.toLowerCase().includes(groupSearchTerm.toLowerCase())
+                    );
+                  })
+                  .map((group) => {
+                  // B2B kartları için hiyerarşik yapı: "Bayi Adı/Bayi Adı - Tarih Saat"
+                  const parts = group.name.split('/');
+                  const displayName = parts.length > 1 ? parts[parts.length - 1] : group.name;
+                  const parentName = parts.length > 1 ? parts[0] : null;
+                  
+                  return (
+                    <button
+                      key={group.name}
+                      onClick={() => setSelectedGroup(group.name)}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                        selectedGroup === group.name
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                      title={parentName ? `${parentName} > ${displayName}` : group.name}
+                    >
+                      <Folder size={16} className="flex-shrink-0" />
+                      <span className="truncate max-w-[200px]">{displayName}</span>
+                      <span className="flex-shrink-0">({group.count})</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

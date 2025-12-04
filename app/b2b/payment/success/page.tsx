@@ -36,7 +36,7 @@ export default function B2BPaymentSuccessPage() {
 
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Satın aldığınız kart "Kartlarım" sekmesinde görüntülenebilir.
+            Satın aldığınız kart &quot;Kartlarım&quot; sekmesinde görüntülenebilir.
           </p>
           <button
             onClick={() => router.push('/b2b/dashboard?tab=my-cards')}

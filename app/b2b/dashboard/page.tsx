@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { LogOut, Package, DollarSign, Store, CreditCard, ShoppingCart, X, Plus, Minus, Shield } from 'lucide-react';
+import { Package, Store, CreditCard, ShoppingCart, X, Plus, Minus, Shield, Eye } from 'lucide-react';
 import Image from 'next/image';
+import B2BSidebar from '../components/B2BSidebar';
 
 type Dealer = {
   id: string;
@@ -89,6 +90,8 @@ export default function B2BDashboardPage() {
   });
   const [lastOrderNumber, setLastOrderNumber] = useState<string | null>(null);
   const [showOrderSuccessModal, setShowOrderSuccessModal] = useState(false);
+  const [filterText, setFilterText] = useState('');
+  const [purchaseCardsMap, setPurchaseCardsMap] = useState<{ [purchaseId: string]: Array<{ card_id: string; full_name: string | null }> }>({});
 
   useEffect(() => {
     const session = localStorage.getItem('b2b_session');
@@ -208,6 +211,26 @@ export default function B2BDashboardPage() {
 
       const purchases = (data ?? []) as DealerPurchase[];
       setPurchasedCards(purchases);
+
+      // Her purchase için kartları yükle
+      const cardsMap: { [purchaseId: string]: Array<{ card_id: string; full_name: string | null }> } = {};
+      for (const purchase of purchases) {
+        const { data: purchaseCards } = await supabase
+          .from('dealer_purchase_cards')
+          .select(`
+            card_id,
+            card:cards(full_name)
+          `)
+          .eq('dealer_purchase_id', purchase.id);
+
+        if (purchaseCards) {
+          cardsMap[purchase.id] = purchaseCards.map((pc: any) => ({
+            card_id: pc.card_id,
+            full_name: pc.card?.full_name || null,
+          }));
+        }
+      }
+      setPurchaseCardsMap(cardsMap);
     } catch (err) {
       console.error('Purchases fetch error:', err);
     } finally {
@@ -258,26 +281,7 @@ export default function B2BDashboardPage() {
     router.push('/b2b/checkout');
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('b2b_session');
-    router.push('/b2b/login');
-  };
 
-  const totalValue = useMemo(
-    () => dealerCards.reduce((sum, card) => sum + card.dealer_price, 0),
-    [dealerCards]
-  );
-
-  const averagePrice = useMemo(
-    () =>
-      dealerCards.length > 0
-        ? Math.round(
-            dealerCards.reduce((sum, card) => sum + card.dealer_price, 0) /
-              dealerCards.length
-          )
-        : 0,
-    [dealerCards]
-  );
 
   const lastOrderPurchases = useMemo(
     () =>
@@ -298,81 +302,13 @@ export default function B2BDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-        
-      <aside className="w-64 bg-gray-900 text-white flex flex-col">
-        <div className="p-6 border-b border-gray-800 flex flex-col items-center">
-          <div className="w-32 h-12 mb-3 flex items-center justify-center">
-   
-            {dealer.logo_url ? (
-              <img
-                src={dealer.logo_url}
-                alt={dealer.name}
-                className="object-contain w-full h-full"
-              />
-            ) : (
-              <img
-                src="/notouchness1.png"
-                alt="Logo"
-                className="object-contain w-full h-full"
-              />
-            )}
-          </div>
-          <p className="text-sm text-gray-300 font-medium text-center">
-            {dealer.name}
-          </p>
-          <p className="text-xs text-gray-500 mt-1">B2B Bayi Paneli</p>
-        </div>
-
-        <nav className="flex-1 p-4">
-          <ul className="space-y-2">
-            <li>
-              <button
-                type="button"
-                onClick={() => setActiveTab('buy')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                  activeTab === 'buy'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                }`}
-              >
-                <ShoppingCart size={18} />
-                <span>Kart Satın Al</span>
-              </button>
-            </li>
-            <li>
-              <button
-                type="button"
-                onClick={() => setActiveTab('my-cards')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                  activeTab === 'my-cards'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                }`}
-              >
-                <CreditCard size={18} />
-                <span>Kartlarım</span>
-              </button>
-            </li>
-          </ul>
-        </nav>
-
-        <div className="p-4 border-t border-gray-800">
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
-          >
-            <LogOut size={18} />
-            <span>Çıkış Yap</span>
-          </button>
-        </div>
-      </aside>
+    <div className="h-screen bg-gray-50 flex overflow-hidden">
+      <B2BSidebar dealer={dealer} activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Main */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col ml-64 min-w-0">
         {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
+        <header className="bg-white shadow-sm border-b border-gray-200 relative z-[60]">
           <div className="px-6 py-4 flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
@@ -402,51 +338,6 @@ export default function B2BDashboardPage() {
 
         {/* Content */}
         <main className="flex-1 p-6 overflow-y-auto">
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Toplam Kart</p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {dealerCards.length}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Package size={24} className="text-blue-600" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Ortalama Fiyat</p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {averagePrice} TRY
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <DollarSign size={24} className="text-green-600" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Toplam Değer</p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {totalValue} TRY
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <DollarSign size={24} className="text-purple-600" />
-                </div>
-              </div>
-            </div>
-          </div>
-
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
               {error}
@@ -574,13 +465,26 @@ export default function B2BDashboardPage() {
           {activeTab === 'my-cards' && (
             <section className="bg-white rounded-xl shadow-sm border border-gray-200">
               <div className="p-6 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                  <CreditCard size={20} />
-                  Kartlarım
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  Satın aldığınız kartlar ve detayları
-                </p>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                      <CreditCard size={20} />
+                      Kartlarım
+                    </h2>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Satın aldığınız kartlar ve detayları
+                    </p>
+                  </div>
+                  <div className="flex-1 max-w-md ml-4">
+                    <input
+                      type="text"
+                      placeholder="Kart adı, kategori veya kayıtlı kişi ile ara..."
+                      value={filterText}
+                      onChange={(e) => setFilterText(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="p-6">
@@ -597,11 +501,28 @@ export default function B2BDashboardPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {purchasedCards.map((purchase) => (
-                      <div
+                    {purchasedCards
+                      .filter((purchase) => {
+                        if (!filterText.trim()) return true;
+                        const searchText = filterText.toLowerCase();
+                        const cardName = purchase.sales_card.name.toLowerCase();
+                        const category = purchase.sales_card.category?.toLowerCase() || '';
+                        const registeredUsers = purchaseCardsMap[purchase.id] || [];
+                        const hasRegisteredUser = registeredUsers.some(
+                          (user) => user.full_name?.toLowerCase().includes(searchText)
+                        );
+                        return (
+                          cardName.includes(searchText) ||
+                          category.includes(searchText) ||
+                          hasRegisteredUser
+                        );
+                      })
+                      .map((purchase) => {
+                        const registeredUsers = purchaseCardsMap[purchase.id] || [];
+                        return (
+                          <div
                         key={purchase.id}
-                        className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow cursor-pointer"
-                        onClick={() => setSelectedPurchase(purchase)}
+                        className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow"
                       >
                         <div className="flex">
                           {purchase.sales_card.image_front && (
@@ -649,17 +570,47 @@ export default function B2BDashboardPage() {
                                     </span>
                                   </div>
                                 </div>
+                                {registeredUsers.length > 0 && (
+                                  <div className="mt-3 pt-3 border-t border-gray-200">
+                                    <p className="text-xs text-gray-500 mb-2">Kayıtlı Kullanıcılar:</p>
+                                    <div className="flex flex-wrap gap-2">
+                                      {registeredUsers
+                                        .filter((user) => user.full_name)
+                                        .map((user, idx) => (
+                                          <span
+                                            key={idx}
+                                            className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded"
+                                          >
+                                            {user.full_name}
+                                          </span>
+                                        ))}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-                              {purchase.sales_card.category && (
-                                <span className="ml-4 px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded h-fit">
-                                  {purchase.sales_card.category}
-                                </span>
-                              )}
+                              <div className="flex items-center gap-3">
+                                {purchase.sales_card.category && (
+                                  <span className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded h-fit">
+                                    {purchase.sales_card.category}
+                                  </span>
+                                )}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    router.push(`/b2b/cards/${purchase.id}`);
+                                  }}
+                                  className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                  title="Detayları Görüntüle"
+                                >
+                                  <Eye size={18} />
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    ))}
+                        );
+                      })}
                   </div>
                 )}
               </div>
