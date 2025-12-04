@@ -81,7 +81,11 @@ export async function POST(request: NextRequest) {
     // Eğer sandbox flag açık ama IYZICO_URI prod’a işaret ediyorsa yine sandbox’a zorlayalım:
     if (isSandbox && !baseUrl.includes('sandbox')) baseUrl = 'https://sandbox-api.iyzipay.com';
 
-    const callbackUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/payment-callback`;
+    // Callback URL'i dinamik olarak mevcut host üzerinden kur
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+    const callbackUrl = `${siteUrl}/api/payment-callback`;
     const ip = getClientIp(request);
 
     // Buyer name parçalama

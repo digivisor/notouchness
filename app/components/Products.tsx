@@ -240,8 +240,8 @@ export default function Products({ onCartOpen }: ProductsProps = {}) {
           inStock: selectedProduct.inStock
         } as unknown as ModalProduct : null}
         onClose={() => setIsProductModalOpen(false)}
-        onAddToCart={(p, qty) => {
-          addToCart(p as unknown as { id: number; name: string; price: string | number; image: string }, qty);
+        onAddToCart={(p, qty, cardsData) => {
+          addToCart(p as unknown as { id: number; name: string; price: string | number; image: string }, qty, cardsData);
           setAddedToCart(p.id);
           // Sepeti aç
           if (onCartOpen) {
@@ -250,9 +250,9 @@ export default function Products({ onCartOpen }: ProductsProps = {}) {
           setTimeout(() => setAddedToCart(null), 2500);
         }}
         onCartOpen={onCartOpen}
-        onBuyNow={(product, qty) => {
+        onBuyNow={(product, qty, cardsData) => {
           // Ürünü sepete ekle (zaten sepette varsa miktarı artırır)
-          addToCart(product as unknown as { id: number; name: string; price: string | number; image: string }, qty);
+          addToCart(product as unknown as { id: number; name: string; price: string | number; image: string }, qty, cardsData);
           // Modal'ı kapat
           setIsProductModalOpen(false);
           // Checkout sayfasına yönlendir

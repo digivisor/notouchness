@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { 
   LayoutDashboard, CreditCard, Users, Settings, 
-  LogOut, Home, ShoppingBag, MessageSquare, Package, Mail
+  LogOut, Home, ShoppingBag, MessageSquare, Package, Mail, QrCode, Store
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 
@@ -29,8 +29,10 @@ export default function AdminSidebar({ activePage }: AdminSidebarProps) {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/admin/dashboard', key: 'dashboard' },
     { icon: CreditCard, label: 'Kartlar', href: '/admin/cards', key: 'cards' },
+    { icon: QrCode, label: 'QR Menu', href: '/admin/qrmenu', key: 'qrmenu' },
     { icon: Package, label: 'Siparişler', href: '/admin/orders', key: 'orders' },
     { icon: ShoppingBag, label: 'Satış Kartları', href: '/admin/sales-cards', key: 'sales-cards' },
+    { icon: Store, label: 'Bayiler', href: '/admin/dealers', key: 'dealers' },
     { icon: MessageSquare, label: 'Kurumsal Mesajlar', href: '/admin/corporate-requests', key: 'corporate-requests' },
     { icon: Mail, label: 'İletişim Mesajları', href: '/admin/contact-messages', key: 'contact-messages' },
     { icon: Users, label: 'Kullanıcılar', href: '/admin/users', key: 'users' },

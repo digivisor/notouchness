@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { CardData } from '../components/ProductModal';
 
 export interface CartItem {
   id: number;
@@ -8,6 +9,7 @@ export interface CartItem {
   price: string | number;
   image: string;
   quantity: number;
+  cardsData?: CardData[]; // Her ürün için kart verileri
 }
 
 interface Product {
@@ -19,9 +21,10 @@ interface Product {
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
+  addToCart: (product: Product, quantity?: number, cardsData?: CardData[]) => void;
   removeFromCart: (productId: number) => void;
   updateQuantity: (productId: number, newQuantity: number) => void;
+  updateCartItemCardsData: (productId: number, cardsData: CardData[]) => void;
   getTotalPrice: () => number;
   cartCount: number;
   clearCart: () => void;
@@ -60,7 +63,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [cartItems, isLoaded]);
 
-  const addToCart = (product: Product, quantity: number = 1) => {
+  const addToCart = (product: Product, quantity: number = 1, cardsData?: CardData[]) => {
     const existingItem = cartItems.find(item => item.id === product.id);
     
     // Son eklenen ürün ID'sini set et
@@ -69,9 +72,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setTimeout(() => setLastAddedProductId(null), 1000);
     
     if (existingItem) {
+      // Mevcut item varsa, mevcut cardsData'yı koru ve yeni kartları ekle
+      const existingCardsData = existingItem.cardsData || [];
+      const newCardsData = cardsData || [];
+      
+      // Mevcut kartları koru, yeni kartları sonuna ekle
+      const mergedCardsData = [...existingCardsData, ...newCardsData];
+      
       setCartItems(cartItems.map(item =>
         item.id === product.id
-          ? { ...item, quantity: item.quantity + quantity }
+          ? { 
+              ...item, 
+              quantity: item.quantity + quantity, 
+              cardsData: mergedCardsData.length > 0 ? mergedCardsData : item.cardsData 
+            }
           : item
       ));
     } else {
@@ -80,7 +94,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         name: product.name,
         price: product.price,
         image: product.image,
-        quantity: quantity
+        quantity: quantity,
+        cardsData: cardsData
       }]);
     }
   };
@@ -99,6 +114,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
           : item
       ));
     }
+  };
+
+  const updateCartItemCardsData = (productId: number, cardsData: CardData[]) => {
+    setCartItems(cartItems.map(item =>
+      item.id === productId
+        ? { ...item, cardsData: cardsData }
+        : item
+    ));
   };
 
   const getTotalPrice = () => {
@@ -122,6 +145,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       addToCart,
       removeFromCart,
       updateQuantity,
+      updateCartItemCardsData,
       getTotalPrice,
       cartCount,
       clearCart,

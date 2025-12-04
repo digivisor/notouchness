@@ -19,6 +19,16 @@ interface OrderItem {
   price: number;
   image?: string;
   total: number;
+  cardsData?: Array<{
+    name: string;
+    subtitle: string;
+    logo: string | null;
+    logoSize: number;
+    logoX: number;
+    logoY: number;
+    logoInverted: boolean;
+    svgOutput?: string;
+  }>;
 }
 
 interface Order {
@@ -47,7 +57,6 @@ interface Order {
 export default function OrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -100,10 +109,11 @@ export default function OrdersPage() {
       updated_at: new Date().toISOString(),
     };
 
-    if (status === 'shipped' && !selectedOrder?.shipped_at) {
+    // Sipariş durumuna göre tarih ekle
+    if (status === 'shipped') {
       updateData.shipped_at = new Date().toISOString();
     }
-    if (status === 'delivered' && !selectedOrder?.delivered_at) {
+    if (status === 'delivered') {
       updateData.delivered_at = new Date().toISOString();
     }
 
@@ -117,16 +127,6 @@ export default function OrdersPage() {
     } else {
       setToast({ message: 'Sipariş durumu güncellendi!', type: 'success' });
       loadOrders();
-      if (selectedOrder?.id === orderId) {
-        const updatedOrderResult = await supabase
-          .from('orders')
-          .select('*')
-          .eq('id', orderId)
-          .single();
-        if (updatedOrderResult.data) {
-          setSelectedOrder(updatedOrderResult.data);
-        }
-      }
     }
   };
 
@@ -144,9 +144,6 @@ export default function OrdersPage() {
     } else {
       showToast('Ödeme durumu güncellendi!', 'success');
       loadOrders();
-      if (selectedOrder) {
-        setSelectedOrder({ ...selectedOrder, payment_status: status });
-      }
     }
   };
 
@@ -399,7 +396,7 @@ export default function OrdersPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button
-                            onClick={() => setSelectedOrder(order)}
+                            onClick={() => router.push(`/admin/orders/${order.id}`)}
                             className="text-blue-600 hover:text-blue-900"
                           >
                             <Eye size={18} />
@@ -415,181 +412,6 @@ export default function OrdersPage() {
         </main>
       </div>
 
-      {/* Order Detail Modal */}
-      {selectedOrder && (
-        <>
-          <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-            onClick={() => setSelectedOrder(null)}
-          />
-          <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4">
-              <div 
-                className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Modal Header */}
-                <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Sipariş Detayı</h2>
-                      <p className="text-sm text-gray-500">{selectedOrder.order_number}</p>
-                    </div>
-                    <button
-                      onClick={() => setSelectedOrder(null)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      <XCircle size={24} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Modal Body */}
-                <div className="px-6 py-6 space-y-6">
-                  {/* Customer Info */}
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Müşteri Bilgileri</h3>
-                    <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Ad Soyad:</span>
-                        <span className="font-medium text-gray-900">{selectedOrder.customer_name}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Email:</span>
-                        <span className="font-medium text-gray-900">{selectedOrder.customer_email}</span>
-                      </div>
-                      {selectedOrder.customer_phone && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Telefon:</span>
-                          <span className="font-medium text-gray-900">{selectedOrder.customer_phone}</span>
-                        </div>
-                      )}
-                      {selectedOrder.customer_address && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Adres:</span>
-                          <span className="font-medium text-gray-900 text-right max-w-xs">{selectedOrder.customer_address}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Order Items */}
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Sipariş Ürünleri</h3>
-                    <div className="space-y-3">
-                      {selectedOrder.items.map((item, idx) => (
-                        <div key={idx} className="flex items-center gap-4 bg-gray-50 rounded-lg p-4">
-                          {item.image && (
-                            <div className="w-16 h-16 bg-white rounded overflow-hidden shrink-0">
-                              <Image 
-                                src={item.image} 
-                                alt={item.name}
-                                width={64}
-                                height={64}
-                                className="object-cover w-full h-full"
-                              />
-                            </div>
-                          )}
-                          <div className="flex-1">
-                            <p className="font-medium text-gray-900">{item.name}</p>
-                            <p className="text-sm text-gray-500">Adet: {item.quantity}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-gray-900">
-                              ₺{(item.total || (item.price || 0) * item.quantity).toFixed(2)}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              ₺{(item.price || 0).toFixed(2)} / adet
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Price Summary */}
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Fiyat Özeti</h3>
-                    <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Ara Toplam:</span>
-                        <span className="font-medium text-gray-900">₺{Number(selectedOrder.subtotal).toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Kargo:</span>
-                        <span className="font-medium text-gray-900">₺{Number(selectedOrder.shipping_cost).toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Vergi:</span>
-                        <span className="font-medium text-gray-900">₺{Number(selectedOrder.tax).toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between pt-2 border-t border-gray-300">
-                        <span className="font-semibold text-gray-900">Toplam:</span>
-                        <span className="font-bold text-gray-900 text-lg">₺{Number(selectedOrder.total).toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Status Updates */}
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Durum Güncelle</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Sipariş Durumu</label>
-                        <select
-                          value={selectedOrder.order_status}
-                          onChange={(e) => updateOrderStatus(selectedOrder.id, e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                        >
-                          <option value="pending">Bekliyor</option>
-                          <option value="processing">İşlemde</option>
-                          <option value="shipped">Kargoda</option>
-                          <option value="delivered">Teslim Edildi</option>
-                          <option value="cancelled">İptal Edildi</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Ödeme Durumu</label>
-                        <select
-                          value={selectedOrder.payment_status}
-                          onChange={(e) => updatePaymentStatus(selectedOrder.id, e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                        >
-                          <option value="pending">Bekliyor</option>
-                          <option value="paid">Ödendi</option>
-                          <option value="failed">Başarısız</option>
-                          <option value="refunded">İade Edildi</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Notes */}
-                  {(selectedOrder.customer_note || selectedOrder.admin_note) && (
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Notlar</h3>
-                      <div className="space-y-3">
-                        {selectedOrder.customer_note && (
-                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <p className="text-sm font-medium text-blue-900 mb-1">Müşteri Notu:</p>
-                            <p className="text-sm text-blue-800">{selectedOrder.customer_note}</p>
-                          </div>
-                        )}
-                        {selectedOrder.admin_note && (
-                          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                            <p className="text-sm font-medium text-gray-900 mb-1">Admin Notu:</p>
-                            <p className="text-sm text-gray-700">{selectedOrder.admin_note}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   );
 }

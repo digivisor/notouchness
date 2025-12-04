@@ -54,9 +54,9 @@ export default function StorePage() {
     setTimeout(() => setSelectedProduct(null), 300);
   };
 
-  const handleBuyNow = (product: ModalProduct, qty: number = 1) => {
+  const handleBuyNow = (product: ModalProduct, qty: number = 1, cardsData?: import('../components/ProductModal').CardData[]) => {
     // Ürünü sepete ekle (zaten sepette varsa miktarı artırır)
-    addToCart(product as unknown as Product, qty);
+    addToCart(product as unknown as Product, qty, cardsData);
     // Modal'ı kapat
     closeProductModal();
     // Checkout sayfasına yönlendir
@@ -200,8 +200,8 @@ export default function StorePage() {
     }
   });
 
-  const handleAddToCart = (product: Product, qty: number = 1) => {
-    addToCart(product, qty);
+  const handleAddToCart = (product: Product, qty: number = 1, cardsData?: import('../components/ProductModal').CardData[]) => {
+    addToCart(product, qty, cardsData);
     setAddedToCart(product.id);
     // Sepeti otomatik aç
     setIsCartVisible(true);
@@ -540,8 +540,8 @@ export default function StorePage() {
         isOpen={isProductModalOpen}
         product={selectedProduct as unknown as ModalProduct}
         onClose={closeProductModal}
-        onAddToCart={(p, qty) => {
-          handleAddToCart(p as unknown as Product, qty);
+        onAddToCart={(p, qty, cardsData) => {
+          handleAddToCart(p as unknown as Product, qty, cardsData);
         }}
         onCartOpen={openCart}
         onBuyNow={handleBuyNow}

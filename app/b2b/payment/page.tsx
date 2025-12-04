@@ -1,108 +1,127 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { useCart } from '../../context/CartContext';
-import { supabase } from '../../../lib/supabase';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
-import CartModal from '../../components/CartModal';
-import { ArrowLeft, CreditCard, Shield, CheckCircle } from 'lucide-react';
-import CardSVG from '../../components/CardSVG';
-import { CardData } from '../../components/ProductModal';
+import { supabase } from '@/lib/supabase';
+import { CreditCard, Shield, ArrowLeft, X } from 'lucide-react';
 
-export default function PaymentPage() {
+type Dealer = {
+  id: string;
+  name: string;
+  email: string;
+  username: string;
+  logo_url?: string | null;
+};
+
+type SalesCard = {
+  id: string;
+  name: string;
+  price: number;
+  currency: string;
+  category: string;
+  image_front: string;
+  image_back?: string | null;
+  description?: string | null;
+};
+
+type DealerCard = {
+  id: string;
+  dealer_id: string;
+  sales_card_id: string;
+  dealer_price: number;
+  currency: string;
+  is_active: boolean;
+  sales_card: SalesCard;
+};
+
+export default function B2BPaymentPage() {
   const router = useRouter();
-  const { cartItems, getTotalPrice, clearCart, isLoaded, updateCartItemCardsData } = useCart();
-  const [isCartVisible, setIsCartVisible] = useState(false);
+  const searchParams = useSearchParams();
+  const salesCardId = searchParams.get('cardId');
+  
+  const [dealer, setDealer] = useState<Dealer | null>(null);
+  const [dealerCard, setDealerCard] = useState<DealerCard | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [threeDSContent, setThreeDSContent] = useState<string | null>(null);
-  const [activeCardTab, setActiveCardTab] = useState<{ [itemId: number]: number }>({});
-  const [localCardsData, setLocalCardsData] = useState<{ [itemId: number]: CardData[] }>({});
+  const [error, setError] = useState<string | null>(null);
+  
   const [formData, setFormData] = useState({
-    // localStorage'dan gelecek
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    district: '',
-    postalCode: '',
-    companyName: '',
-    taxNumber: '',
-    taxOffice: '',
-    orderNote: '',
-    // Ödeme bilgileri
     cardNumber: '',
     cardName: '',
     expiryDate: '',
     cvv: '',
   });
+  
   const [cardErrors, setCardErrors] = useState({
     cardNumber: '',
     expiryDate: '',
     cvv: ''
   });
+
   const [orderNumber] = useState(() => {
     const date = new Date();
     const dateStr = date.toISOString().split('T')[0].replace(/-/g, '');
     const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `ORD-${dateStr}-${random}`;
+    return `B2B-${dateStr}-${random}`;
   });
 
-  // localStorage'dan form verilerini yükle
   useEffect(() => {
-    const savedFormData = localStorage.getItem('checkout_form_data');
-    if (savedFormData) {
-      try {
-        const parsed = JSON.parse(savedFormData);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setFormData(prev => ({ ...prev, ...parsed }));
-      } catch (e) {
-        console.error('Form data parse error:', e);
-        router.push('/checkout');
-      }
-    } else {
-      // Form verisi yoksa bilgiler sayfasına yönlendir
-      router.push('/checkout');
+    const session = localStorage.getItem('b2b_session');
+    if (!session) {
+      router.push('/b2b/login');
+      return;
     }
-  }, [router]);
 
-  // Sepet yüklenene kadar bekle, sonra boşsa mağazaya yönlendir
-  useEffect(() => {
-    if (isLoaded && cartItems.length === 0) {
-      router.push('/store');
-    }
-  }, [cartItems, router, isLoaded]);
-
-  // İlk item için aktif tab'ı ayarla ve localCardsData'yı başlat
-  useEffect(() => {
-    if (cartItems.length > 0) {
-      const newActiveTabs: { [itemId: number]: number } = {};
-      const newLocalCardsData: { [itemId: number]: CardData[] } = {};
-      
-      cartItems.forEach(item => {
-        if (item.cardsData && item.cardsData.length > 0) {
-          if (!activeCardTab[item.id]) {
-            newActiveTabs[item.id] = 0;
-          }
-          if (!localCardsData[item.id]) {
-            newLocalCardsData[item.id] = [...item.cardsData];
-          }
+    try {
+      const parsed = JSON.parse(session);
+      if (parsed.dealer) {
+        setDealer(parsed.dealer);
+        if (salesCardId) {
+          void loadDealerCard(parsed.dealer.id, salesCardId);
+        } else {
+          setError('Kart ID bulunamadı');
+          setLoading(false);
         }
-      });
-      
-      if (Object.keys(newActiveTabs).length > 0) {
-        setActiveCardTab(prev => ({ ...prev, ...newActiveTabs }));
+      } else {
+        router.push('/b2b/login');
       }
-      if (Object.keys(newLocalCardsData).length > 0) {
-        setLocalCardsData(prev => ({ ...prev, ...newLocalCardsData }));
-      }
+    } catch (e) {
+      router.push('/b2b/login');
     }
-  }, [cartItems]);
+  }, [router, salesCardId]);
+
+  const loadDealerCard = async (dealerId: string, cardId: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('dealer_cards')
+        .select(`
+          *,
+          sales_card:sales_cards(*)
+        `)
+        .eq('dealer_id', dealerId)
+        .eq('sales_card_id', cardId)
+        .eq('is_active', true)
+        .single();
+
+      if (fetchError || !data) {
+        throw new Error('Kart bulunamadı');
+      }
+
+      setDealerCard({
+        ...data,
+        sales_card: data.sales_card,
+      } as DealerCard);
+    } catch (err: any) {
+      setError(err.message || 'Kart yüklenirken hata oluştu');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Luhn algoritması ile kart numarası kontrolü
   const validateCardNumber = (cardNumber: string): boolean => {
@@ -225,20 +244,11 @@ export default function PaymentPage() {
     setCardErrors({ cardNumber: '', expiryDate: '', cvv: '' });
   };
 
-  // Tüm kartların dolu olup olmadığını kontrol et
-  const allCardsValid = () => {
-    return Object.values(localCardsData).every(cards => {
-      if (!cards || cards.length === 0) return false;
-      return cards.every(card => card.name && card.logo);
-    });
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Kart validasyonu
-    if (!allCardsValid()) {
-      alert('Lütfen tüm kartlar için logo ve isim bilgilerini doldurun!');
+    if (!dealer || !dealerCard) {
+      setError('Dealer veya kart bilgisi bulunamadı');
       return;
     }
     
@@ -259,12 +269,11 @@ export default function PaymentPage() {
     }
 
     setIsSubmitting(true);
+    setError(null);
 
     try {
-      const totalPrice = getTotalPrice();
-      const shippingCost = 0;
-      const grandTotal = totalPrice + shippingCost;
-
+      const totalAmount = dealerCard.dealer_price;
+      
       // Önce iyzico 3D Secure Payment oluştur
       const [expMonth, expYear] = formData.expiryDate.split('/');
       const cardNumber = formData.cardNumber.replace(/\s/g, '');
@@ -275,12 +284,12 @@ export default function PaymentPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: grandTotal,
+          amount: totalAmount,
           orderNumber: orderNumber,
-          customerEmail: formData.email,
-          customerName: `${formData.firstName} ${formData.lastName}`,
-          customerPhone: formData.phone,
-          billingAddress: `${formData.address}, ${formData.district}, ${formData.city} ${formData.postalCode}`,
+          customerEmail: dealer.email,
+          customerName: dealer.name,
+          customerPhone: '', // B2B için telefon opsiyonel
+          billingAddress: 'B2B Satın Alma',
           cardNumber: cardNumber,
           cardHolderName: formData.cardName,
           expireMonth: expMonth,
@@ -293,60 +302,38 @@ export default function PaymentPage() {
       const paymentData = await paymentResponse.json();
 
       if (!paymentResponse.ok || paymentData.error) {
-        // Hata durumu - sipariş kaydetme, sadece hata sayfasına yönlendir
         const errorParams = new URLSearchParams({
           reason: paymentData.reason || 'general_error',
           ...(paymentData.errorCode && { errorCode: paymentData.errorCode }),
           ...(paymentData.error && { errorMessage: encodeURIComponent(paymentData.error) })
         });
-        router.push(`/checkout/hata?${errorParams.toString()}`);
+        router.push(`/b2b/payment/error?${errorParams.toString()}`);
         setIsSubmitting(false);
         return;
       }
 
-      // 3D Secure HTML content geldiyse (ödeme intent başarılı) siparişi kaydet
+      // 3D Secure HTML content geldiyse (ödeme intent başarılı)
       if (paymentData.threeDSHtmlContent) {
-        // Sipariş verisini hazırla
-        const orderData = {
-          order_number: orderNumber,
-          customer_name: `${formData.firstName} ${formData.lastName}`,
-          customer_email: formData.email,
-          customer_phone: formData.phone,
-          customer_address: `${formData.address}, ${formData.district}, ${formData.city} ${formData.postalCode}`,
-          items: cartItems.map(item => {
-            const price = typeof item.price === 'string' 
-              ? parseFloat(item.price.replace(/[₺,.]/g, ''))
-              : item.price;
-            
-            return {
-              id: item.id,
-              name: item.name,
-              price: price,
-              quantity: item.quantity,
-              image: item.image,
-              total: price * item.quantity,
-              cardsData: item.cardsData || [] // Her ürün için kart verileri (isim, logo, SVG çıktısı)
-            };
-          }),
-          subtotal: totalPrice,
-          shipping_cost: shippingCost,
-          tax: 0,
-          total: grandTotal,
-          payment_method: 'credit_card',
-          payment_status: 'pending',
-          order_status: 'pending',
-          customer_note: formData.orderNote || null,
-          admin_note: null,
+        // Satın alma kaydını hazırla (pending olarak)
+        const purchaseData = {
+          dealer_id: dealer.id,
+          sales_card_id: dealerCard.sales_card_id,
+          dealer_price: dealerCard.dealer_price,
+          currency: dealerCard.currency,
+          quantity: 1,
+          total_amount: totalAmount,
+          status: 'pending', // Ödeme tamamlanınca completed olacak
+          notes: `Order: ${orderNumber}`,
         };
 
         // Supabase'e kaydet
-        const { error: orderError } = await supabase
-          .from('orders')
-          .insert([orderData]);
+        const { error: purchaseError } = await supabase
+          .from('dealer_purchases')
+          .insert([purchaseData]);
 
-        if (orderError) {
-          console.error('Sipariş kaydedilemedi:', orderError);
-          alert('Sipariş kaydedilirken bir hata oluştu!');
+        if (purchaseError) {
+          console.error('Purchase kaydedilemedi:', purchaseError);
+          setError('Satın alma kaydı oluşturulamadı');
           setIsSubmitting(false);
           return;
         }
@@ -375,7 +362,7 @@ export default function PaymentPage() {
       }
     } catch (error) {
       console.error('Beklenmeyen hata:', error);
-      alert('Bir hata oluştu, lütfen tekrar deneyin.');
+      setError('Bir hata oluştu, lütfen tekrar deneyin.');
       setIsSubmitting(false);
     }
   };
@@ -414,72 +401,26 @@ export default function PaymentPage() {
     );
   }
 
-  const shippingCost = 0;
-  const totalPrice = getTotalPrice();
-  const grandTotal = totalPrice + shippingCost;
-
-  // Sepet yüklenene kadar loading göster
-  if (!isLoaded) {
+  if (loading || !dealer || !dealerCard) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header onCartClick={() => setIsCartVisible(true)} />
-        <CartModal isOpen={isCartVisible} onClose={() => setIsCartVisible(false)} />
-        
-        <div className="max-w-7xl mx-auto px-6 py-20 mt-20">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-black mb-4"></div>
-            <p className="text-gray-600">Yükleniyor...</p>
-          </div>
-        </div>
-        
-        <Footer />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600" />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onCartClick={() => setIsCartVisible(true)} />
-      <CartModal isOpen={isCartVisible} onClose={() => setIsCartVisible(false)} />
-
-      <div className="max-w-7xl mx-auto px-6 py-12 mt-20">
+      <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Back Button */}
-        <Link 
-          href="/checkout"
+        <button
+          type="button"
+          onClick={() => router.push('/b2b/dashboard')}
           className="inline-flex items-center gap-2 text-gray-600 hover:text-black transition mb-8"
         >
           <ArrowLeft size={20} />
           Geri
-        </Link>
-
-        {/* Progress Steps */}
-        <div className="mb-12">
-          <div className="flex items-center justify-center gap-4">
-            {[1, 2, 3].map((s) => (
-              <div key={s} className="flex items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold border-2 ${
-                  s <= 2 ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-400 border-gray-200'
-                }`}>
-                  {s < 2 ? (
-                    <CheckCircle className="w-5 h-5" />
-                  ) : (
-                    s
-                  )}
-                </div>
-                {s < 3 && (
-                  <div className={`w-24 h-1 mx-2 ${
-                    s < 2 ? 'bg-gray-900' : 'bg-gray-200'
-                  }`}></div>
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-between max-w-md mx-auto mt-4">
-            <span className="text-sm text-gray-900 font-medium">Bilgiler</span>
-            <span className="text-sm text-gray-900 font-medium">Ödeme</span>
-            <span className="text-sm text-gray-400">Onay</span>
-          </div>
-        </div>
+        </button>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column - Payment Form */}
@@ -504,7 +445,7 @@ export default function PaymentPage() {
                     <div>
                       <p className="text-sm font-semibold text-gray-900 mb-1">iyzico Test Modu (Sandbox)</p>
                       <p className="text-xs text-gray-600">
-                        Bu bir test ortamıdır. Gerçek ödeme yapılmaz. Test kartları ile ödeme simüle edilir ve Supabase&apos;e kaydedilir.
+                        Bu bir test ortamıdır. Gerçek ödeme yapılmaz. Test kartları ile ödeme simüle edilir.
                       </p>
                     </div>
                   </div>
@@ -527,6 +468,12 @@ export default function PaymentPage() {
                     Başarısız Test Kartı Doldur
                   </button>
                 </div>
+
+                {error && (
+                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                    {error}
+                  </div>
+                )}
 
                 <div className="space-y-5">
                   <div>
@@ -614,16 +561,17 @@ export default function PaymentPage() {
               </div>
 
               <div className="flex gap-4">
-                <Link
-                  href="/checkout"
-                  className="flex-1 bg-gray-200 text-gray-700 py-4 rounded-lg font-semibold hover:bg-gray-300 transition text-center"
+                <button
+                  type="button"
+                  onClick={() => router.push('/b2b/dashboard')}
+                  className="flex-1 bg-gray-200 text-gray-700 py-4 rounded-lg font-semibold hover:bg-gray-300 transition"
                 >
-                  Geri
-                </Link>
+                  İptal
+                </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 bg-black text-white py-4 rounded-lg font-semibold hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-blue-600 text-white py-4 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center justify-center gap-2">
@@ -631,10 +579,10 @@ export default function PaymentPage() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Sipariş Oluşturuluyor...
+                      Ödeme İşleniyor...
                     </span>
                   ) : (
-                    'Siparişi Onayla'
+                    'Ödemeyi Tamamla'
                   )}
                 </button>
               </div>
@@ -646,105 +594,53 @@ export default function PaymentPage() {
             <div className="bg-white p-6 rounded-lg shadow-sm sticky top-24">
               <h2 className="text-xl font-bold mb-4 text-gray-900">Sipariş Özeti</h2>
               
-              {/* Cart Items - Kart SVG'leri ile */}
-              <div className="space-y-6 mb-4">
-                {cartItems.map((item) => {
-                  const itemCards = localCardsData[item.id] || item.cardsData || [];
-                  if (itemCards.length === 0) return null;
-                  
-                  const numericPrice = typeof item.price === 'string' 
-                    ? parseFloat(item.price.replace(/[₺,.]/g, ''))
-                    : item.price;
-                  const displayPrice = typeof item.price === 'string' ? item.price : `₺${item.price}`;
-                  const itemTotal = numericPrice * item.quantity;
-                  
-                  const itemActiveTab = activeCardTab[item.id] || 0;
-                  const currentCard = itemCards[itemActiveTab] || {
-                    name: '',
-                    logo: null,
-                    logoSize: 80,
-                    logoX: 10,
-                    logoY: 12,
-                    logoInverted: false,
-                  };
-                  
-                  return (
-                    <div key={item.id} className="border-b border-gray-200 pb-6 last:border-0 last:pb-0">
-                      <h4 className="font-medium text-sm text-gray-900 mb-3">{item.name}</h4>
-                      
-                      {/* Tabs - Eğer birden fazla kart varsa */}
-                      {itemCards.length > 1 && (
-                        <div className="border-b border-gray-200 mb-3">
-                          <div className="flex overflow-x-auto whitespace-nowrap scrollbar-hide">
-                            {itemCards.map((_, index) => (
-                              <button
-                                key={index}
-                                type="button"
-                                onClick={() => setActiveCardTab(prev => ({ ...prev, [item.id]: index }))}
-                                className={`px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
-                                  itemActiveTab === index
-                                    ? 'border-b-2 border-black text-black'
-                                    : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                              >
-                                Kart {index + 1}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Kart SVG - Anında güncelleniyor */}
-                      <div className="flex items-center justify-center bg-gray-50 rounded-lg p-3 mb-3">
-                        <div className="relative w-full max-w-[200px] aspect-[240.9/153.1]">
-                          <CardSVG
-                            name={currentCard.name}
-                            logo={currentCard.logo}
-                            logoSize={currentCard.logoSize}
-                            logoX={currentCard.logoX}
-                            logoY={currentCard.logoY}
-                            logoInverted={currentCard.logoInverted}
-                          />
-                        </div>
-                      </div>
-                      
-                      {/* Açıklama */}
-                      <p className="text-xs text-gray-600 mb-3">
-                        Profesyonel dijital kartvizit: NFC ve QR ile hızlı paylaşım, sınırsız güncelleme ve şık tasarım.
-                      </p>
-                      
-                      {/* Fiyat Bilgisi */}
-                      <div className="text-xs text-gray-600">
-                        <p>Adet: {item.quantity}</p>
-                        <p className="font-semibold text-gray-900 mt-1">
-                          {displayPrice} x {item.quantity} = ₺{itemTotal.toLocaleString('tr-TR')}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
+              {dealerCard.sales_card.image_front && (
+                <div className="mb-4">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={dealerCard.sales_card.image_front}
+                    alt={dealerCard.sales_card.name}
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                </div>
+              )}
+              
+              <div className="space-y-4 mb-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">{dealerCard.sales_card.name}</h3>
+                  {dealerCard.sales_card.description && (
+                    <p className="text-sm text-gray-600 mb-2">{dealerCard.sales_card.description}</p>
+                  )}
+                  {dealerCard.sales_card.category && (
+                    <span className="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
+                      {dealerCard.sales_card.category}
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Ara Toplam</span>
-                  <span className="font-medium text-gray-900">₺{totalPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="text-gray-600">Birim Fiyat</span>
+                  <span className="font-medium text-gray-900">
+                    {dealerCard.dealer_price} {dealerCard.currency}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Kargo</span>
-                  <span className="font-medium text-green-600">Ücretsiz</span>
+                  <span className="text-gray-600">Miktar</span>
+                  <span className="font-medium text-gray-900">1</span>
                 </div>
                 <div className="border-t pt-2 flex justify-between">
                   <span className="font-bold text-gray-900">Toplam</span>
-                  <span className="font-bold text-xl text-gray-900">₺{grandTotal.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="font-bold text-xl text-gray-900">
+                    {dealerCard.dealer_price} {dealerCard.currency}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 }

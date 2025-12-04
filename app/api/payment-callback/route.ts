@@ -170,16 +170,25 @@ async function handleCallback(request: NextRequest, method: 'POST' | 'GET') {
   if (!threeDSSuccess) {
     const reason = mdStatus === '0' ? '3ds_failed' : 'general_error';
     
-    // Eğer sipariş varsa "failed" olarak güncelle
+    // Eğer sipariş varsa "failed" olarak güncelle (B2B veya normal order)
     if (conversationId) {
       try {
         const { supabase } = await import('@/lib/supabase');
-        await supabase
-          .from('orders')
-          .update({ payment_status: 'failed', order_status: 'failed' })
-          .eq('order_number', conversationId);
+        if (conversationId.startsWith('B2B-')) {
+          // B2B purchase'ı failed yap
+          await supabase
+            .from('dealer_purchases')
+            .update({ status: 'failed' })
+            .like('notes', `%${conversationId}%`);
+        } else {
+          // Normal order'ı failed yap
+          await supabase
+            .from('orders')
+            .update({ payment_status: 'failed', order_status: 'failed' })
+            .eq('order_number', conversationId);
+        }
       } catch (e) {
-        console.error('Failed to update order status:', e);
+        console.error('Failed to update order/purchase status:', e);
         // Hata olsa bile devam et
       }
     }
@@ -190,6 +199,11 @@ async function handleCallback(request: NextRequest, method: 'POST' | 'GET') {
       ...(errorCode ? { errorCode } : {}),
       ...(errorMessage ? { errorMessage } : {}),
     });
+    
+    // B2B ise B2B hata sayfasına, değilse normal hata sayfasına
+    if (conversationId && conversationId.startsWith('B2B-')) {
+      return NextResponse.redirect(`${siteUrl}/b2b/payment/error?${qp.toString()}`, { status: 303 });
+    }
     return NextResponse.redirect(`${siteUrl}/checkout/hata?${qp.toString()}`, { status: 303 });
   }
 
@@ -200,17 +214,28 @@ async function handleCallback(request: NextRequest, method: 'POST' | 'GET') {
     // Payment success olduğunda authResult'u loglama
     // console.log('Iyzico payment success authResult:', JSON.stringify(authResult, null, 2));
   } catch (e: any) {
-    // Eğer sipariş varsa "failed" olarak güncelle
+    // Eğer sipariş varsa "failed" olarak güncelle (B2B veya normal order)
     if (conversationId) {
       try {
         const { supabase } = await import('@/lib/supabase');
-        await supabase
-          .from('orders')
-          .update({ payment_status: 'failed', order_status: 'failed' })
-          .eq('order_number', conversationId);
+        if (conversationId.startsWith('B2B-')) {
+          await supabase
+            .from('dealer_purchases')
+            .update({ status: 'failed' })
+            .like('notes', `%${conversationId}%`);
+        } else {
+          await supabase
+            .from('orders')
+            .update({ payment_status: 'failed', order_status: 'failed' })
+            .eq('order_number', conversationId);
+        }
       } catch (err) {
-        console.error('Failed to update order status:', err);
+        console.error('Failed to update order/purchase status:', err);
       }
+    }
+    
+    if (conversationId && conversationId.startsWith('B2B-')) {
+      return NextResponse.redirect(`${siteUrl}/b2b/payment/error?reason=server_error`, { status: 303 });
     }
     return NextResponse.redirect(`${siteUrl}/checkout/hata?reason=server_error`, { status: 303 });
   }
@@ -218,16 +243,23 @@ async function handleCallback(request: NextRequest, method: 'POST' | 'GET') {
   if (authResult?.status !== 'success') {
     const reason = mapErrorCodeToReason(authResult?.errorCode || authResult?.errorMessage);
     
-    // Eğer sipariş varsa "failed" olarak güncelle
+    // Eğer sipariş varsa "failed" olarak güncelle (B2B veya normal order)
     if (conversationId) {
       try {
         const { supabase } = await import('@/lib/supabase');
-        await supabase
-          .from('orders')
-          .update({ payment_status: 'failed', order_status: 'failed' })
-          .eq('order_number', conversationId);
+        if (conversationId.startsWith('B2B-')) {
+          await supabase
+            .from('dealer_purchases')
+            .update({ status: 'failed' })
+            .like('notes', `%${conversationId}%`);
+        } else {
+          await supabase
+            .from('orders')
+            .update({ payment_status: 'failed', order_status: 'failed' })
+            .eq('order_number', conversationId);
+        }
       } catch (e) {
-        console.error('Failed to update order status:', e);
+        console.error('Failed to update order/purchase status:', e);
         // Hata olsa bile devam et
       }
     }
@@ -237,10 +269,14 @@ async function handleCallback(request: NextRequest, method: 'POST' | 'GET') {
       ...(authResult?.errorCode ? { errorCode: String(authResult.errorCode) } : {}),
       ...(authResult?.errorMessage ? { errorMessage: String(authResult.errorMessage) } : {}),
     });
+    
+    if (conversationId && conversationId.startsWith('B2B-')) {
+      return NextResponse.redirect(`${siteUrl}/b2b/payment/error?${qp.toString()}`, { status: 303 });
+    }
     return NextResponse.redirect(`${siteUrl}/checkout/hata?${qp.toString()}`, { status: 303 });
   }
 
-  // 4) DB'de order'ı "paid" yap
+  // 4) DB'de order'ı "paid" yap (veya B2B purchase'ı "completed" yap)
   try {
     const { supabase } = await import('@/lib/supabase');
     // Doğru transactionId: itemTransactions[0].paymentTransactionId
@@ -248,20 +284,42 @@ async function handleCallback(request: NextRequest, method: 'POST' | 'GET') {
     if (authResult && Array.isArray(authResult.itemTransactions) && authResult.itemTransactions.length > 0) {
       transactionId = authResult.itemTransactions[0].paymentTransactionId;
     }
-    const { error: updateError } = await supabase
-      .from('orders')
-      .update({ payment_status: 'paid', payment_transaction_id: transactionId })
-      .eq('order_number', conversationId);
-    if (updateError) {
-      console.error('Order payment status update error:', updateError);
-      // DB hatası ödeme başarısını değiştirmez; logla
+    
+    // B2B satın alma kontrolü (order number B2B- ile başlıyorsa)
+    if (conversationId && conversationId.startsWith('B2B-')) {
+      const { error: updateError } = await supabase
+        .from('dealer_purchases')
+        .update({ 
+          status: 'completed',
+          notes: `Payment completed. Transaction ID: ${transactionId || 'N/A'}` 
+        })
+        .like('notes', `%${conversationId}%`);
+      if (updateError) {
+        console.error('B2B Purchase payment status update error:', updateError);
+      } else {
+        // B2B başarı: dashboard'a yönlendir (Kartlarım sekmesi ve success parametresi ile)
+        return NextResponse.redirect(`${siteUrl}/b2b/dashboard?tab=my-cards&payment=success&order=${conversationId}`, { status: 303 });
+      }
+    } else {
+      // Normal order güncellemesi
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({ payment_status: 'paid', payment_transaction_id: transactionId })
+        .eq('order_number', conversationId);
+      if (updateError) {
+        console.error('Order payment status update error:', updateError);
+        // DB hatası ödeme başarısını değiştirmez; logla
+      }
     }
   } catch (e) {
     console.error('Supabase import/update error:', e);
     // DB hatası ödeme başarısını değiştirmez; logla
   }
 
-  // 5) Onay sayfası
+  // 5) Onay sayfası (B2B değilse normal checkout onay sayfasına)
+  if (conversationId && conversationId.startsWith('B2B-')) {
+    return NextResponse.redirect(`${siteUrl}/b2b/dashboard?tab=my-cards&payment=success&order=${conversationId}`, { status: 303 });
+  }
   return NextResponse.redirect(`${siteUrl}/checkout/onay?payment=success&order=${conversationId}`, { status: 303 });
 }
 

@@ -6,6 +6,7 @@
   --color-background: #000000;
   --color-foreground: #ffffff;
   --font-poppins: 'Poppins', sans-serif;
+  --font-montserrat: 'Montserrat', sans-serif;
 }
 
 body {
@@ -43,6 +44,41 @@ body {
   50% {
     box-shadow: 0 0 40px rgba(168, 85, 247, 0.8);
   }
+}
+
+/* 3D Flip Animation for Card */
+.perspective-1000 {
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+}
+
+.card-flip-container {
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+.card-front {
+  transform: rotateY(0deg);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: transform 0.7s ease-in-out;
+  -webkit-transition: transform 0.7s ease-in-out;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: transform 0.7s ease-in-out;
+  -webkit-transition: transform 0.7s ease-in-out;
+}
+
+.card-flip-container:hover .card-front {
+  transform: rotateY(180deg);
+}
+
+.card-flip-container:hover .card-back {
+  transform: rotateY(0deg);
 }
 
 @keyframes gradient {

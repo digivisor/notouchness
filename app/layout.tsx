@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Poppins, Montserrat } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "./context/CartContext";
 import { UserProvider } from "./context/UserContext";
@@ -9,6 +9,13 @@ const poppins = Poppins({
   weight: ['300', '400', '500', '600', '700'],
   subsets: ["latin"],
   variable: "--font-poppins",
+});
+
+const montserrat = Montserrat({
+  weight: ['300', '400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  subsets: ["latin"],
+  variable: "--font-montserrat",
 });
 
 export const metadata: Metadata = {
@@ -23,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr">
-      <body className={`${poppins.variable} antialiased font-sans`}>
+      <body className={`${poppins.variable} ${montserrat.variable} antialiased font-sans`}>
         <CardProvider>
           <UserProvider>
             <CartProvider>
