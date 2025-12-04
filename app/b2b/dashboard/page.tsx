@@ -179,14 +179,11 @@ export default function B2BDashboardPage() {
         throw fetchError;
       }
 
-      const cards = (data || []).map((item: any) => ({
-        ...item,
-        sales_card: item.sales_card,
-      }));
-
+      const cards = (data ?? []) as DealerCard[];
       setDealerCards(cards);
-    } catch (err: any) {
-      setError(err.message || 'Kartlar yüklenirken hata oluştu');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Kartlar yüklenirken hata oluştu';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -209,13 +206,9 @@ export default function B2BDashboardPage() {
         throw fetchError;
       }
 
-      const purchases = (data || []).map((item: any) => ({
-        ...item,
-        sales_card: item.sales_card,
-      }));
-
+      const purchases = (data ?? []) as DealerPurchase[];
       setPurchasedCards(purchases);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Purchases fetch error:', err);
     } finally {
       setLoadingPurchases(false);
@@ -600,7 +593,7 @@ export default function B2BDashboardPage() {
                   <div className="p-12 text-center text-gray-500">
                     <Package size={48} className="mx-auto mb-4 text-gray-400" />
                     <p>Henüz satın aldığınız kart yok</p>
-                    <p className="text-sm mt-2">"Kart Satın Al" sekmesinden kart satın alabilirsiniz</p>
+                    <p className="text-sm mt-2">&quot;Kart Satın Al&quot; sekmesinden kart satın alabilirsiniz</p>
                   </div>
                 ) : (
                   <div className="space-y-4">

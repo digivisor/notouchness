@@ -95,6 +95,8 @@ export default function EditorPage() {
 
     // Initialize from currentCard
     if (currentCard) {
+      // Bu effect sadece mevcut karttan editor state'ini baslangicta senkronize eder
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditorSettings({
         backgroundColor: currentCard.backgroundColor || '#ffffff',
         containerBackgroundColor: currentCard.containerBackgroundColor || '#f9fafb',

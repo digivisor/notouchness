@@ -349,7 +349,7 @@ export default function QRMenuManagePage() {
               return (
                 <button
                   key={tab.key}
-                  onClick={() => setActiveTab(tab.key as any)}
+                  onClick={() => setActiveTab(tab.key)}
                   className={`w-full px-4 py-3 rounded-lg transition-all flex items-center gap-3 font-medium ${
                     activeTab === tab.key
                       ? 'bg-blue-600 text-white shadow-md'
@@ -418,7 +418,7 @@ export default function QRMenuManagePage() {
                     ].map((step) => (
                       <div key={step.key} className="flex items-center flex-1">
                         <button
-                          onClick={() => setActiveStep(step.key as any)}
+                          onClick={() => setActiveStep(step.key)}
                           className={`flex-1 px-4 py-2 rounded-lg transition-all ${
                             activeStep === step.key
                               ? 'bg-blue-600 text-white shadow-md'

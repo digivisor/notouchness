@@ -389,7 +389,7 @@ export default function OrderDetailPage() {
       // Statik QR kod alanını bul - içinde çok sayıda rect olan g element'i
       // İlk rect'in x="203.6" y="100.8" konumunda olması gerekiyor
       const allGroups = Array.from(svgElement.querySelectorAll('g'));
-      let qrGroup = allGroups.find((g) => {
+      const qrGroup = allGroups.find((g) => {
         const rects = g.querySelectorAll('rect');
         if (rects.length > 50) {
           // İlk rect'in konumunu kontrol et

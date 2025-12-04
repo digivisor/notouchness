@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
         sales_card: salesCard,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('B2B purchase error:', error);
     return NextResponse.json(
       { success: false, error: 'Satın alma sırasında bir hata oluştu' },

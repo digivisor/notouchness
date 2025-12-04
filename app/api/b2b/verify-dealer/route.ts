@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         logo_url: dealer.logo_url,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('B2B login error:', error);
     return NextResponse.json(
       { success: false, error: 'Giriş yapılırken bir hata oluştu' },

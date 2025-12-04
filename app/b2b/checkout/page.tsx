@@ -58,8 +58,9 @@ export default function B2BCheckoutPage() {
       return;
     }
     try {
-      const parsed = JSON.parse(session);
+      const parsed = JSON.parse(session) as { dealer?: Dealer };
       if (parsed.dealer) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setDealer(parsed.dealer);
       } else {
         router.push('/b2b/login');

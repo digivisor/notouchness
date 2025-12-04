@@ -54,19 +54,25 @@ export default function ProductModal({ isOpen, product, onClose, onAddToCart, on
 
   // Initialize cards when quantity changes
   useEffect(() => {
-    setCards(Array(quantity).fill(null).map(() => ({
-      name: '',
-      subtitle: '',
-      logo: null,
-      logoSize: 80,
-      logoX: 10,
-      logoY: 12,
-      logoInverted: false,
-    })));
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCards(
+      Array(quantity)
+        .fill(null)
+        .map(() => ({
+          name: '',
+          subtitle: '',
+          logo: null,
+          logoSize: 80,
+          logoX: 10,
+          logoY: 12,
+          logoInverted: false,
+        }))
+    );
     if (activeTab >= quantity) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveTab(Math.max(0, quantity - 1));
     }
-  }, [quantity]);
+  }, [quantity, activeTab]);
 
   // Reset quantity when modal opens
   useEffect(() => {

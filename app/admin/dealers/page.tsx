@@ -132,12 +132,9 @@ export default function AdminDealersPage() {
     if (error) {
       console.error('Dealer purchases fetch error:', error.message);
     } else {
-      const purchases = (data || []).map((item: any) => ({
-        ...item,
-        dealer: item.dealer,
-        sales_card: item.sales_card,
-      }));
-      setDealerPurchases(purchases as DealerPurchase[]);
+      // Supabase'ten gelen veriyi güçlü tipe çevir
+      const purchases = (data ?? []) as DealerPurchase[];
+      setDealerPurchases(purchases);
     }
   };
 
@@ -154,10 +151,7 @@ export default function AdminDealersPage() {
     if (error) {
       console.error('Dealer cards fetch error:', error.message);
     } else {
-      const cards = (data || []).map((item: any) => ({
-        ...item,
-        sales_card: item.sales_card,
-      }));
+      const cards = (data ?? []) as DealerCard[];
       setDealerCards(cards);
     }
   };
@@ -235,8 +229,9 @@ export default function AdminDealersPage() {
       const url = await uploadLogo(file);
       setField({ logo_url: url });
       setSuccess('Logo yüklendi!');
-    } catch (err: any) {
-      setError(err.message || 'Logo yüklenirken hata oluştu');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Logo yüklenirken hata oluştu';
+      setError(message);
     } finally {
       setUploadingLogo(false);
     }
@@ -272,7 +267,9 @@ export default function AdminDealersPage() {
         passwordHash = await hashPassword(password);
       }
 
-      const dealerData: any = {
+      const dealerData: Omit<Dealer, 'id' | 'created_at' | 'updated_at' | 'password_hash'> & {
+        password_hash?: string;
+      } = {
         name: model.name,
         email: model.email,
         username: model.username,
@@ -305,8 +302,9 @@ export default function AdminDealersPage() {
       setEditing(null);
       setPassword('');
       setShowPassword(false);
-    } catch (err: any) {
-      setError(err.message || 'Kayıt sırasında hata oluştu');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Kayıt sırasında hata oluştu';
+      setError(message);
     } finally {
       setSaving(false);
     }

@@ -80,29 +80,31 @@ export default function PaymentPage() {
 
   // İlk item için aktif tab'ı ayarla ve localCardsData'yı başlat
   useEffect(() => {
-    if (cartItems.length > 0) {
-      const newActiveTabs: { [itemId: number]: number } = {};
-      const newLocalCardsData: { [itemId: number]: CardData[] } = {};
-      
-      cartItems.forEach(item => {
-        if (item.cardsData && item.cardsData.length > 0) {
-          if (!activeCardTab[item.id]) {
-            newActiveTabs[item.id] = 0;
-          }
-          if (!localCardsData[item.id]) {
-            newLocalCardsData[item.id] = [...item.cardsData];
-          }
+    if (cartItems.length === 0) return;
+
+    const newActiveTabs: { [itemId: number]: number } = {};
+    const newLocalCardsData: { [itemId: number]: CardData[] } = {};
+    
+    cartItems.forEach(item => {
+      if (item.cardsData && item.cardsData.length > 0) {
+        if (!activeCardTab[item.id]) {
+          newActiveTabs[item.id] = 0;
         }
-      });
-      
-      if (Object.keys(newActiveTabs).length > 0) {
-        setActiveCardTab(prev => ({ ...prev, ...newActiveTabs }));
+        if (!localCardsData[item.id]) {
+          newLocalCardsData[item.id] = [...item.cardsData];
+        }
       }
-      if (Object.keys(newLocalCardsData).length > 0) {
-        setLocalCardsData(prev => ({ ...prev, ...newLocalCardsData }));
-      }
+    });
+    
+    if (Object.keys(newActiveTabs).length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActiveCardTab(prev => ({ ...prev, ...newActiveTabs }));
     }
-  }, [cartItems]);
+    if (Object.keys(newLocalCardsData).length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLocalCardsData(prev => ({ ...prev, ...newLocalCardsData }));
+    }
+  }, [cartItems, activeCardTab, localCardsData]);
 
   // Luhn algoritması ile kart numarası kontrolü
   const validateCardNumber = (cardNumber: string): boolean => {

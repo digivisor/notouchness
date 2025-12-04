@@ -116,8 +116,9 @@ export default function B2BPaymentPage() {
         ...data,
         sales_card: data.sales_card,
       } as DealerCard);
-    } catch (err: any) {
-      setError(err.message || 'Kart yüklenirken hata oluştu');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Kart yüklenirken hata oluştu';
+      setError(message);
     } finally {
       setLoading(false);
     }
