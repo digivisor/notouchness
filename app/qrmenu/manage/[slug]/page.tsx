@@ -340,16 +340,16 @@ export default function QRMenuManagePage() {
             <h2 className="text-lg font-bold text-gray-900">Menü Yönetimi</h2>
           </div>
           <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-            {[
+            {([
               { key: 'menu', label: 'QR Menü', icon: ShoppingBag },
               { key: 'cards', label: 'Kartlar', icon: QrCode },
               { key: 'settings', label: 'Ayarlar', icon: Settings },
-            ].map((tab) => {
+            ] as const).map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
+                  onClick={() => setActiveTab(tab.key as 'menu' | 'cards' | 'settings')}
                   className={`w-full px-4 py-3 rounded-lg transition-all flex items-center gap-3 font-medium ${
                     activeTab === tab.key
                       ? 'bg-blue-600 text-white shadow-md'
@@ -410,15 +410,15 @@ export default function QRMenuManagePage() {
               {activeTab === 'menu' && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
                   <div className="flex items-center justify-between">
-                    {[
+                    {([
                       { key: 'general', label: 'Genel Bilgiler', step: 1 },
                       { key: 'categories', label: 'Kategoriler', step: 2 },
                       { key: 'items', label: 'Ürünler', step: 3 },
                       { key: 'colors', label: 'Renkler', step: 4 },
-                    ].map((step) => (
+                    ] as const).map((step) => (
                       <div key={step.key} className="flex items-center flex-1">
                         <button
-                          onClick={() => setActiveStep(step.key)}
+                          onClick={() => setActiveStep(step.key as 'general' | 'categories' | 'items' | 'colors')}
                           className={`flex-1 px-4 py-2 rounded-lg transition-all ${
                             activeStep === step.key
                               ? 'bg-blue-600 text-white shadow-md'
