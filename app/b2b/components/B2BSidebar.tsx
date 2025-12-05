@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { LogOut, ShoppingCart, CreditCard } from 'lucide-react';
+import { LogOut, ShoppingCart, CreditCard, Wallet } from 'lucide-react';
 
 type Dealer = {
   id: string;
@@ -13,8 +13,8 @@ type Dealer = {
 
 type B2BSidebarProps = {
   dealer: Dealer;
-  activeTab?: 'buy' | 'my-cards';
-  onTabChange?: (tab: 'buy' | 'my-cards') => void;
+  activeTab?: 'buy' | 'my-cards' | 'account';
+  onTabChange?: (tab: 'buy' | 'my-cards' | 'account') => void;
 };
 
 export default function B2BSidebar({ dealer, activeTab, onTabChange }: B2BSidebarProps) {
@@ -25,7 +25,11 @@ export default function B2BSidebar({ dealer, activeTab, onTabChange }: B2BSideba
     router.push('/b2b/login');
   };
 
-  const handleTabClick = (tab: 'buy' | 'my-cards') => {
+  const handleTabClick = (tab: 'buy' | 'my-cards' | 'account') => {
+    if (tab === 'account') {
+      router.push('/b2b/account');
+      return;
+    }
     if (onTabChange) {
       onTabChange(tab);
     } else {
@@ -85,6 +89,20 @@ export default function B2BSidebar({ dealer, activeTab, onTabChange }: B2BSideba
             >
               <CreditCard size={18} />
               <span>Kartlarım</span>
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              onClick={() => handleTabClick('account')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === 'account'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+              }`}
+            >
+              <Wallet size={18} />
+              <span>Cari Hesap</span>
             </button>
           </li>
         </ul>

@@ -306,8 +306,23 @@ export default function B2BCardDetailPage() {
     setError(null);
 
     try {
+      // Önce mevcut kartları kontrol et
+      const { data: existingCards } = await supabase
+        .from('dealer_purchase_cards')
+        .select('card_id')
+        .eq('dealer_purchase_id', purchase.id);
+
+      const existingCount = existingCards?.length || 0;
+      const remainingCards = purchase.quantity - existingCount;
+
+      if (remainingCards <= 0) {
+        // Tüm kartlar zaten oluşturulmuş, sadece yükle
+        await loadCards(purchase.id, purchase);
+        setIsCreatingCards(false);
+        return;
+      }
+
       const newCards: CardData[] = [];
-      const totalCards = purchase.quantity;
 
       // Grup adını oluştur: "Bayi Adı/Bayi Adı - DD.MM.YYYY HH:MM"
       const now = new Date();
@@ -320,7 +335,7 @@ export default function B2BCardDetailPage() {
       const dateTimeStr = `${day}.${month}.${year} ${hours}:${minutes}`;
       const groupName = `${dealerName}/${dealerName} - ${dateTimeStr}`;
 
-      for (let i = 0; i < totalCards; i++) {
+      for (let i = 0; i < remainingCards; i++) {
         // Yeni kart oluştur (grup adı ile)
         const newCard = await createCardByAdmin(undefined, groupName, 'nfc');
         if (!newCard) {

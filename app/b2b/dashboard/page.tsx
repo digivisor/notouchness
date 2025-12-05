@@ -71,7 +71,7 @@ export default function B2BDashboardPage() {
   const [loadingPurchases, setLoadingPurchases] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'buy' | 'my-cards'>('buy');
+  const [activeTab, setActiveTab] = useState<'buy' | 'my-cards' | 'account'>('buy');
   const [selectedPurchase, setSelectedPurchase] = useState<DealerPurchase | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);

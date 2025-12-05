@@ -25,6 +25,7 @@ export default function AdminQRMenuPage() {
   const [isCreateCardModalOpen, setIsCreateCardModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [groupName, setGroupName] = useState('');
+  const [qrColor, setQrColor] = useState<'black' | 'white'>('black'); // QR kod rengi: siyah veya beyaz
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [isCreatingCards, setIsCreatingCards] = useState(false);
   const [creatingProgress, setCreatingProgress] = useState({ current: 0, total: 0 });
@@ -939,6 +940,47 @@ export default function AdminQRMenuPage() {
                         />
                         <p className="text-xs text-gray-500 mt-1">
                           Aynı grup adına sahip kartlar birlikte yönetilebilir
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">
+                          QR Kod Rengi
+                        </label>
+                        <div className="flex gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setQrColor('black')}
+                            className={`flex-1 px-4 py-3 rounded-lg border-2 font-medium transition-all ${
+                              qrColor === 'black'
+                                ? 'border-blue-600 bg-blue-50 text-blue-700'
+                                : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                            }`}
+                          >
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="w-6 h-6 bg-black rounded"></div>
+                              <span>Siyah QR</span>
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setQrColor('white')}
+                            className={`flex-1 px-4 py-3 rounded-lg border-2 font-medium transition-all ${
+                              qrColor === 'white'
+                                ? 'border-blue-600 bg-blue-50 text-blue-700'
+                                : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                            }`}
+                          >
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="w-6 h-6 bg-gray-800 rounded border-2 border-gray-300">
+                                <div className="w-full h-full bg-white rounded"></div>
+                              </div>
+                              <span>Beyaz QR</span>
+                            </div>
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          QR kodun arka plan rengi seçilirken otomatik olarak ayarlanır
                         </p>
                       </div>
 

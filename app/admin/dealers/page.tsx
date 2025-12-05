@@ -79,6 +79,11 @@ export default function AdminDealersPage() {
   const [cardPrices, setCardPrices] = useState<Record<string, number>>({});
   const [dealerPurchases, setDealerPurchases] = useState<DealerPurchase[]>([]);
   const [orderSearchTerm, setOrderSearchTerm] = useState('');
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [depositDealer, setDepositDealer] = useState<Dealer | null>(null);
+  const [depositAmount, setDepositAmount] = useState('');
+  const [depositDescription, setDepositDescription] = useState('');
+  const [depositing, setDepositing] = useState(false);
 
   const model = editing ?? emptyDealer;
 
@@ -342,6 +347,60 @@ export default function AdminDealersPage() {
     setEditing(dealer);
     setPassword('****'); // Düzenleme modunda şifreyi gizle
     setShowPassword(false);
+  };
+
+  const handleDeposit = (dealer: Dealer) => {
+    setDepositDealer(dealer);
+    setDepositAmount('');
+    setDepositDescription('');
+    setShowDepositModal(true);
+  };
+
+  const handleDepositSubmit = async () => {
+    if (!depositDealer || !depositAmount) {
+      setError('Lütfen tutarı girin.');
+      return;
+    }
+
+    const amount = parseFloat(depositAmount);
+    if (isNaN(amount) || amount <= 0) {
+      setError('Geçerli bir tutar girin.');
+      return;
+    }
+
+    setDepositing(true);
+    setError(null);
+
+    try {
+      // API route üzerinden para yükle (service role key ile RLS bypass)
+      const response = await fetch('/api/admin/deposit-to-dealer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          dealerId: depositDealer.id,
+          amount: amount,
+          description: depositDescription || `Para yükleme - ${depositDealer.name}`,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Para yükleme sırasında hata oluştu');
+      }
+
+      setSuccess(`${depositDealer.name} hesabına ${amount.toFixed(2)} TRY yüklendi! Yeni bakiye: ${data.newBalance.toFixed(2)} TRY`);
+      setShowDepositModal(false);
+      setDepositAmount('');
+      setDepositDescription('');
+      setDepositDealer(null);
+    } catch (err: any) {
+      setError(err.message || 'Para yükleme sırasında hata oluştu');
+    } finally {
+      setDepositing(false);
+    }
   };
 
   const handleManageCards = async (dealer: Dealer) => {
@@ -628,6 +687,13 @@ export default function AdminDealersPage() {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <button
+                              onClick={() => handleDeposit(dealer)}
+                              className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
+                              title="Para Yükle"
+                            >
+                              <DollarSign size={18} />
+                            </button>
+                            <button
                               onClick={() => handleManageCards(dealer)}
                               className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
                               title="Kartları Yönet"
@@ -881,6 +947,87 @@ export default function AdminDealersPage() {
                       </div>
                     ))}
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Para Yükleme Modalı */}
+      {showDepositModal && depositDealer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900">
+                Para Yükle - {depositDealer.name}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowDepositModal(false);
+                  setDepositDealer(null);
+                  setDepositAmount('');
+                  setDepositDescription('');
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tutar (TRY)
+                </label>
+                <input
+                  type="number"
+                  value={depositAmount}
+                  onChange={(e) => setDepositAmount(e.target.value)}
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Açıklama (Opsiyonel)
+                </label>
+                <input
+                  type="text"
+                  value={depositDescription}
+                  onChange={(e) => setDepositDescription(e.target.value)}
+                  placeholder="Para yükleme açıklaması"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                  {error}
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={handleDepositSubmit}
+                  disabled={depositing || !depositAmount}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                >
+                  {depositing ? 'Yükleniyor...' : 'Para Yükle'}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowDepositModal(false);
+                    setDepositDealer(null);
+                    setDepositAmount('');
+                    setDepositDescription('');
+                  }}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium"
+                >
+                  İptal
+                </button>
               </div>
             </div>
           </div>

@@ -932,7 +932,7 @@ function CardItem({ card, getCardUrl, copyToClipboard, downloadQRCode, isSelecte
 
       <div className="flex justify-center mb-3 p-2 bg-gray-50 rounded-lg" onClick={onSelect} style={{ cursor: 'pointer' }}>
         <div id={`qr-${card.id}`}>
-          <QRCodeSVG value={getCardUrl(card.id)} size={100} />
+          <QRCodeSVG value={getCardUrl(card.id)} size={100} bgColor="transparent" />
         </div>
       </div>
 
@@ -1035,7 +1035,7 @@ function CardDetailModal({ card, getCardUrl, copyToClipboard, downloadQRCode, on
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">QR Kod</label>
             <div id={`qr-${card.id}`} className="flex justify-center p-4 bg-white border border-gray-200 rounded-lg">
-              <QRCodeSVG value={getCardUrl(card.id)} size={256} />
+              <QRCodeSVG value={getCardUrl(card.id)} size={256} bgColor="transparent" />
             </div>
             <button
               onClick={() => downloadQRCode(card.id)}

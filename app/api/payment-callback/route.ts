@@ -285,13 +285,92 @@ async function handleCallback(request: NextRequest, method: 'POST' | 'GET') {
     return NextResponse.redirect(`${siteUrl}/checkout/hata?${qp.toString()}`, { status: 303 });
   }
 
-  // 4) DB'de order'ı "paid" yap (veya B2B purchase'ı "completed" yap)
+  // 4) DB'de order'ı "paid" yap (veya B2B purchase'ı "completed" yap veya DEPOSIT için hesaba para yükle)
   try {
     const { supabase } = await import('@/lib/supabase');
     // Doğru transactionId: itemTransactions[0].paymentTransactionId
     let transactionId = undefined;
     if (authResult && Array.isArray(authResult.itemTransactions) && authResult.itemTransactions.length > 0) {
       transactionId = authResult.itemTransactions[0].paymentTransactionId;
+    }
+    
+    // DEPOSIT kontrolü (cari hesap para yükleme)
+    if (conversationId && conversationId.startsWith('DEPOSIT_')) {
+      // DEPOSIT_{dealerId}_{amount}_{date}_{random} formatını parse et
+      const parts = conversationId.split('_');
+      if (parts.length >= 5) { // DEPOSIT, uuid, amount, date, random = 5 parça
+        const dealerId = parts[1];
+        const amountStr = parts[2].replace(/(\d{2})$/, '.$1'); // Son 2 haneyi ondalık yap
+        const amount = parseFloat(amountStr);
+        
+        // Dealer ID'yi doğrula (UUID formatı basit kontrol)
+        if (dealerId.length < 30) {
+           console.error('Invalid dealer ID in conversationId:', dealerId);
+           return NextResponse.redirect(`${siteUrl}/b2b/account?payment=error&reason=invalid_order`, { status: 303 });
+        }
+        
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        
+        if (supabaseServiceKey && amount > 0) {
+          const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+            auth: {
+              autoRefreshToken: false,
+              persistSession: false,
+            },
+          });
+          
+          // Mevcut hesabı kontrol et (direkt dealerId ile)
+          const { data: account, error: accountError } = await supabaseAdmin
+            .from('dealer_accounts')
+            .select('balance')
+            .eq('dealer_id', dealerId)
+            .single();
+          
+          // Eğer hesap yoksa (accountError) veya varsa bakiye güncelle
+          // Ancak önce dealer'ın var olup olmadığını kontrol etmeye gerek yok, foreign key constraint hatası alırız yoksa.
+          // Yine de güvenli olsun diye upsert yapıyoruz.
+          
+          const currentBalance = account?.balance || 0;
+          const newBalance = currentBalance + amount;
+          
+          // Hesabı güncelle veya oluştur
+          const { error: updateError } = await supabaseAdmin
+            .from('dealer_accounts')
+            .upsert({
+              dealer_id: dealerId,
+              balance: newBalance,
+            }, {
+              onConflict: 'dealer_id',
+            });
+          
+          if (!updateError) {
+            // Transaction kaydı
+            await supabaseAdmin
+              .from('dealer_account_transactions')
+              .insert({
+                dealer_id: dealerId,
+                type: 'deposit',
+                amount: amount,
+                description: `Para yükleme - Ödeme: ${conversationId} | Transaction ID: ${transactionId || 'N/A'}`,
+              });
+            
+            // Başarı: account sayfasına yönlendir
+            return NextResponse.redirect(`${siteUrl}/b2b/account?payment=success&amount=${amount.toFixed(2)}`, { status: 303 });
+          } else {
+            console.error('Dealer account update error:', updateError);
+            return NextResponse.redirect(`${siteUrl}/b2b/account?payment=error&reason=update_failed`, { status: 303 });
+          }
+        } else {
+          console.error('Supabase service key or amount invalid:', { hasKey: !!supabaseServiceKey, amount });
+          const reason = !supabaseServiceKey ? 'config_error_key' : 'config_error_amount';
+          return NextResponse.redirect(`${siteUrl}/b2b/account?payment=error&reason=${reason}`, { status: 303 });
+        }
+      }
+      // Parse hatası
+      console.error('Invalid conversationId format:', conversationId);
+      return NextResponse.redirect(`${siteUrl}/b2b/account?payment=error&reason=invalid_order`, { status: 303 });
     }
     
     // B2B satın alma kontrolü (order number B2B- ile başlıyorsa)
@@ -328,6 +407,9 @@ async function handleCallback(request: NextRequest, method: 'POST' | 'GET') {
   // 5) Onay sayfası (B2B değilse normal checkout onay sayfasına)
   if (conversationId && conversationId.startsWith('B2B-')) {
     return NextResponse.redirect(`${siteUrl}/b2b/dashboard?tab=my-cards&payment=success&order=${conversationId}`, { status: 303 });
+  }
+  if (conversationId && conversationId.startsWith('DEPOSIT_')) {
+    return NextResponse.redirect(`${siteUrl}/b2b/account?payment=success`, { status: 303 });
   }
   return NextResponse.redirect(`${siteUrl}/checkout/onay?payment=success&order=${conversationId}`, { status: 303 });
 }
