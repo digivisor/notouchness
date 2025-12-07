@@ -140,7 +140,7 @@ export default function UserProfilePage() {
   
   // Platform icon mapping
   // Type definition for both Lucide icons and custom SVG components
-  type IconType = LucideIcon | React.FC<{ color?: string, size?: number | string, style?: any }>;
+  type IconType = LucideIcon | React.FC<{ color?: string, size?: number | string, style?: any }> | React.FC<{ size?: number, className?: string, color?: string }>;
   
   const getPlatformIcon = (platform: string): IconType => {
     const icons: Record<string, IconType> = {
@@ -150,16 +150,16 @@ export default function UserProfilePage() {
       iban: IbanIcon,
       
       // PlatformIcons componentinden gelenler
-      spotify: PlatformIcons.SpotifyIcon,
-      behance: PlatformIcons.BehanceIcon,
-      amazon: PlatformIcons.AmazonIcon,
-      tiktok: PlatformIcons.TiktokIcon,
-      snapchat: PlatformIcons.SnapchatIcon,
-      reddit: PlatformIcons.RedditIcon,
-      discord: PlatformIcons.DiscordIcon,
-      pinterest: PlatformIcons.PinterestIcon,
-      twitch: PlatformIcons.TwitchIcon,
-      threads: PlatformIcons.ThreadsIcon,
+      spotify: PlatformIcons.SpotifyIcon as IconType,
+      behance: PlatformIcons.BehanceIcon as IconType,
+      amazon: PlatformIcons.AmazonIcon as IconType,
+      tiktok: PlatformIcons.TiktokIcon as IconType,
+      snapchat: PlatformIcons.SnapchatIcon as IconType,
+      reddit: PlatformIcons.RedditIcon as IconType,
+      discord: PlatformIcons.DiscordIcon as IconType,
+      pinterest: PlatformIcons.PinterestIcon as IconType,
+      twitch: PlatformIcons.TwitchIcon as IconType,
+      threads: PlatformIcons.ThreadsIcon as IconType,
       
       // Mevcut Lucide İkonları
       instagram: Instagram,
