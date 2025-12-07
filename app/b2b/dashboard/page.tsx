@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Package, Store, CreditCard, ShoppingCart, X, Plus, Minus, Shield, Eye } from 'lucide-react';
+import { Package, Store, CreditCard, ShoppingCart, X, Plus, Minus, Shield, Eye, Folder } from 'lucide-react';
 import Image from 'next/image';
 import B2BSidebar from '../components/B2BSidebar';
 
@@ -91,7 +91,11 @@ export default function B2BDashboardPage() {
   const [lastOrderNumber, setLastOrderNumber] = useState<string | null>(null);
   const [showOrderSuccessModal, setShowOrderSuccessModal] = useState(false);
   const [filterText, setFilterText] = useState('');
-  const [purchaseCardsMap, setPurchaseCardsMap] = useState<{ [purchaseId: string]: Array<{ card_id: string; full_name: string | null }> }>({});
+  const [purchaseCardsMap, setPurchaseCardsMap] = useState<{ [purchaseId: string]: Array<{ card_id: string; full_name: string | null; group_name: string | null }> }>({});
+  const [allCards, setAllCards] = useState<Array<{ id: string; group_name: string | null; purchase_id: string }>>([]);
+  const [groups, setGroups] = useState<Array<{ name: string; count: number }>>([]);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [groupSearchTerm, setGroupSearchTerm] = useState('');
 
   useEffect(() => {
     const session = localStorage.getItem('b2b_session');
@@ -212,14 +216,16 @@ export default function B2BDashboardPage() {
       const purchases = (data ?? []) as DealerPurchase[];
       setPurchasedCards(purchases);
 
-      // Her purchase için kartları yükle
-      const cardsMap: { [purchaseId: string]: Array<{ card_id: string; full_name: string | null }> } = {};
+      // Her purchase için kartları yükle ve grup bilgilerini al
+      const cardsMap: { [purchaseId: string]: Array<{ card_id: string; full_name: string | null; group_name: string | null }> } = {};
+      const allCardsList: Array<{ id: string; group_name: string | null; purchase_id: string }> = [];
+      
       for (const purchase of purchases) {
         const { data: purchaseCards } = await supabase
           .from('dealer_purchase_cards')
           .select(`
             card_id,
-            card:cards(full_name)
+            card:cards(full_name, group_name)
           `)
           .eq('dealer_purchase_id', purchase.id);
 
@@ -227,10 +233,33 @@ export default function B2BDashboardPage() {
           cardsMap[purchase.id] = purchaseCards.map((pc: any) => ({
             card_id: pc.card_id,
             full_name: pc.card?.full_name || null,
+            group_name: pc.card?.group_name || null,
           }));
+          
+          // Tüm kartları listeye ekle
+          purchaseCards.forEach((pc: any) => {
+            if (pc.card_id) {
+              allCardsList.push({
+                id: pc.card_id,
+                group_name: pc.card?.group_name || null,
+                purchase_id: purchase.id,
+              });
+            }
+          });
         }
       }
       setPurchaseCardsMap(cardsMap);
+      setAllCards(allCardsList);
+      
+      // Grupları hesapla
+      const groupMap = new Map<string, number>();
+      allCardsList.forEach(card => {
+        if (card.group_name) {
+          groupMap.set(card.group_name, (groupMap.get(card.group_name) || 0) + 1);
+        }
+      });
+      const groupList = Array.from(groupMap.entries()).map(([name, count]) => ({ name, count }));
+      setGroups(groupList);
     } catch (err) {
       console.error('Purchases fetch error:', err);
     } finally {
@@ -487,6 +516,75 @@ export default function B2BDashboardPage() {
                 </div>
               </div>
 
+              {/* Grup Filtreleme */}
+              {groups.length > 0 && (
+                <div className="p-6 border-b border-gray-200 bg-gray-50">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-gray-900">Grup Filtreleme</h3>
+                  </div>
+                  
+                  {/* Grup Arama */}
+                  <div className="mb-4">
+                    <input
+                      type="text"
+                      placeholder="Grup adına göre ara..."
+                      value={groupSearchTerm}
+                      onChange={(e) => setGroupSearchTerm(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setSelectedGroup(null)}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                        selectedGroup === null
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      <CreditCard size={16} />
+                      Tümü ({purchasedCards.length})
+                    </button>
+                    
+                    {groups
+                      .filter((group) => {
+                        if (groupSearchTerm.trim() === '') return true;
+                        const parts = group.name.split('/');
+                        const displayName = parts.length > 1 ? parts[parts.length - 1] : group.name;
+                        const parentName = parts.length > 1 ? parts[0] : null;
+                        return (
+                          displayName.toLowerCase().includes(groupSearchTerm.toLowerCase()) ||
+                          (parentName && parentName.toLowerCase().includes(groupSearchTerm.toLowerCase())) ||
+                          group.name.toLowerCase().includes(groupSearchTerm.toLowerCase())
+                        );
+                      })
+                      .map((group) => {
+                        const parts = group.name.split('/');
+                        const displayName = parts.length > 1 ? parts[parts.length - 1] : group.name;
+                        const parentName = parts.length > 1 ? parts[0] : null;
+                        
+                        return (
+                          <button
+                            key={group.name}
+                            onClick={() => setSelectedGroup(group.name)}
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                              selectedGroup === group.name
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                            title={parentName ? `${parentName} > ${displayName}` : group.name}
+                          >
+                            <Folder size={16} className="flex-shrink-0" />
+                            <span className="truncate max-w-[200px]">{displayName}</span>
+                            <span className="flex-shrink-0">({group.count})</span>
+                          </button>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
+
               <div className="p-6">
                 {loadingPurchases ? (
                   <div className="p-12 text-center text-gray-500">
@@ -503,6 +601,16 @@ export default function B2BDashboardPage() {
                   <div className="space-y-4">
                     {purchasedCards
                       .filter((purchase) => {
+                        // Grup filtresi
+                        if (selectedGroup !== null) {
+                          const purchaseCards = purchaseCardsMap[purchase.id] || [];
+                          const hasGroupMatch = purchaseCards.some(
+                            (card) => card.group_name === selectedGroup
+                          );
+                          if (!hasGroupMatch) return false;
+                        }
+                        
+                        // Metin filtresi
                         if (!filterText.trim()) return true;
                         const searchText = filterText.toLowerCase();
                         const cardName = purchase.sales_card.name.toLowerCase();
@@ -519,6 +627,15 @@ export default function B2BDashboardPage() {
                       })
                       .map((purchase) => {
                         const registeredUsers = purchaseCardsMap[purchase.id] || [];
+                        // Purchase'ın kartlarından grup adlarını al
+                        const purchaseGroups = new Set<string>();
+                        registeredUsers.forEach((card) => {
+                          if (card.group_name) {
+                            purchaseGroups.add(card.group_name);
+                          }
+                        });
+                        const groupNames = Array.from(purchaseGroups);
+                        
                         return (
                           <div
                         key={purchase.id}
@@ -538,9 +655,22 @@ export default function B2BDashboardPage() {
                           <div className="flex-1 p-4">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
-                                <h3 className="font-semibold text-gray-900 mb-2">
-                                  {purchase.sales_card.name}
-                                </h3>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <h3 className="font-semibold text-gray-900">
+                                    {purchase.sales_card.name}
+                                  </h3>
+                                  {groupNames.length > 0 && (
+                                    <span className="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs font-medium rounded flex items-center gap-1">
+                                      <Folder size={12} />
+                                      {groupNames.length === 1 
+                                        ? (() => {
+                                            const parts = groupNames[0].split('/');
+                                            return parts.length > 1 ? parts[parts.length - 1] : groupNames[0];
+                                          })()
+                                        : `${groupNames.length} Grup`}
+                                    </span>
+                                  )}
+                                </div>
                                 {purchase.sales_card.description && (
                                   <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                                     {purchase.sales_card.description}
@@ -705,61 +835,66 @@ export default function B2BDashboardPage() {
 
           {/* Son sipariş başarılı modalı */}
           {showOrderSuccessModal && lastOrderNumber && lastOrderPurchases.length > 0 && (
-            <div
-              className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4"
-              onClick={() => setShowOrderSuccessModal(false)}
-            >
+            <>
               <div
-                className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="p-5 border-b border-gray-200 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-bold text-gray-900">
-                      Satın Alma Başarılı
-                    </h2>
-                    <p className="text-xs text-gray-600 mt-1">
-                      {lastOrderNumber} numaralı siparişte eklenen kartlar aşağıdadır.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowOrderSuccessModal(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-                <div className="p-5 space-y-3">
-                  {lastOrderPurchases.map((purchase) => (
-                    <div
-                      key={purchase.id}
-                      className="border border-gray-200 rounded-lg p-3 flex items-center gap-3"
-                    >
-                      {purchase.sales_card.image_front && (
-                        <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden flex-shrink-0">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={purchase.sales_card.image_front}
-                            alt={purchase.sales_card.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <h3 className="text-sm font-semibold text-gray-900">
-                          {purchase.sales_card.name}
-                        </h3>
-                        <p className="text-xs text-gray-600 mt-1">
-                          {purchase.quantity} adet •{' '}
-                          {purchase.total_amount} {purchase.currency}
-                        </p>
-                      </div>
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[40]"
+                onClick={() => setShowOrderSuccessModal(false)}
+              />
+              <div className="fixed inset-0 z-[40] flex items-center justify-center p-4">
+                <div
+                  className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900">
+                        Satın Alma Başarılı
+                      </h2>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {lastOrderNumber} numaralı siparişte eklenen kartlar aşağıdadır.
+                      </p>
                     </div>
-                  ))}
+                    <button
+                      type="button"
+                      onClick={() => setShowOrderSuccessModal(false)}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <X size={24} />
+                    </button>
+                  </div>
+                  <div className="p-6 space-y-3">
+                    {lastOrderPurchases.map((purchase) => (
+                      <div
+                        key={purchase.id}
+                        className="border border-gray-200 rounded-lg p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors"
+                      >
+                        {purchase.sales_card.image_front && (
+                          <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={purchase.sales_card.image_front}
+                              alt={purchase.sales_card.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base font-semibold text-gray-900 mb-1">
+                            {purchase.sales_card.name}
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            {purchase.quantity} adet •{' '}
+                            <span className="font-medium text-gray-900">
+                              {purchase.total_amount} {purchase.currency}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            </>
           )}
         </main>
       </div>

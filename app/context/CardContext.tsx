@@ -117,7 +117,7 @@ export interface CardProfile {
   primaryColor: string;
   secondaryColor: string;
   profileImage: string;
-  customLinks: Array<{ id: string; title: string; url: string; icon?: string; description?: string }>;
+  customLinks: Array<{ id: string; title: string; url: string; icon?: string; description?: string; platform?: string }>;
   
   // Gelişmiş Görünüm Ayarları
   backgroundColor?: string;

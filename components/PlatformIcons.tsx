@@ -4,283 +4,333 @@ import React from 'react';
 interface IconProps {
   size?: number;
   className?: string;
+  color?: string;
 }
 
 // E-ticaret Platformları
-export const TrendyolIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const TrendyolIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
   </svg>
 );
 
-export const HepsiburadaIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const HepsiburadaIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
   </svg>
 );
 
-export const TemuIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const TemuIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
     <circle cx="12" cy="12" r="4"/>
   </svg>
 );
 
-export const EtsyIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const EtsyIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M7 5h10v2H7V5zm0 6h10v2H7v-2zm0 6h7v2H7v-2z"/>
   </svg>
 );
 
-export const AmazonIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M17.5 14c-1.5 0-2.7 1.2-2.7 2.7s1.2 2.8 2.7 2.8 2.7-1.2 2.7-2.7-1.2-2.8-2.7-2.8zM3 11.5v2h3.5L9 16l3.5-2.5H16v-2H3zm12-6C13.5 4.1 12 2.6 10.5 2.1 9 1.6 7.5 1.9 6.3 2.8c-.7.5-1.1 1.4-1.1 2.2 0 1.1.6 2.1 1.5 2.7L10 10l3.3-2.3c.9-.6 1.5-1.6 1.5-2.7 0-.8-.4-1.7-1.1-2.2C12.5 1.9 11 1.6 9.5 2.1 8 2.6 6.5 4.1 5 5.5"/>
-  </svg>
+export const AmazonIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 48 48" fill={color} className={className}>
+    <path d="M25.4026553,25.9595294 C24.660417,27.4418824 23.3876054,28.3962353 22.0103725,28.7181176 C21.8015298,28.7181176 21.4826213,28.8225882 21.1637129,28.8225882 C18.835399,28.8225882 17.458166,27.0211765 17.458166,24.3727059 C17.458166,20.9788235 19.4703937,19.392 22.0103725,18.6465882 C23.3876054,18.3303529 24.9793255,18.2230588 26.5682233,18.2230588 L26.5682233,19.4964706 C26.5682233,21.9331765 26.6726447,23.8390588 25.4026553,25.9595294 L25.4026553,25.9595294 Z M26.5682233,13.3524706 C25.1909904,13.4569412 23.5992703,13.5614118 22.0103725,13.7703529 C19.574815,14.0922353 17.1392576,14.5157647 15.1298521,15.4701176 C11.2098182,17.0597647 8.55977364,20.4508235 8.55977364,25.4287059 C8.55977364,31.6856471 12.5842289,34.8621176 17.6726531,34.8621176 C19.3659723,34.8621176 20.7432053,34.6475294 22.0103725,34.3341176 C24.0282445,33.696 25.7187415,32.5298824 27.7309692,30.4094118 C28.8965372,31.9990588 29.2182679,32.7444706 31.2276733,34.4385882 C31.7582467,34.6475294 32.28882,34.6475294 32.7093276,34.3341176 C33.9821392,33.2724706 36.208854,31.3637647 37.3715998,30.3049412 C37.9021732,29.8814118 37.7977518,29.2432941 37.4760212,28.7181176 C36.3132753,27.2329412 35.1448851,25.9595294 35.1448851,23.0992941 L35.1448851,13.5614118 C35.1448851,9.53505882 35.4666157,5.82494118 32.5004849,3.072 C30.0649275,0.849882353 26.2493149,0 23.2831841,0 L22.0103725,0 C16.6115064,0.313411765 10.8937319,2.64564706 9.61809814,9.32329412 C9.40643324,10.1731765 10.0442501,10.4894118 10.4675799,10.5938824 L16.3998415,11.3364706 C17.0348362,11.2291765 17.3537447,10.6983529 17.458166,10.1731765 C17.9859172,7.84094118 19.8937235,6.67482353 22.0103725,6.46023529 L22.4365245,6.46023529 C23.7093361,6.46023529 25.086569,6.99105882 25.8259851,8.05270588 C26.6726447,9.32329412 26.5682233,11.0202353 26.5682233,12.5054118 L26.5682233,13.3524706 L26.5682233,13.3524706 Z" /> 
+    <path d="M47.9943556,35.9463529 L47.9943556,35.9435294 C47.971778,35.4437647 47.8673567,35.0625882 47.658514,34.7463529 L47.6359364,34.7152941 L47.6105366,34.6842353 C47.3988717,34.4527059 47.1956734,34.3651765 46.9755419,34.2691765 C46.3179696,34.0150588 45.3612442,33.8795294 44.2097872,33.8767059 C43.382883,33.8767059 42.4713128,33.9557647 41.5540982,34.1562353 L41.551276,34.0941176 L40.6284171,34.4018824 L40.6114839,34.4103529 L40.0893771,34.5797647 L40.0893771,34.6023529 C39.47696,34.8564706 38.9209869,35.1727059 38.4045245,35.5482353 C38.0827939,35.7882353 37.8175072,36.1072941 37.8033962,36.5957647 C37.7949296,36.8611765 37.9303952,37.1661176 38.1533489,37.3468235 C38.3763025,37.5275294 38.6359448,37.5896471 38.8645429,37.5896471 C38.9181647,37.5896471 38.9689643,37.5868235 39.0141194,37.5783529 L39.0592746,37.5755294 L39.093141,37.5698824 C39.5446928,37.4738824 40.2022651,37.4089412 40.9727253,37.3016471 C41.6331198,37.2282353 42.3330251,37.1745882 42.9397978,37.1745882 C43.368772,37.1717647 43.7554132,37.2028235 44.0206999,37.2592941 C44.1533432,37.2875294 44.2521202,37.3214118 44.3057419,37.3496471 C44.3254973,37.3552941 44.3396083,37.3637647 44.3480749,37.3694118 C44.3593637,37.4061176 44.3762969,37.5021176 44.3734747,37.6348235 C44.3791191,38.1430588 44.164632,39.0861176 43.8683012,40.0065882 C43.5804369,40.9270588 43.2304843,41.8503529 42.999064,42.4630588 C42.94262,42.6042353 42.9059314,42.7595294 42.9059314,42.9289412 C42.900287,43.1745882 43.0018862,43.4738824 43.2163733,43.6715294 C43.425216,43.8691765 43.696147,43.9482353 43.9219229,43.9482353 L43.9332117,43.9482353 C44.2718756,43.9454118 44.5597398,43.8098824 44.8080933,43.6150588 C47.1505182,41.5087059 47.9661336,38.1430588 48,36.2484706 L47.9943556,35.9463529 Z M41.0489247,38.8658824 C40.8090378,38.8630588 40.5635065,38.9195294 40.3349084,39.0268235 C40.0780883,39.1284706 39.8156239,39.2470588 39.5672704,39.3515294 L39.2032068,39.504 L38.7290774,39.6931765 L38.7290774,39.6988235 C33.5785648,41.7882353 28.16841,43.0136471 23.1618295,43.1209412 C22.9783866,43.1265882 22.7921215,43.1265882 22.614323,43.1265882 C14.7403887,43.1322353 8.31706456,39.4785882 1.83729642,35.8785882 C1.61152053,35.76 1.37727804,35.6978824 1.15150215,35.6978824 C0.860815683,35.6978824 0.561662624,35.808 0.344353327,36.0112941 C0.12704403,36.2174118 -0.00277710907,36.5138824 4.50895989e-05,36.816 C-0.00277710907,37.2084706 0.208887791,37.5698824 0.505218651,37.8042353 C6.58705678,43.0870588 13.25309,47.9943529 22.2192152,48 C22.3941915,48 22.57199,47.9943529 22.7497885,47.9915294 C28.453452,47.8644706 34.902176,45.936 39.9087564,42.7905882 L39.9398006,42.7708235 C40.5945507,42.3783529 41.2493008,41.9322353 41.8673623,41.4381176 C42.2511813,41.1529412 42.516468,40.7068235 42.516468,40.2437647 C42.4995348,39.4221176 41.8024517,38.8658824 41.0489247,38.8658824 Z" id="Fill-237" fill="#FF9A00"> </path> </svg>
 );
 
-export const ShopifyIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const ShopifyIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M15.8 2.1c0 .1-.1.2-.1.3-.1.3-.3.5-.5.7-.2.1-.4.2-.7.2h-.3c-.3 0-.6-.1-.8-.2-.2-.1-.4-.3-.5-.5-.1-.2-.2-.4-.2-.7V1c0-.3 0-.5.1-.8.1-.2.2-.4.3-.6.2-.2.4-.3.6-.4.2-.1.5-.1.7-.1h.1c.3 0 .6.1.8.2.3.1.5.3.7.6.1.2.2.5.2.8v.4zm3.7 17.3l-6 3.5-6-3.5V8.7l6-3.5 6 3.5v10.7z"/>
   </svg>
 );
 
-export const SahibindenIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const SahibindenIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
   </svg>
 );
 
-export const N11Icon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const N11Icon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h8v-2h-8V9h8V7h-8V5h8V3h-8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2h-8z"/>
   </svg>
 );
 
 // Geliştirici Platformları
-export const GitLabIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const GitLabIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 21.42l3.684-11.333h-7.368L12 21.42zM2.667 10.087l1.842-5.67.001-.006 1.842 5.676h-3.685zm18.666 0L23.175 4.42l-1.842 5.667h-3.685l1.843-5.67zM12 21.42l-3.684-11.333H2.667L12 21.42zm0 0l3.684-11.333h5.649L12 21.42z"/>
   </svg>
 );
 
-export const DevToIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const DevToIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M7.42 10.05c-.18-.16-.46-.23-.84-.23H6l.02 2.44.04 2.45h.56c.42 0 .63-.09.83-.27.24-.24.26-.36.26-2.2 0-1.91-.02-1.96-.29-2.19zM0 4.94v14.12h24V4.94H0zm8.56 10.78c-.45.5-1.03.74-1.76.74H4.71V8.53h2.09c.73 0 1.31.24 1.76.74.46.5.68 1.33.68 2.48 0 1.15-.22 1.98-.68 2.48zm7.16-2.43h-1.46v1.06h1.46v1.04h-1.46v1.78h-1.04V8.53h2.5v1.04zm4.33 3.57h-1.04v-4.61l-1.22 4.61h-.77l-1.21-4.61v4.61h-1.04V8.53h1.52l1.25 4.67 1.24-4.67h1.52v5.66z"/>
   </svg>
 );
 
-export const StackOverflowIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const StackOverflowIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M15 21h-10v-2h10v2zm6-11.665l-1.621-9.335-1.993.346 1.62 9.335 1.994-.346zm-5.964 6.937l-9.746-.975-.186 2.016 9.755.879.177-1.92zm.538-2.587l-9.276-2.608-.526 1.954 9.306 2.5.496-1.846zm1.204-2.413l-8.297-4.864-1.029 1.743 8.298 4.865 1.028-1.744zm1.866-1.467l-5.339-7.829-1.672 1.14 5.339 7.829 1.672-1.14zm-2.644 4.195v8h-12v-8h-2v10h16v-10h-2z"/>
   </svg>
 );
 
-export const FigmaIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const FigmaIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 12m0-4a4 4 0 1 0 8 0 4 4 0 1 0-8 0zm-4 8a4 4 0 0 0 4-4v-4H8a4 4 0 0 0 0 8zm0-8h4V4H8a4 4 0 0 0 0 8zm8-4v4a4 4 0 1 0 0-8 4 4 0 0 0 0 4z"/>
   </svg>
 );
 
-export const NotionIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const NotionIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M4 2h16l4 4v16H4V2zm0 2v16h16V6h-4V4H4z"/>
   </svg>
 );
 
+export const BehanceIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 -9 48 48" fill={color} className={className}>
+    <path d="M730.671768,174.006032 L743.382997,174.006032 L743.382997,170.364269 L730.671768,170.364269 L730.671768,174.006032 L730.671768,174.006032 Z M733.683065,181.952204 C732.873091,182.776334 732.362271,183.892807 732.153427,185.301624 L742.039626,185.301624 C741.935204,183.798144 741.421562,182.662181 740.51281,181.879814 C739.59277,181.103016 738.461064,180.716009 737.106404,180.716009 C735.638855,180.716009 734.493039,181.128074 733.683065,181.952204 L733.683065,181.952204 L733.683065,181.952204 Z M742.26258,177.063109 C743.79504,177.736891 745.056567,178.806032 746.049985,180.264965 C746.955914,181.551276 747.537289,183.043619 747.802576,184.739211 C747.957798,185.730394 748.019886,187.167053 747.994487,189.035267 L732.012317,189.035267 C732.108272,191.204176 732.864624,192.727146 734.309595,193.598608 C735.18448,194.141531 736.237164,194.414385 737.473291,194.414385 C738.77433,194.414385 739.838302,194.083063 740.653921,193.423202 C741.102652,193.064037 741.497761,192.568445 741.836426,191.933643 L747.69251,191.933643 C747.537289,193.214385 746.826092,194.520186 745.567387,195.845476 C743.603129,197.947564 740.851476,199 737.315248,199 C734.394261,199 731.817584,198.114617 729.590862,196.338283 C727.35285,194.564733 726.240899,191.67471 726.240899,187.676566 C726.240899,183.926218 727.248428,181.050116 729.260663,179.04826 C731.278543,177.051972 733.889086,176.046868 737.103582,176.046868 C739.014217,176.046868 740.732943,176.386543 742.26258,177.063109 L742.26258,177.063109 L742.26258,177.063109 Z M705.912528,185.379582 L705.912528,193.183759 L713.114805,193.183759 C714.401733,193.183759 715.406439,193.011137 716.120458,192.668677 C717.421496,192.028306 718.070604,190.814385 718.070604,189.015777 C718.070604,187.490023 717.444074,186.44594 716.182546,185.875174 C715.476994,185.557773 714.486399,185.390719 713.216405,185.379582 L705.912528,185.379582 L705.912528,185.379582 Z M705.912528,174.081206 L705.912528,180.537819 L713.126094,180.537819 C714.410199,180.537819 715.457239,180.295592 716.264391,179.811137 C717.065898,179.326682 717.469474,178.469142 717.469474,177.244084 C717.469474,175.87703 716.938899,174.977726 715.877748,174.537819 C714.957708,174.234339 713.789313,174.081206 712.369742,174.081206 L705.912528,174.081206 L705.912528,174.081206 Z M722.021697,172.118329 C722.927626,173.362877 723.382002,174.849652 723.382002,176.584223 C723.382002,178.36891 722.927626,179.808353 722.010408,180.8942 C721.496766,181.50116 720.743236,182.058005 719.746996,182.559165 C721.259701,183.104872 722.399873,183.965197 723.17598,185.142923 C723.943621,186.317865 724.330264,187.748956 724.330264,189.430626 C724.330264,191.165197 723.889999,192.721578 723.006648,194.096984 C722.447851,195.007425 721.747943,195.77587 720.906924,196.399536 C719.961484,197.115081 718.846712,197.60232 717.556962,197.869606 C716.267213,198.134107 714.873042,198.262181 713.365982,198.262181 L700,198.262181 L700,169 L714.334,169 C717.952072,169.0529 720.511815,170.091415 722.021697,172.118329 L722.021697,172.118329 L722.021697,172.118329 Z" transform="translate(-700.000000, -169.000000)" />
+  </svg>
+);
+
 // Ödeme Platformları
-export const RevolutIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const RevolutIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
   </svg>
 );
 
-export const WiseIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const WiseIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M11 17h2v-6h-2v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM11 9h2V7h-2v2z"/>
   </svg>
 );
 
-export const PaparaIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const PaparaIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
   </svg>
 );
 
 // Sosyal Medya (eksik olanlar için)
-export const ThreadsIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+export const ThreadsIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
+    <path d="M12.713 16.96c-.705 0-1.32-.15-1.812-.446-.49-.295-.85-.733-1.067-1.296l-.064-.172a4.32 4.32 0 0 1-.267-1.474V13.5a2.71 2.71 0 0 1 2.713-2.713h.066c1.376.045 2.53.95 2.86 2.247.056.21.085.432.085.66v.016c0 1.41-.576 2.675-1.51 3.586l-.12.117c-.272.257-.596.465-.953.612Zm5.626-4.96c0-.3-.026-.595-.076-.88a4.712 4.712 0 0 0-4.57-3.93h-.086a4.31 4.31 0 0 0-4.313 4.313v.076c0 .25.02.497.058.74a4.32 4.32 0 0 0 .562 1.8 2.7 2.7 0 0 0 2.272 1.25c.78 0 1.47-.328 1.96-.857.68-.84 1.06-1.917 1.06-3.07v-.127a6.32 6.32 0 0 0-6.267-6.313 6.32 6.32 0 0 0 6.313 6.313c1.45 0 2.8-.49 3.88-1.32l1.06 1.28c-1.37 1.07-3.11 1.64-4.94 1.64a7.97 7.97 0 0 1-7.97-7.913 7.97 7.97 0 0 1 7.913 7.97v.127a4.35 4.35 0 0 1-1.286 3.13 4.36 4.36 0 0 1-3.174 1.287 4.36 4.36 0 0 1-3.65-1.96c-.076-.127-.145-.258-.206-.392a5.92 5.92 0 0 1-.366-2.02v-.076c0-2.38 1.58-4.43 3.81-5.31l-.06-.16c-.3-.8-.8-1.43-1.47-1.85-.67-.42-1.5-.64-2.4-.64a4.37 4.37 0 0 0-4.37 4.37v.076c0 .5.06 1 .18 1.47l.07.25c.25.8.73 1.45 1.38 1.88.65.43 1.47.66 2.38.66Z"/>
   </svg>
 );
 
-export const ClubhouseIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const ClubhouseIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
     <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
   </svg>
 );
 
+export const TiktokIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
+    <path d="M21,7V9a1,1,0,0,1-1,1,8,8,0,0,1-4-1.08V15.5A6.5,6.5,0,1,1,6.53,9.72a1,1,0,0,1,1.47.9v2.52a.92.92,0,0,1-.28.62,2.49,2.49,0,0,0,2,4.23A2.61,2.61,0,0,0,12,15.35V3a1,1,0,0,1,1-1h2.11a1,1,0,0,1,1,.83A4,4,0,0,0,20,6,1,1,0,0,1,21,7Z"/>
+  </svg>
+);
+
+export const SnapchatIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 192 192" fill="none" stroke={color} strokeWidth="12" className={className}>
+    <path strokeLinejoin="round" d="M95.918 22.002c-11.963-.087-24.145 4.54-32.031 13.717-6.995 7.405-9.636 17.901-9.284 27.868-.03 5.119.032 10.237.05 15.355-4.901-1.217-9.873-4.624-15.063-2.937-4.422 1.313-6.267 7.088-3.596 10.791 2.876 3.761 7.346 5.907 11.08 8.71 1.837 1.5 4.313 2.571 5.68 4.499-.001 4.62-2.425 8.897-4.722 12.786-5.597 8.802-14.342 15.531-23.705 20.18-2.39 1.035-4.59 4.144-2.473 6.499 3.862 3.622 9.327 4.778 14.195 6.486 2.047.64 5.078 1.34 4.886 4.084.335 2.923 2.205 6.066 5.492 6.078 7.873.91 16.289.522 23.345 4.741 6.917 4.006 14.037 8.473 22.255 8.96 8.188.767 16.623-.888 23.642-5.255 5.23-2.884 10.328-6.477 16.456-7.061 5.155-1.206 10.702-.151 15.685-2.072 3.193-1.367 2.762-5.244 4.104-7.808 2.532-1.747 5.77-1.948 8.59-3.102 3.687-1.47 8.335-2.599 10.268-6.413 1.148-3.038-2.312-4.698-4.453-5.88-11.38-5.874-21.631-14.921-26.121-27.191-.496-1.936-2.279-4.834.084-6.255 4.953-4.176 11.413-6.575 15.514-11.715 3.103-3.884.941-10.55-4.141-11.322-4.928-.78-9.525 1.893-14.152 3.127-.404-8.53.502-17.232-.776-25.746-2.429-13.808-13.514-25.157-26.813-29.124-4.521-1.401-9.266-2.037-13.996-2Z"/>
+  </svg>
+);
+
+export const RedditIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.63 7.46c-.5 0-.93.26-1.19.65-.93-.47-2.11-.79-3.44-.83l.59-2.75 1.93.41c.03.52.46.94 1 .94.55 0 1-.45 1-1s-.45-1-1-1c-.4 0-.74.24-.9.59l-2.15-.46c-.09-.02-.19.02-.24.1l-.68 3.16c-1.35.03-2.55.36-3.49.84-.26-.4-.7-.67-1.2-.67-.83 0-1.5.67-1.5 1.5 0 .53.27.99.69 1.26-.03.17-.04.34-.04.52 0 2.66 3.03 4.83 6.77 4.83s6.77-2.17 6.77-4.83c0-.17-.01-.33-.04-.5.41-.27.68-.72.68-1.24 0-.83-.67-1.5-1.5-1.5zm-5.63 5.79c-.77 0-1.41-.41-1.7-1.02h3.41c-.29.6-1.03 1.02-1.71 1.02zm2.19-2.8c-.34 0-.62-.28-.62-.62s.28-.62.62-.62.62.28.62.62-.28.62-.62.62zm-4.38 0c-.34 0-.62-.28-.62-.62s.28-.62.62-.62.62.28.62.62-.28.62-.62.62z"/>
+  </svg>
+);
+
+export const PinterestIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 512 512" fill={color} className={className}>
+    <path d="M220.646,338.475C207.223,408.825,190.842,476.269,142.3,511.5 c-14.996-106.33,21.994-186.188,39.173-270.971c-29.293-49.292,3.518-148.498,65.285-124.059 c76.001,30.066-65.809,183.279,29.38,202.417c99.405,19.974,139.989-172.476,78.359-235.054 C265.434-6.539,95.253,81.775,116.175,211.161c5.09,31.626,37.765,41.22,13.062,84.884c-57.001-12.65-74.005-57.6-71.822-117.533 c3.53-98.108,88.141-166.787,173.024-176.293c107.34-12.014,208.081,39.398,221.991,140.376 c15.67,113.978-48.442,237.412-163.23,228.529C258.085,368.704,245.023,353.283,220.646,338.475z"/>
+  </svg>
+);
+
+export const TwitchIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
+    <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
+  </svg>
+);
+
+export const DiscordIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className={className}>
+    <path d="M2 11.6C2 8.23969 2 6.55953 2.65396 5.27606C3.2292 4.14708 4.14708 3.2292 5.27606 2.65396C6.55953 2 8.23969 2 11.6 2H20.4C23.7603 2 25.4405 2 26.7239 2.65396C27.8529 3.2292 28.7708 4.14708 29.346 5.27606C30 6.55953 30 8.23969 30 11.6V20.4C30 23.7603 30 25.4405 29.346 26.7239C28.7708 27.8529 27.8529 28.7708 26.7239 29.346C25.4405 30 23.7603 30 20.4 30H11.6C8.23969 30 6.55953 30 5.27606 29.346C4.14708 28.7708 3.2292 27.8529 2.65396 26.7239C2 25.4405 2 23.7603 2 20.4V11.6Z" fill={color}/>
+    <path d="M23.6361 9.33998C22.212 8.71399 20.6892 8.25903 19.0973 8C18.9018 8.33209 18.6734 8.77875 18.5159 9.13408C16.8236 8.89498 15.1469 8.89498 13.4857 9.13408C13.3283 8.77875 13.0946 8.33209 12.8974 8C11.3037 8.25903 9.77927 8.71565 8.35518 9.3433C5.48276 13.4213 4.70409 17.3981 5.09342 21.3184C6.99856 22.6551 8.84487 23.467 10.66 23.9983C11.1082 23.4189 11.5079 22.8029 11.8523 22.1536C11.1964 21.9195 10.5683 21.6306 9.9748 21.2951C10.1323 21.1856 10.2863 21.071 10.4351 20.9531C14.0551 22.5438 17.9881 22.5438 21.5649 20.9531C21.7154 21.071 21.8694 21.1856 22.0251 21.2951C21.4299 21.6322 20.8 21.9211 20.1442 22.1553C20.4885 22.8029 20.8865 23.4205 21.3364 24C23.1533 23.4687 25.0013 22.6567 26.9065 21.3184C27.3633 16.7738 26.1261 12.8335 23.6361 9.33998ZM12.3454 18.9075C11.2587 18.9075 10.3676 17.9543 10.3676 16.7937C10.3676 15.6331 11.2397 14.6783 12.3454 14.6783C13.4511 14.6783 14.3422 15.6314 14.3232 16.7937C14.325 17.9543 13.4511 18.9075 12.3454 18.9075ZM19.6545 18.9075C18.5678 18.9075 17.6767 17.9543 17.6767 16.7937C17.6767 15.6331 18.5488 14.6783 19.6545 14.6783C20.7602 14.6783 21.6514 15.6314 21.6323 16.7937C21.6323 17.9543 20.7602 18.9075 19.6545 18.9075Z" fill={color}/>
+  </svg>
+);
+
 // Mesajlaşma
-export const WeChatIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const WeChatIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M8.5 10c-.83 0-1.5.67-1.5 1.5S7.67 13 8.5 13s1.5-.67 1.5-1.5S9.33 10 8.5 10zm7 0c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-1.48.41-2.86 1.12-4.06 1.19.93 2.7 1.48 4.38 1.48 1.34 0 2.58-.38 3.64-1.04.37.77.86 1.46 1.44 2.04-.75.66-1.73 1.06-2.78 1.06-1.66 0-3-1.34-3-3 0-.35.06-.69.17-1H7.5C5.57 7.48 4 9.05 4 11v1c0 2.76 2.24 5 5 5h2v3c0 .55.45 1 1 1s1-.45 1-1v-3h2c2.76 0 5-2.24 5-5v-1c0-1.95-1.57-3.52-3.5-3.52h-.47c.11.32.17.66.17 1 0 1.66-1.34 3-3 3-1.05 0-2.03-.4-2.78-1.06.58-.58 1.07-1.27 1.44-2.04C13.42 8.38 14.66 8 16 8c1.68 0 3.19-.55 4.38-1.48C20.59 9.14 21 10.52 21 12c0 4.41-3.59 8-8 8z"/>
   </svg>
 );
 
-export const LineIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const LineIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-4-4h3V9h2v4h3l-4 4z"/>
   </svg>
 );
 
+// Müzik
+export const SpotifyIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 48 48" fill={color} className={className}>
+    <path d="M238.16,481.36 C230.48,476.8 217.64,476.32 210.32,478.6 C209.12,478.96 207.92,478.24 207.56,477.16 C207.2,475.96 207.92,474.76 209,474.4 C217.52,471.88 231.56,472.36 240.44,477.64 C241.52,478.24 241.88,479.68 241.28,480.76 C240.68,481.6 239.24,481.96 238.16,481.36 M237.92,488.08 C237.32,488.92 236.24,489.28 235.4,488.68 C228.92,484.72 219.08,483.52 211.52,485.92 C210.56,486.16 209.48,485.68 209.24,484.72 C209,483.76 209.48,482.68 210.44,482.44 C219.2,479.8 230,481.12 237.44,485.68 C238.16,486.04 238.52,487.24 237.92,488.08 M235.04,494.68 C234.56,495.4 233.72,495.64 233,495.16 C227.36,491.68 220.28,490.96 211.88,492.88 C211.04,493.12 210.32,492.52 210.08,491.8 C209.84,490.96 210.44,490.24 211.16,490 C220.28,487.96 228.2,488.8 234.44,492.64 C235.28,493 235.4,493.96 235.04,494.68 M224,460 C210.8,460 200,470.8 200,484 C200,497.2 210.8,508 224,508 C237.2,508 248,497.2 248,484 C248,470.8 237.32,460 224,460" transform="translate(-200.000000, -460.000000)"/>
+  </svg>
+);
+
 // Müzik Platformları
-export const SoundCloudIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const SoundCloudIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M3 17v-6l1 3-1 3zm2 0v-8l1 4-1 4zm2 0v-10l1 5-1 5zm2 0V7l1 5-1 5zm2 0V5l1 6-1 6zm10-6c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
   </svg>
 );
 
-export const BandcampIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const BandcampIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M0 8l8 8H24L16 8H0z"/>
   </svg>
 );
 
-export const AppleMusicIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const AppleMusicIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-7C10.62 9.5 9.5 10.62 9.5 12s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/>
   </svg>
 );
 
-export const DeezerIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const DeezerIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M18.81 2v3.45h3.1V2h-3.1zM14.25 6.69v3.45h3.1V6.69h-3.1zm0 4.69v3.45h3.1v-3.45h-3.1zm0 4.69v3.45h3.1v-3.45h-3.1zm4.56-4.69v3.45h3.1v-3.45h-3.1zm0 4.69v3.45h3.1v-3.45h-3.1z"/>
   </svg>
 );
 
 // Video/Streaming
-export const VimeoIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const VimeoIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M22 7.42c-.1 2.16-1.61 5.12-4.54 8.88C14.41 20.2 11.96 22 10.01 22c-1.17 0-2.16-1.08-2.97-3.24-.54-1.98-1.08-3.96-1.62-5.94-.6-2.16-1.25-3.24-1.93-3.24-.15 0-.68.32-1.59.96L1 9.24c1.01-.89 2-1.78 2.97-2.67 1.33-1.15 2.33-1.75 3.01-1.81 1.6-.15 2.59.94 2.97 3.27.41 2.51.69 4.07.85 4.67.48 2.19.99 3.28 1.56 3.28.44 0 1.11-.7 2-2.1.89-1.4 1.37-2.47 1.43-3.2.12-1.21-.35-1.81-1.4-1.81-.5 0-1.01.11-1.54.35 1.03-3.37 2.99-5.01 5.89-4.92 2.15.06 3.16 1.46 3.04 4.2z"/>
   </svg>
 );
 
-export const DailymotionIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const DailymotionIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M13.55 11.97c-.28.37-.63.55-1.05.55-.73 0-1.33-.6-1.33-1.33 0-.73.6-1.33 1.33-1.33.42 0 .77.18 1.05.55V7.5h2.55v9h-2.55v-.53zM2 3v18h20V3H2zm17.5 15.5h-15v-13h15v13z"/>
   </svg>
 );
 
-export const RumbleIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const RumbleIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 2L1 21h22L12 2zm0 4.5l7.5 13h-15l7.5-13z"/>
   </svg>
 );
 
-export const KickIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const KickIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
   </svg>
 );
 
 // Profesyonel Ağlar
-export const XingIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const XingIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M18.6 5.4L13.2 15l3.4 6h-4.2l-3.4-6 5.4-9.6h4.2zM8.8 3L6.2 8.2 9.8 15H5.6l-3.6-6.8L4.6 3h4.2z"/>
   </svg>
 );
 
-export const AngelListIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const AngelListIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 2L1 12h3v9h7v-6h2v6h7v-9h3L12 2z"/>
   </svg>
 );
 
-export const CrunchbaseIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const CrunchbaseIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M20 3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14H9c-1.65 0-3-1.35-3-3V10c0-1.65 1.35-3 3-3h2c1.65 0 3 1.35 3 3v4c0 1.65-1.35 3-3 3z"/>
   </svg>
 );
 
-export const ProductHuntIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const ProductHuntIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-3H9V8h4c1.66 0 3 1.34 3 3s-1.34 3-3 3zm0-4h-2V9h2c.55 0 1 .45 1 1s-.45 1-1 1z"/>
   </svg>
 );
 
 // Rezervasyon/Servis
-export const BookingIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const BookingIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
   </svg>
 );
 
-export const AirbnbIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+export const AirbnbIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
+    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5-2.5 2.5z"/>
   </svg>
 );
 
-export const TripAdvisorIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const TripAdvisorIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 2l2 4h3l-2 2 1 3-4-2-4 2 1-3-2-2h3l2-4zm0 9c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm14 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
   </svg>
 );
 
-export const UberIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const UberIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
   </svg>
 );
 
-export const BoltIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const BoltIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
   </svg>
 );
 
 // Content Platforms
-export const SubstackIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const SubstackIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M3 3h18v4H3V3zm0 6h18v12L12 15 3 21V9z"/>
   </svg>
 );
 
-export const PatreonIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const PatreonIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <circle cx="15" cy="9.5" r="6.5"/>
     <path d="M2 2h4v20H2z"/>
   </svg>
 );
 
-export const KoFiIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const KoFiIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 6c1.11 0 2-.9 2-2 0-.38-.1-.73-.29-1.03L12 0l-1.71 2.97c-.19.3-.29.65-.29 1.03 0 1.1.9 2 2 2zm4.6 9.99l-1.07-1.07-1.08 1.07c-1.3 1.3-3.58 1.31-4.89 0l-1.07-1.07-1.09 1.07C6.75 16.64 5.88 17 4.96 17c-.73 0-1.4-.23-1.96-.61V21c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-4.61c-.56.38-1.23.61-1.96.61-.92 0-1.79-.36-2.44-1.01zM18 9h-5V7h-2v2H6c-1.66 0-3 1.34-3 3v1.54c0 1.08.88 1.96 1.96 1.96.52 0 1.02-.2 1.38-.57l2.14-2.13 2.13 2.13c.74.74 2.03.74 2.77 0l2.14-2.13 2.13 2.13c.37.37.86.57 1.38.57 1.08 0 1.96-.88 1.96-1.96V12C21 10.34 19.66 9 18 9z"/>
   </svg>
 );
 
-export const BuyMeACoffeeIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const BuyMeACoffeeIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.11 0 2-.89 2-2V5c0-1.11-.89-2-2-2zm0 5h-2V5h2v3zM2 21h18v-2H2v2z"/>
   </svg>
 );
 
 // Messenger Icons (Lucide'da olmayanlar için alternatifler)
-export const AliExpressIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const AliExpressIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
   </svg>
 );
 
-export const GittigidiyorIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const GittigidiyorIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
   </svg>
 );
 
-export const EbayIcon: React.FC<IconProps> = ({ size = 16, className = '' }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+export const EbayIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
   </svg>
 );
-

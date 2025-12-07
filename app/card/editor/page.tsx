@@ -7,6 +7,7 @@ import { useCard } from '../../context/CardContext';
 import { Save, Eye, User, LogOut, Home, Palette, Type, Image as ImageIcon, Sparkles, Layout, Grid, Upload, X, Menu, MoreVertical } from 'lucide-react';
 import Image from 'next/image';
 import Toast from '../../components/Toast';
+import CardSidebar from '../components/CardSidebar';
 import {
   Mail, Phone, Globe, MapPin,
   Instagram, Linkedin, Twitter, Facebook, Youtube,
@@ -17,7 +18,7 @@ import {
 
 export default function EditorPage() {
   const router = useRouter();
-  const { currentCard, isOwner, updateCard } = useCard();
+  const { currentCard, isOwner, updateCard, logoutFromCard } = useCard();
   const [activeTab, setActiveTab] = useState('layout');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -267,83 +268,10 @@ export default function EditorPage() {
         />
       )}
 
-      {/* Mobile Sidebar Overlay */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sol Sidebar */}
-      <div className={`
-        fixed lg:sticky top-0 left-0 h-screen w-60 bg-black text-white flex flex-col z-50
-        transform transition-transform duration-300 ease-in-out
-        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-        {/* Close Button - Mobile Only */}
-        <button
-          onClick={() => setIsSidebarOpen(false)}
-          className="lg:hidden absolute top-4 right-4 p-2 hover:bg-gray-800 rounded-lg transition"
-        >
-          <X size={20} />
-        </button>
-        <div className="p-6">
-          <h1 className="text-2xl font-bold">Kart Ayarları</h1>
-          <p className="text-gray-400 text-sm mt-1">{card.username || card.fullName}</p>
-        </div>
-
-        <nav className="flex-1 px-3">
-          <button
-            onClick={() => router.push('/card/setup')}
-            className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition mb-2"
-          >
-            <User size={20} />
-            <span>Profil Düzenle</span>
-          </button>
-
-          <button
-            onClick={() => router.push('/card/appearance')}
-            className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition mb-2"
-          >
-            <Palette size={20} />
-            <span>Görünüm & Tema</span>
-          </button>
-
-          <button
-            className="w-full flex items-center gap-3 px-4 py-3 bg-white text-black rounded-lg transition mb-2"
-          >
-            <Sparkles size={20} />
-            <span>Editor</span>
-          </button>
-        </nav>
-
-        <div className="p-3 border-t border-gray-800">
-          <button
-            onClick={() => router.push(`/${card.username}`)}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 rounded-lg transition text-sm mb-2"
-          >
-            <Eye size={18} />
-            Profili Görüntüle
-          </button>
-
-          <button
-            onClick={() => router.push('/')}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 rounded-lg transition text-sm mb-2"
-          >
-            <Home size={18} />
-            Ana Sayfa
-          </button>
-
-          <button
-            onClick={() => router.push('/card/login')}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg transition text-sm"
-          >
-            <LogOut size={18} />
-            Çıkış Yap
-          </button>
-        </div>
-      </div>
+      <CardSidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)}
+      />
 
       {/* Sağ Taraf - Tab Navigation + Editor + Önizleme */}
       <div className="flex flex-col flex-1 lg:ml-0">

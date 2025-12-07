@@ -32,6 +32,7 @@ export default function B2BCheckoutPage() {
   const [threeDSContent, setThreeDSContent] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [groupName, setGroupName] = useState('');
   const [accountBalance, setAccountBalance] = useState<number | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'account'>('card');
   const [formData, setFormData] = useState({
@@ -288,7 +289,7 @@ export default function B2BCheckoutPage() {
               quantity: item.quantity,
               total_amount: item.price * item.quantity,
               status: 'completed',
-              notes: `Order: ${orderNumber} | Address: ${deliveryAddress}`,
+              notes: `Order: ${orderNumber} | Address: ${deliveryAddress}${groupName ? ` | Group: ${groupName}` : ''}`,
             })
             .select('id')
             .single();
@@ -374,7 +375,7 @@ export default function B2BCheckoutPage() {
             quantity: item.quantity,
             total_amount: item.price * item.quantity,
             status: 'pending',
-            notes: `Order: ${orderNumber} | Address: ${deliveryAddress}`,
+            notes: `Order: ${orderNumber} | Address: ${deliveryAddress}${groupName ? ` | Group: ${groupName}` : ''}`,
           });
         }
 
@@ -814,6 +815,27 @@ export default function B2BCheckoutPage() {
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent text-gray-900 placeholder:text-gray-400 resize-none"
                   required
                 />
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-600 text-white text-sm font-semibold">
+                    3
+                  </span>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    Grup Adı (Opsiyonel)
+                  </h2>
+                </div>
+                <input
+                  type="text"
+                  value={groupName}
+                  onChange={(e) => setGroupName(e.target.value)}
+                  placeholder="Örn: Şirket Çalışanları 2025, Müşteri Kartları, vb."
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent text-gray-900 placeholder:text-gray-400"
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Kartlarınızı gruplandırmak için bir isim verin. Boş bırakılırsa otomatik grup adı oluşturulur.
+                </p>
               </div>
             </div>
           </div>

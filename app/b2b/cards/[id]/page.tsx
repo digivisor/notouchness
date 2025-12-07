@@ -324,16 +324,28 @@ export default function B2BCardDetailPage() {
 
       const newCards: CardData[] = [];
 
-      // Grup adını oluştur: "Bayi Adı/Bayi Adı - DD.MM.YYYY HH:MM"
-      const now = new Date();
-      const day = String(now.getDate()).padStart(2, '0');
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const year = now.getFullYear();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const dealerName = purchase.dealer.name;
-      const dateTimeStr = `${day}.${month}.${year} ${hours}:${minutes}`;
-      const groupName = `${dealerName}/${dealerName} - ${dateTimeStr}`;
+      // Grup adını belirle: Purchase notes'tan al veya otomatik oluştur
+      let groupName = '';
+      if (purchase.notes) {
+        // Notes formatı: "Order: XXX | Address: YYY | Group: ZZZ"
+        const groupMatch = purchase.notes.match(/\| Group: (.+)$/);
+        if (groupMatch && groupMatch[1]) {
+          groupName = groupMatch[1].trim();
+        }
+      }
+      
+      // Eğer grup adı yoksa otomatik oluştur: "Bayi Adı/Bayi Adı - DD.MM.YYYY HH:MM"
+      if (!groupName) {
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const dealerName = purchase.dealer.name;
+        const dateTimeStr = `${day}.${month}.${year} ${hours}:${minutes}`;
+        groupName = `${dealerName}/${dealerName} - ${dateTimeStr}`;
+      }
 
       for (let i = 0; i < remainingCards; i++) {
         // Yeni kart oluştur (grup adı ile)

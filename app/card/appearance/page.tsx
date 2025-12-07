@@ -4,9 +4,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCard } from '../../context/CardContext';
-import { Save, Eye, User, LogOut, Home, Palette, Sparkles, X } from 'lucide-react';
+import { Save, Eye, User, LogOut, Home, Palette, Sparkles, X, Menu } from 'lucide-react';
 import Image from 'next/image';
 import { Mail, Phone, Globe, Instagram, Linkedin, Twitter, Facebook, Youtube, MessageCircle, Send, Github, Link2, Music, Video, MoreVertical } from 'lucide-react';
+import CardSidebar from '../components/CardSidebar';
 
 type ThemeType = {
   id: string;
@@ -32,6 +33,7 @@ export default function AppearancePage() {
   const [selectedTheme, setSelectedTheme] = useState<ThemeType | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // 4-5 Farklı Tema
   const themes: ThemeType[] = [
@@ -227,68 +229,26 @@ export default function AppearancePage() {
 
   return (
     <div className="flex min-h-screen bg-white">
-      {/* Sol Sidebar */}
-      <div className="w-60 bg-black text-white flex flex-col sticky top-0 h-screen">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold">Kart Ayarları</h1>
-          <p className="text-gray-400 text-sm mt-1">{currentCard.username}</p>
-        </div>
-        
-        <nav className="flex-1 px-3">
-          <button
-            onClick={() => router.push('/card/setup')}
-            className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition mb-2"
-          >
-            <User size={20} />
-            <span>Profil Düzenle</span>
-          </button>
-          
-          <button
-            className="w-full flex items-center gap-3 px-4 py-3 bg-white text-black rounded-lg transition mb-2"
-          >
-            <Palette size={20} />
-            <span>Tema</span>
-          </button>
-          
-          <button
-            onClick={() => router.push('/card/editor')}
-            className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition mb-2"
-          >
-            <Sparkles size={20} />
-            <span>Editor</span>
-          </button>
-        </nav>
-
-        <div className="p-3 border-t border-gray-800">
-          <button
-            onClick={() => router.push(`/${currentCard.username}`)}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 rounded-lg transition text-sm mb-2"
-          >
-            <Eye size={18} />
-            Profili Görüntüle
-          </button>
-          
-          <button
-            onClick={() => router.push('/')}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 rounded-lg transition text-sm mb-2"
-          >
-            <Home size={18} />
-            Ana Sayfa
-          </button>
-          
-          <button
-            onClick={() => setShowLogoutModal(true)}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg transition text-sm"
-          >
-            <LogOut size={18} />
-            Çıkış Yap
-          </button>
-        </div>
-      </div>
+      <CardSidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+        onLogout={() => setShowLogoutModal(true)}
+      />
 
       {/* Ana İçerik */}
-      <div className="flex-1 overflow-auto">
-        <div className="max-w-6xl mx-auto p-8">
+      <div className="flex-1 overflow-auto flex flex-col">
+        {/* Mobile Header */}
+        <div className="lg:hidden p-4 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-30">
+          <h1 className="text-lg font-bold">Kart Ayarları</h1>
+          <button 
+            onClick={() => setIsSidebarOpen(true)}
+            className="p-2 hover:bg-gray-100 rounded-lg"
+          >
+            <Menu size={24} />
+          </button>
+        </div>
+
+        <div className="max-w-6xl mx-auto p-4 lg:p-8 w-full">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Tema</h1>
             <p className="text-gray-600">Profilinin görünümünü özelleştir ve hazır temalardan seç</p>

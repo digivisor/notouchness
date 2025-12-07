@@ -15,6 +15,7 @@ import {
   Trash2,
   Palette,
   Sparkles,
+  Menu,
   Mail,
   Phone,
   Globe,
@@ -32,24 +33,126 @@ import {
   Link2,
   Music,
   Video,
-  TrendingUp,
-  Users,
-  Clock,
-  Code,
+  Calendar,
   Pen,
-  ShoppingBag,
   CreditCard,
-  Calendar
+  Dribbble,
+  MoreVertical
 } from 'lucide-react';
 import * as PlatformIcons from '@/components/PlatformIcons';
 import { cardDb } from '@/lib/supabase-cards';
+import CardSidebar from '../components/CardSidebar';
 
 interface CustomLink {
   id: string;
   title: string;
   url: string;
   icon?: string;
+  platform?: string;
 }
+
+interface SocialLinkItem {
+  id: string;
+  value: string;
+  title: string;
+}
+
+interface SocialMediaState {
+  [key: string]: SocialLinkItem[];
+}
+
+const SOCIAL_PLATFORMS = [
+  // Sosyal Medya
+  { id: 'instagram', label: 'Instagram', icon: Instagram, prefix: 'instagram.com/', category: 'Sosyal Medya' },
+  { id: 'facebook', label: 'Facebook', icon: Facebook, prefix: 'facebook.com/', category: 'Sosyal Medya' },
+  { id: 'twitter', label: 'Twitter/X', icon: Twitter, prefix: 'twitter.com/', category: 'Sosyal Medya' },
+  { id: 'linkedin', label: 'LinkedIn', icon: Linkedin, prefix: 'linkedin.com/in/', category: 'Sosyal Medya' },
+  { id: 'youtube', label: 'YouTube', icon: Youtube, prefix: 'youtube.com/', category: 'Sosyal Medya' },
+  { id: 'tiktok', label: 'TikTok', icon: PlatformIcons.TiktokIcon, prefix: 'tiktok.com/@', category: 'Sosyal Medya' },
+  { id: 'snapchat', label: 'Snapchat', icon: PlatformIcons.SnapchatIcon, prefix: 'snapchat.com/add/', category: 'Sosyal Medya' },
+  { id: 'pinterest', label: 'Pinterest', icon: PlatformIcons.PinterestIcon, prefix: 'pinterest.com/', category: 'Sosyal Medya' },
+  { id: 'reddit', label: 'Reddit', icon: PlatformIcons.RedditIcon, prefix: 'reddit.com/user/', category: 'Sosyal Medya' },
+  { id: 'twitch', label: 'Twitch', icon: PlatformIcons.TwitchIcon, prefix: 'twitch.tv/', category: 'Sosyal Medya' },
+  { id: 'discord', label: 'Discord', icon: PlatformIcons.DiscordIcon, prefix: '', placeholder: 'kullanici#1234', category: 'Sosyal Medya' },
+  { id: 'spotify', label: 'Spotify', icon: PlatformIcons.SpotifyIcon, prefix: 'open.spotify.com/user/', category: 'Sosyal Medya' },
+  { id: 'threads', label: 'Threads', icon: PlatformIcons.ThreadsIcon, prefix: 'threads.net/@', category: 'Sosyal Medya' },
+  { id: 'clubhouse', label: 'Clubhouse', icon: PlatformIcons.ClubhouseIcon, prefix: 'clubhouse.com/@', category: 'Sosyal Medya' },
+
+  // Mesajlaşma
+  { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle, prefix: '', placeholder: '+905555555555', category: 'Mesajlaşma' },
+  { id: 'telegram', label: 'Telegram', icon: Send, prefix: 't.me/', category: 'Mesajlaşma' },
+  { id: 'signal', label: 'Signal', icon: MessageCircle, prefix: '', placeholder: '+905555555555', category: 'Mesajlaşma' },
+  { id: 'viber', label: 'Viber', icon: Phone, prefix: '', placeholder: '+905555555555', category: 'Mesajlaşma' },
+  { id: 'wechat', label: 'WeChat', icon: PlatformIcons.WeChatIcon, prefix: '', placeholder: 'ID', category: 'Mesajlaşma' },
+  { id: 'line', label: 'LINE', icon: PlatformIcons.LineIcon, prefix: '', placeholder: 'ID', category: 'Mesajlaşma' },
+
+  // Profesyonel
+  { id: 'github', label: 'GitHub', icon: Github, prefix: 'github.com/', category: 'Profesyonel' },
+  { id: 'gitlab', label: 'GitLab', icon: PlatformIcons.GitLabIcon, prefix: 'gitlab.com/', category: 'Profesyonel' },
+  { id: 'behance', label: 'Behance', icon: PlatformIcons.BehanceIcon, prefix: 'behance.net/', category: 'Profesyonel' },
+  { id: 'dribbble', label: 'Dribbble', icon: Dribbble, prefix: 'dribbble.com/', category: 'Profesyonel' },
+  { id: 'medium', label: 'Medium', icon: Pen, prefix: 'medium.com/@', category: 'Profesyonel' },
+  { id: 'devto', label: 'Dev.to', icon: PlatformIcons.DevToIcon, prefix: 'dev.to/', category: 'Profesyonel' },
+  { id: 'stackoverflow', label: 'Stack Overflow', icon: PlatformIcons.StackOverflowIcon, prefix: 'stackoverflow.com/users/', category: 'Profesyonel' },
+  { id: 'figma', label: 'Figma', icon: PlatformIcons.FigmaIcon, prefix: 'figma.com/@', category: 'Profesyonel' },
+  { id: 'notion', label: 'Notion', icon: PlatformIcons.NotionIcon, prefix: '', placeholder: 'Workspace URL', category: 'Profesyonel' },
+  { id: 'calendly', label: 'Calendly', icon: Calendar, prefix: 'calendly.com/', category: 'Profesyonel' },
+  { id: 'linktree', label: 'Linktree', icon: Link2, prefix: 'linktr.ee/', category: 'Profesyonel' },
+  { id: 'substack', label: 'Substack', icon: PlatformIcons.SubstackIcon, prefix: '', suffix: '.substack.com', category: 'Profesyonel' },
+  { id: 'patreon', label: 'Patreon', icon: PlatformIcons.PatreonIcon, prefix: 'patreon.com/', category: 'Profesyonel' },
+  { id: 'kofi', label: 'Ko-fi', icon: PlatformIcons.KoFiIcon, prefix: 'ko-fi.com/', category: 'Profesyonel' },
+  { id: 'buymeacoffee', label: 'Buy Me a Coffee', icon: PlatformIcons.BuyMeACoffeeIcon, prefix: 'buymeacoffee.com/', category: 'Profesyonel' },
+
+  // Ödeme
+  { id: 'iban', label: 'IBAN', icon: DollarSign, prefix: '', placeholder: 'TR00 0000 0000 0000 0000 0000 00', category: 'Ödeme Bilgileri' },
+  { id: 'paypal', label: 'PayPal', icon: CreditCard, prefix: 'paypal.me/', category: 'Ödeme Bilgileri' },
+  { id: 'cashapp', label: 'Cash App', icon: DollarSign, prefix: 'cash.app/$', category: 'Ödeme Bilgileri' },
+  { id: 'venmo', label: 'Venmo', icon: DollarSign, prefix: 'venmo.com/', category: 'Ödeme Bilgileri' },
+  { id: 'revolut', label: 'Revolut', icon: PlatformIcons.RevolutIcon, prefix: 'revolut.me/', category: 'Ödeme Bilgileri' },
+  { id: 'wise', label: 'Wise', icon: PlatformIcons.WiseIcon, prefix: '', placeholder: 'email@example.com', category: 'Ödeme Bilgileri' },
+  { id: 'papara', label: 'Papara', icon: PlatformIcons.PaparaIcon, prefix: '', placeholder: 'Papara No', category: 'Ödeme Bilgileri' },
+
+  // E-ticaret
+  { id: 'etsy', label: 'Etsy', icon: PlatformIcons.EtsyIcon, prefix: 'etsy.com/shop/', category: 'E-ticaret & Satış Kanalları' },
+  { id: 'amazon', label: 'Amazon', icon: PlatformIcons.AmazonIcon, prefix: '', placeholder: 'Mağaza URL', category: 'E-ticaret & Satış Kanalları' },
+  { id: 'ebay', label: 'eBay', icon: PlatformIcons.EbayIcon, prefix: 'ebay.com/usr/', category: 'E-ticaret & Satış Kanalları' },
+  { id: 'shopify', label: 'Shopify', icon: PlatformIcons.ShopifyIcon, prefix: '', suffix: '.myshopify.com', category: 'E-ticaret & Satış Kanalları' },
+  { id: 'trendyol', label: 'Trendyol', icon: PlatformIcons.TrendyolIcon, prefix: 'trendyol.com/magaza/', category: 'E-ticaret & Satış Kanalları' },
+  { id: 'hepsiburada', label: 'Hepsiburada', icon: PlatformIcons.HepsiburadaIcon, prefix: 'hepsiburada.com/magaza/', category: 'E-ticaret & Satış Kanalları' },
+  { id: 'temu', label: 'Temu', icon: PlatformIcons.TemuIcon, prefix: '', placeholder: 'Mağaza URL', category: 'E-ticaret & Satış Kanalları' },
+  { id: 'aliexpress', label: 'AliExpress', icon: PlatformIcons.AliExpressIcon, prefix: 'aliexpress.com/store/', category: 'E-ticaret & Satış Kanalları' },
+  { id: 'sahibinden', label: 'Sahibinden', icon: PlatformIcons.SahibindenIcon, prefix: '', suffix: '.sahibinden.com', category: 'E-ticaret & Satış Kanalları' },
+  { id: 'gittigidiyor', label: 'GittiGidiyor', icon: PlatformIcons.GittigidiyorIcon, prefix: '', placeholder: 'Mağaza adı', category: 'E-ticaret & Satış Kanalları' },
+  { id: 'n11', label: 'N11', icon: PlatformIcons.N11Icon, prefix: 'n11.com/magaza/', category: 'E-ticaret & Satış Kanalları' },
+
+  // Müzik
+  { id: 'soundcloud', label: 'SoundCloud', icon: PlatformIcons.SoundCloudIcon, prefix: 'soundcloud.com/', category: 'Müzik Platformları' },
+  { id: 'bandcamp', label: 'Bandcamp', icon: PlatformIcons.BandcampIcon, prefix: '', suffix: '.bandcamp.com', category: 'Müzik Platformları' },
+  { id: 'applemusic', label: 'Apple Music', icon: PlatformIcons.AppleMusicIcon, prefix: '', placeholder: 'Sanatçı profili', category: 'Müzik Platformları' },
+  { id: 'deezer', label: 'Deezer', icon: PlatformIcons.DeezerIcon, prefix: '', placeholder: 'Sanatçı profili', category: 'Müzik Platformları' },
+
+  // Video
+  { id: 'vimeo', label: 'Vimeo', icon: PlatformIcons.VimeoIcon, prefix: 'vimeo.com/', category: 'Video & Streaming' },
+  { id: 'dailymotion', label: 'Dailymotion', icon: PlatformIcons.DailymotionIcon, prefix: 'dailymotion.com/', category: 'Video & Streaming' },
+  { id: 'rumble', label: 'Rumble', icon: PlatformIcons.RumbleIcon, prefix: 'rumble.com/c/', category: 'Video & Streaming' },
+  { id: 'kick', label: 'Kick', icon: PlatformIcons.KickIcon, prefix: 'kick.com/', category: 'Video & Streaming' },
+
+  // Profesyonel Ağlar
+  { id: 'xing', label: 'Xing', icon: PlatformIcons.XingIcon, prefix: 'xing.com/profile/', category: 'Profesyonel Ağlar' },
+  { id: 'angellist', label: 'AngelList', icon: PlatformIcons.AngelListIcon, prefix: 'angel.co/', category: 'Profesyonel Ağlar' },
+  { id: 'crunchbase', label: 'Crunchbase', icon: PlatformIcons.CrunchbaseIcon, prefix: 'crunchbase.com/', category: 'Profesyonel Ağlar' },
+  { id: 'producthunt', label: 'Product Hunt', icon: PlatformIcons.ProductHuntIcon, prefix: 'producthunt.com/@', category: 'Profesyonel Ağlar' },
+
+  // Rezervasyon
+  { id: 'booking', label: 'Booking.com', icon: PlatformIcons.BookingIcon, prefix: '', placeholder: 'Property ID', category: 'Rezervasyon & Servis' },
+  { id: 'airbnb', label: 'Airbnb', icon: PlatformIcons.AirbnbIcon, prefix: '', placeholder: 'Listing URL', category: 'Rezervasyon & Servis' },
+  { id: 'tripadvisor', label: 'TripAdvisor', icon: PlatformIcons.TripAdvisorIcon, prefix: '', placeholder: 'İşletme URL', category: 'Rezervasyon & Servis' },
+  { id: 'uber', label: 'Uber', icon: PlatformIcons.UberIcon, prefix: '', placeholder: 'Profil', category: 'Rezervasyon & Servis' },
+  { id: 'bolt', label: 'Bolt', icon: PlatformIcons.BoltIcon, prefix: '', placeholder: 'Profil', category: 'Rezervasyon & Servis' },
+];
+
+// Kategorileri grupla
+const CATEGORIES = Array.from(new Set(SOCIAL_PLATFORMS.map(p => p.category)));
 
 export default function CardSetupPage() {
   const router = useRouter();
@@ -59,7 +162,11 @@ export default function CardSetupPage() {
   const [customLinks, setCustomLinks] = useState<CustomLink[]>([]);
   const [usernameError, setUsernameError] = useState<string>('');
   const [isCheckingUsername, setIsCheckingUsername] = useState<boolean>(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
+  // Sosyal Medya Linkleri State'i
+  const [socialMediaLinks, setSocialMediaLinks] = useState<SocialMediaState>({});
+
   // Modal state
   const [modal, setModal] = useState<{
     isOpen: boolean;
@@ -83,94 +190,11 @@ export default function CardSetupPage() {
     title: '',
     company: '',
     bio: '',
+    // İletişim
     email: '',
     phone: '',
     website: '',
     location: '',
-    // Sosyal Medya
-    instagram: '',
-    facebook: '',
-    twitter: '',
-    linkedin: '',
-    youtube: '',
-    tiktok: '',
-    snapchat: '',
-    pinterest: '',
-    reddit: '',
-    twitch: '',
-    discord: '',
-    spotify: '',
-    threads: '',
-    clubhouse: '',
-    // Mesajlaşma
-    whatsapp: '',
-    telegram: '',
-    signal: '',
-    viber: '',
-    wechat: '',
-    line: '',
-    // Profesyonel/İş
-    github: '',
-    gitlab: '',
-    behance: '',
-    dribbble: '',
-    medium: '',
-    devto: '',
-    stackoverflow: '',
-    figma: '',
-    notion: '',
-    calendly: '',
-    linktree: '',
-    substack: '',
-    patreon: '',
-    kofi: '',
-    buymeacoffee: '',
-    // E-ticaret/Satış
-    etsy: '',
-    amazon: '',
-    ebay: '',
-    shopify: '',
-    trendyol: '',
-    hepsiburada: '',
-    temu: '',
-    aliexpress: '',
-    sahibinden: '',
-    gittigidiyor: '',
-    n11: '',
-    // Ödeme
-    iban: '',
-    paypal: '',
-    cashapp: '',
-    venmo: '',
-    revolut: '',
-    wise: '',
-    papara: '',
-    // Video/Streaming
-    vimeo: '',
-    dailymotion: '',
-    rumble: '',
-    kick: '',
-    // Müzik
-    soundcloud: '',
-    bandcamp: '',
-    applemusic: '',
-    deezer: '',
-    // Profesyonel Ağlar
-    xing: '',
-    angellist: '',
-    crunchbase: '',
-    producthunt: '',
-    // Rezervasyon/Servis
-    booking: '',
-    airbnb: '',
-    tripadvisor: '',
-    uber: '',
-    bolt: '',
-    // Görünüm
-    theme: 'dark' as CardProfile['theme'],
-    layoutStyle: 'icons-with-title' as 'icons-only' | 'icons-with-title' | 'full-description' | 'full-width-buttons',
-    primaryColor: '#000000',
-    secondaryColor: '#ffffff',
   });
 
   useEffect(() => {
@@ -179,99 +203,64 @@ export default function CardSetupPage() {
       return;
     }
 
-    // setFormData'yı callback içinde çağır
-    const initializeForm = () => {
-      setFormData({
-        username: currentCard.username || '',
-        fullName: currentCard.fullName || '',
-        title: currentCard.title || '',
-        company: currentCard.company || '',
-        bio: currentCard.bio || '',
-        email: currentCard.email || '',
-        phone: currentCard.phone || '',
-        website: currentCard.website || '',
-        location: currentCard.location || '',
-        instagram: currentCard.instagram || '',
-        facebook: currentCard.facebook || '',
-        twitter: currentCard.twitter || '',
-        linkedin: currentCard.linkedin || '',
-        youtube: currentCard.youtube || '',
-        tiktok: currentCard.tiktok || '',
-      snapchat: currentCard.snapchat || '',
-      pinterest: currentCard.pinterest || '',
-      reddit: currentCard.reddit || '',
-      twitch: currentCard.twitch || '',
-      discord: currentCard.discord || '',
-      spotify: currentCard.spotify || '',
-      threads: currentCard.threads || '',
-      clubhouse: currentCard.clubhouse || '',
-      whatsapp: currentCard.whatsapp || '',
-      telegram: currentCard.telegram || '',
-      signal: currentCard.signal || '',
-      viber: currentCard.viber || '',
-      wechat: currentCard.wechat || '',
-      line: currentCard.line || '',
-      github: currentCard.github || '',
-      gitlab: currentCard.gitlab || '',
-      behance: currentCard.behance || '',
-      dribbble: currentCard.dribbble || '',
-      medium: currentCard.medium || '',
-      devto: currentCard.devto || '',
-      stackoverflow: currentCard.stackoverflow || '',
-      figma: currentCard.figma || '',
-      notion: currentCard.notion || '',
-      calendly: currentCard.calendly || '',
-      linktree: currentCard.linktree || '',
-      substack: currentCard.substack || '',
-      patreon: currentCard.patreon || '',
-      kofi: currentCard.kofi || '',
-      buymeacoffee: currentCard.buymeacoffee || '',
-      etsy: currentCard.etsy || '',
-      amazon: currentCard.amazon || '',
-      ebay: currentCard.ebay || '',
-      shopify: currentCard.shopify || '',
-      trendyol: currentCard.trendyol || '',
-      hepsiburada: currentCard.hepsiburada || '',
-      temu: currentCard.temu || '',
-      aliexpress: currentCard.aliexpress || '',
-      sahibinden: currentCard.sahibinden || '',
-      gittigidiyor: currentCard.gittigidiyor || '',
-      n11: currentCard.n11 || '',
-      iban: currentCard.iban || '',
-      paypal: currentCard.paypal || '',
-      cashapp: currentCard.cashapp || '',
-      venmo: currentCard.venmo || '',
-      revolut: currentCard.revolut || '',
-      wise: currentCard.wise || '',
-      papara: currentCard.papara || '',
-      vimeo: currentCard.vimeo || '',
-      dailymotion: currentCard.dailymotion || '',
-      rumble: currentCard.rumble || '',
-      kick: currentCard.kick || '',
-      soundcloud: currentCard.soundcloud || '',
-      bandcamp: currentCard.bandcamp || '',
-      applemusic: currentCard.applemusic || '',
-      deezer: currentCard.deezer || '',
-      xing: currentCard.xing || '',
-      angellist: currentCard.angellist || '',
-      crunchbase: currentCard.crunchbase || '',
-      producthunt: currentCard.producthunt || '',
-      booking: currentCard.booking || '',
-      airbnb: currentCard.airbnb || '',
-      tripadvisor: currentCard.tripadvisor || '',
-      uber: currentCard.uber || '',
-      bolt: currentCard.bolt || '',
-      theme: currentCard.theme,
-      layoutStyle: currentCard.layoutStyle || 'icons-with-title',
-      primaryColor: currentCard.primaryColor || '#000000',
-      secondaryColor: currentCard.secondaryColor || '#ffffff',
+    // Temel bilgileri yükle
+    setFormData({
+      username: currentCard.username || '',
+      fullName: currentCard.fullName || '',
+      title: currentCard.title || '',
+      company: currentCard.company || '',
+      bio: currentCard.bio || '',
+      email: currentCard.email || '',
+      phone: currentCard.phone || '',
+      website: currentCard.website || '',
+      location: currentCard.location || '',
     });
     
     setProfileImage(currentCard.profileImage || '');
-    setCustomLinks(currentCard.customLinks || []);
-    };
+    setCustomLinks(currentCard.customLinks?.filter(link => !link.platform) || []); // Platformu olmayanlar gerçek custom linktir
+
+    // Sosyal medya linklerini yükle
+    const initialSocialLinks: SocialMediaState = {};
     
-    initializeForm();
+    SOCIAL_PLATFORMS.forEach(platform => {
+      const links: SocialLinkItem[] = [];
+      
+      // 1. Sabit sütundan gelen veri
+      const mainValue = (currentCard as any)[platform.id];
+      if (mainValue) {
+        links.push({
+          id: `main-${platform.id}`,
+          value: mainValue,
+          title: '' // Sabit sütunda başlık yok
+        });
+      }
+      
+      // 2. customLinks içinden gelen platform verileri
+      if (currentCard.customLinks) {
+        const platformLinks = currentCard.customLinks.filter(link => link.platform === platform.id);
+        platformLinks.forEach(link => {
+          // Eğer sabit sütundaki değerle aynıysa ekleme (duplicate önleme)
+          if (!links.some(l => l.value === link.url)) {
+             links.push({
+              id: link.id,
+              value: link.url,
+              title: link.title
+            });
+          } else {
+            // Eğer varsa ve başlığı varsa güncelle
+            const existing = links.find(l => l.value === link.url);
+            if (existing) existing.title = link.title;
+          }
+        });
+      }
+      
+      if (links.length > 0) {
+        initialSocialLinks[platform.id] = links;
+      }
+    });
+    
+    setSocialMediaLinks(initialSocialLinks);
+
   }, [currentCard, isOwner, router]);
 
   // Modal helper fonksiyonları
@@ -298,28 +287,64 @@ export default function CardSetupPage() {
     setModal({ ...modal, isOpen: false });
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
-    // Kullanıcı adı değiştiğinde kontrolü temizle
     if (name === 'username') {
       setUsernameError('');
     }
   };
 
-  // Kullanıcı adı kontrolü için debounce fonksiyonu
+  // Sosyal Medya İşlemleri
+  const addSocialLink = (platformId: string) => {
+    setSocialMediaLinks(prev => {
+      const currentLinks = prev[platformId] || [];
+      return {
+        ...prev,
+        [platformId]: [
+          ...currentLinks,
+          { id: `new-${Date.now()}`, value: '', title: '' }
+        ]
+      };
+    });
+  };
+
+  const updateSocialLink = (platformId: string, id: string, field: 'value' | 'title', value: string) => {
+    setSocialMediaLinks(prev => {
+      const currentLinks = prev[platformId] || [];
+      return {
+        ...prev,
+        [platformId]: currentLinks.map(link => 
+          link.id === id ? { ...link, [field]: value } : link
+        )
+      };
+    });
+  };
+
+  const removeSocialLink = (platformId: string, id: string) => {
+    setSocialMediaLinks(prev => {
+      const currentLinks = prev[platformId] || [];
+      const filtered = currentLinks.filter(link => link.id !== id);
+      if (filtered.length === 0) {
+        const newState = { ...prev };
+        delete newState[platformId];
+        return newState;
+      }
+      return { ...prev, [platformId]: filtered };
+    });
+  };
+
+  // Kullanıcı adı kontrolü
   useEffect(() => {
     const checkUsername = async () => {
       const username = formData.username.trim();
       
-      // Boş veya mevcut kullanıcı adıyla aynıysa kontrol yapma
       if (!username || username === currentCard?.username) {
         setUsernameError('');
         return;
       }
       
-      // Kullanıcı adı formatı kontrolü
       const usernameRegex = /^[a-zA-Z0-9_-]+$/;
       if (!usernameRegex.test(username)) {
         setUsernameError('Kullanıcı adı sadece harf, rakam, tire ve alt çizgi içerebilir');
@@ -335,7 +360,6 @@ export default function CardSetupPage() {
       
       try {
         const isAvailable = await cardDb.checkUsernameAvailability(username, currentCard?.id);
-        
         if (!isAvailable) {
           setUsernameError('Bu kullanıcı adı zaten kullanılıyor');
         } else {
@@ -349,9 +373,7 @@ export default function CardSetupPage() {
       }
     };
     
-    // Debounce: Kullanıcı yazmayı bıraktıktan 500ms sonra kontrol et
     const timeoutId = setTimeout(checkUsername, 500);
-    
     return () => clearTimeout(timeoutId);
   }, [formData.username, currentCard?.id, currentCard?.username]);
 
@@ -400,19 +422,16 @@ export default function CardSetupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Kullanıcı adı hatası varsa kaydetme
     if (usernameError) {
       showModal('error', 'Geçersiz Kullanıcı Adı', usernameError);
       return;
     }
     
-    // Kullanıcı adı kontrolü devam ediyorsa bekle
     if (isCheckingUsername) {
       showModal('warning', 'Lütfen Bekleyin', 'Kullanıcı adı kontrol ediliyor...');
       return;
     }
     
-    // Kullanıcı adı değiştiyse son bir kez daha kontrol et
     if (formData.username && formData.username !== currentCard?.username) {
       const isAvailable = await cardDb.checkUsernameAvailability(formData.username, currentCard?.id);
       if (!isAvailable) {
@@ -421,11 +440,55 @@ export default function CardSetupPage() {
         return;
       }
     }
+
+    // Sosyal medya linklerini işle
+    const socialMediaUpdates: any = {};
+    const newCustomLinks = [...customLinks]; // Mevcut custom linkler
+
+    // Validasyon kontrolü: Çoklu link varsa başlık zorunlu
+    for (const platform of SOCIAL_PLATFORMS) {
+      const links = socialMediaLinks[platform.id] || [];
+      // Boş value olanları filtrele
+      const validLinks = links.filter(l => l.value.trim() !== '');
+      
+      if (validLinks.length > 1) {
+        const missingTitle = validLinks.some(l => !l.title.trim());
+        if (missingTitle) {
+          showModal('error', 'Eksik Bilgi', `${platform.label} için birden fazla link eklediğinizde, her biri için açıklama girmelisiniz.`);
+          return;
+        }
+      }
+    }
+
+    // Veriyi hazırla
+    for (const platform of SOCIAL_PLATFORMS) {
+      const links = socialMediaLinks[platform.id] || [];
+      const validLinks = links.filter(l => l.value.trim() !== '');
+
+      if (validLinks.length === 0) {
+        socialMediaUpdates[platform.id] = '';
+      } else if (validLinks.length === 1 && !validLinks[0].title.trim()) {
+        // Tek link ve başlıksız -> Ana sütuna yaz
+        socialMediaUpdates[platform.id] = validLinks[0].value;
+      } else {
+        // Çoklu link veya başlıklı tek link -> customLinks'e ekle
+        socialMediaUpdates[platform.id] = ''; // Ana sütunu boşalt
+        validLinks.forEach(link => {
+          newCustomLinks.push({
+            id: link.id.startsWith('new') ? Date.now().toString() + Math.random() : link.id,
+            title: link.title || platform.label, // Başlık yoksa platform adı
+            url: link.value,
+            platform: platform.id
+          });
+        });
+      }
+    }
     
     const success = await updateCard({
       ...formData,
+      ...socialMediaUpdates,
       profileImage,
-      customLinks
+      customLinks: newCustomLinks
     });
     
     if (success) {
@@ -461,12 +524,6 @@ export default function CardSetupPage() {
     );
   };
 
-  useEffect(() => {
-    if (!currentCard || !isOwner) {
-      router.push('/card/login');
-    }
-  }, [currentCard, isOwner, router]);
-
   if (!currentCard || !isOwner) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -477,75 +534,24 @@ export default function CardSetupPage() {
 
   return (
     <div className="flex min-h-screen bg-white">
-      
-      {/* Sol Sidebar */}
-      <div className="w-60 bg-black text-white flex flex-col sticky top-0 h-screen">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold">Kart Ayarları</h1>
-          <p className="text-gray-400 text-sm mt-1">{currentCard.username || currentCard.fullName}</p>
-        </div>
-        
-        <nav className="flex-1 px-3">
-          <button
-            className="w-full flex items-center gap-3 px-4 py-3 bg-white text-black rounded-lg transition mb-2"
-          >
-            <User size={20} />
-            <span>Profil Düzenle</span>
-          </button>
-          
-          <button
-            type="button"
-            onClick={() => router.push('/card/appearance')}
-            className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition mb-2"
-          >
-            <Palette size={20} />
-            <span>Görünüm & Tema</span>
-          </button>
-          
-          <button
-            type="button"
-            onClick={() => router.push('/card/editor')}
-            className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition mb-2"
-          >
-            <Sparkles size={20} />
-            <span>Editor</span>
-          </button>
-        </nav>
+      <CardSidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+        onLogout={handleLogout}
+      />
 
-        <div className="p-3 border-t border-gray-800">
-          <button
-            type="button"
-            onClick={handlePreview}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 rounded-lg transition text-sm mb-2"
+      <div className="w-full flex-1 overflow-auto flex flex-col">
+        <div className="lg:hidden p-4 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-30">
+          <h1 className="text-lg font-bold">Kart Ayarları</h1>
+          <button 
+            onClick={() => setIsSidebarOpen(true)}
+            className="p-2 hover:bg-gray-100 rounded-lg"
           >
-            <Eye size={18} />
-            Profili Görüntüle
-          </button>
-          
-          <button
-            type="button"
-            onClick={() => router.push('/')}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 rounded-lg transition text-sm mb-2"
-          >
-            <Home size={18} />
-            Ana Sayfa
-          </button>
-          
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg transition text-sm"
-          >
-            <LogOut size={18} />
-            Çıkış Yap
+            <Menu size={24} />
           </button>
         </div>
-      </div>
 
-      {/* Ana İçerik */}
-      <div className="flex-1 overflow-auto">
-        <div className="w-full px-8 py-6">
-          
+        <div className="w-full px-4 lg:px-8 py-6">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900">Profil Düzenle</h1>
             <p className="text-sm text-gray-500 mt-1">
@@ -554,7 +560,6 @@ export default function CardSetupPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6 pb-24">
-            
             {/* Profil Resmi */}
             <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-5">Profil Resmi</h2>
@@ -562,13 +567,7 @@ export default function CardSetupPage() {
                 <div className="relative">
                   {profileImage ? (
                     <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200">
-                      <Image 
-                        src={profileImage} 
-                        alt="Profile" 
-                        width={80} 
-                        height={80}
-                        className="object-cover w-full h-full"
-                      />
+                      <Image src={profileImage} alt="Profile" width={80} height={80} className="object-cover w-full h-full" />
                     </div>
                   ) : (
                     <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center">
@@ -576,30 +575,17 @@ export default function CardSetupPage() {
                     </div>
                   )}
                 </div>
-                <div className="flex-1">
+                <div className="w-full flex-1">
                   <label className="cursor-pointer">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition text-sm">
                       <Upload size={16} />
                       <span>Resim Yükle</span>
                     </div>
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                   </label>
-                  <p className="text-xs text-gray-500 mt-2">
-                    PNG, JPG veya GIF. Max 2MB.
-                  </p>
+                  <p className="text-xs text-gray-500 mt-2">PNG, JPG veya GIF. Max 2MB.</p>
                   {profileImage && (
-                    <button
-                      type="button"
-                      onClick={() => setProfileImage('')}
-                      className="text-red-600 text-xs mt-1.5 hover:underline"
-                    >
-                      Kaldır
-                    </button>
+                    <button type="button" onClick={() => setProfileImage('')} className="text-red-600 text-xs mt-1.5 hover:underline">Kaldır</button>
                   )}
                 </div>
               </div>
@@ -608,23 +594,18 @@ export default function CardSetupPage() {
             {/* Temel Bilgiler */}
             <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-5">Temel Bilgiler</h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                
+              <div className="grid md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Kullanıcı Adı *
-                  </label>
-                  <div className="flex items-center gap-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Kullanıcı Adı *</label>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <span className="text-gray-500">notouchness.com/</span>
-                    <div className="flex-1 relative">
+                    <div className="w-full flex-1 relative">
                       <input
                         type="text"
                         name="username"
                         value={formData.username}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-2 border rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900 ${
-                          usernameError ? 'border-red-500' : 'border-gray-200'
-                        }`}
+                        className={`w-full px-4 py-2 border rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900 ${usernameError ? 'border-red-500' : 'border-gray-200'}`}
                         placeholder="kullaniciadi"
                         required
                       />
@@ -635,79 +616,30 @@ export default function CardSetupPage() {
                       )}
                     </div>
                   </div>
-                  {usernameError && (
-                    <p className="mt-1 text-sm text-red-500">{usernameError}</p>
-                  )}
+                  {usernameError && <p className="mt-1 text-sm text-red-500">{usernameError}</p>}
                   {!usernameError && formData.username && formData.username !== currentCard?.username && !isCheckingUsername && (
                     <p className="mt-1 text-sm text-green-600">✓ Kullanıcı adı kullanılabilir</p>
                   )}
                 </div>
-
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Ad Soyad *</label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="Fazıl Can Akbaş"
-                    required
-                  />
+                  <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Ad Soyad" required />
                 </div>
-
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Ünvan</label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="Full Stack Developer"
-                  />
+                  <input type="text" name="title" value={formData.title} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Ünvan" />
                 </div>
-
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5">
-                    <Briefcase size={16} />
-                    Şirket
-                  </label>
-                  <input
-                    type="text"
-                    name="company"
-                    value={formData.company}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="Digivisor"
-                  />
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Briefcase size={16} /> Şirket</label>
+                  <input type="text" name="company" value={formData.company} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Şirket" />
                 </div>
-
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5">
-                    <MapPin size={16} />
-                    Konum
-                  </label>
-                  <input
-                    type="text"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="İstanbul, Türkiye"
-                  />
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><MapPin size={16} /> Konum</label>
+                  <input type="text" name="location" value={formData.location} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Konum" />
                 </div>
-
                 <div className="md:col-span-2">
                   <label className="block text-xs font-medium text-gray-600 mb-1">Hakkında</label>
-                  <textarea
-                    name="bio"
-                    value={formData.bio}
-                    onChange={handleInputChange}
-                    rows={3}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="Kendinden kısaca bahset..."
-                  />
+                  <textarea name="bio" value={formData.bio} onChange={handleInputChange} rows={3} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Kendinden kısaca bahset..." />
                 </div>
               </div>
             </div>
@@ -715,706 +647,100 @@ export default function CardSetupPage() {
             {/* İletişim */}
             <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-5">İletişim</h2>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5">
-                    <Mail size={16} />
-                    E-posta
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="email@example.com"
-                  />
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Mail size={16} /> E-posta</label>
+                  <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="email@example.com" />
                 </div>
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5">
-                    <Phone size={16} />
-                    Telefon
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="+90 555 555 55 55"
-                  />
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Phone size={16} /> Telefon</label>
+                  <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="+90 555 555 55 55" />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5">
-                    <Globe size={16} />
-                    Website
-                  </label>
-                  <input
-                    type="url"
-                    name="website"
-                    value={formData.website}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="https://example.com"
-                  />
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Globe size={16} /> Website</label>
+                  <input type="url" name="website" value={formData.website} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="https://example.com" />
                 </div>
               </div>
             </div>
 
-            {/* Sosyal Medya */}
-            <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-5">Sosyal Medya</h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Instagram size={16} />Instagram</label>
-                  <input
-                    type="text"
-                    name="instagram"
-                    value={formData.instagram}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5">
-                    <Facebook size={16} />
-                    Facebook
-                  </label>
-                  <input
-                    type="text"
-                    name="facebook"
-                    value={formData.facebook}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5">
-                    <Twitter size={16} />
-                    Twitter/X
-                  </label>
-                  <input
-                    type="text"
-                    name="twitter"
-                    value={formData.twitter}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5">
-                    <Linkedin size={16} />
-                    LinkedIn
-                  </label>
-                  <input
-                    type="text"
-                    name="linkedin"
-                    value={formData.linkedin}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5">
-                    <Youtube size={16} />
-                    YouTube
-                  </label>
-                  <input
-                    type="text"
-                    name="youtube"
-                    value={formData.youtube}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="@kanaladi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Video size={16} />TikTok</label>
-                  <input
-                    type="text"
-                    name="tiktok"
-                    value={formData.tiktok}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="@kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Users size={16} />Snapchat</label>
-                  <input
-                    type="text"
-                    name="snapchat"
-                    value={formData.snapchat}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Palette size={16} />Pinterest</label>
-                  <input
-                    type="text"
-                    name="pinterest"
-                    value={formData.pinterest}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><MessageCircle size={16} />Reddit</label>
-                  <input
-                    type="text"
-                    name="reddit"
-                    value={formData.reddit}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="u/kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Video size={16} />Twitch</label>
-                  <input
-                    type="text"
-                    name="twitch"
-                    value={formData.twitch}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Users size={16} />Discord</label>
-                  <input
-                    type="text"
-                    name="discord"
-                    value={formData.discord}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullanici#1234"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Music size={16} />Spotify</label>
-                  <input
-                    type="text"
-                    name="spotify"
-                    value={formData.spotify}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="Profil URL"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.ThreadsIcon size={16} />Threads</label>
-                  <input
-                    type="text"
-                    name="threads"
-                    value={formData.threads}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="@kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.ClubhouseIcon size={16} />Clubhouse</label>
-                  <input
-                    type="text"
-                    name="clubhouse"
-                    value={formData.clubhouse}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="@kullaniciadi"
-                  />
-                </div>
-              </div>
-            </div>
+            {/* Dinamik Sosyal Medya Bölümleri */}
+            {CATEGORIES.map(category => (
+              <div key={category} className="bg-gray-50 rounded-lg border border-gray-200 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-5">{category}</h2>
+                <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-6">
+                  {SOCIAL_PLATFORMS.filter(p => p.category === category).map(platform => {
+                    const links = socialMediaLinks[platform.id] || [];
+                    // Varsayılan boş link göster (eğer hiç yoksa)
+                    const displayLinks = links.length > 0 ? links : [{ id: `default-${platform.id}`, value: '', title: '' }];
+                    const Icon = platform.icon;
 
-            {/* Mesajlaşma */}
-            <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-5">Mesajlaşma</h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5">
-                    <MessageCircle size={16} />
-                    WhatsApp
-                  </label>
-                  <input
-                    type="text"
-                    name="whatsapp"
-                    value={formData.whatsapp}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="+905555555555"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5">
-                    <Send size={16} />
-                    Telegram
-                  </label>
-                  <input
-                    type="text"
-                    name="telegram"
-                    value={formData.telegram}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="@kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><MessageCircle size={16} />Signal</label>
-                  <input
-                    type="text"
-                    name="signal"
-                    value={formData.signal}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="+905555555555"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Phone size={16} />Viber</label>
-                  <input
-                    type="text"
-                    name="viber"
-                    value={formData.viber}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="+905555555555"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.WeChatIcon size={16} />WeChat</label>
-                  <input
-                    type="text"
-                    name="wechat"
-                    value={formData.wechat}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="ID"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.LineIcon size={16} />LINE</label>
-                  <input
-                    type="text"
-                    name="line"
-                    value={formData.line}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="ID"
-                  />
-                </div>
-              </div>
-            </div>
+                    return (
+                      <div key={platform.id} className="flex flex-col gap-3">
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+                          <Icon size={16} /> {platform.label}
+                        </label>
+                        
+                        {displayLinks.map((link, index) => (
+                          <div key={link.id} className="flex flex-col gap-2 p-3 border border-gray-200 rounded-lg bg-white">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                              {platform.prefix && <span className="text-gray-500 text-sm whitespace-nowrap">{platform.prefix}</span>}
+                              <input
+                                type="text"
+                                value={link.value}
+                                onChange={(e) => {
+                                  if (links.length === 0) {
+                                    // İlk kez veri giriliyorsa state'e ekle
+                                    setSocialMediaLinks(prev => ({
+                                      ...prev,
+                                      [platform.id]: [{ id: `new-${Date.now()}`, value: e.target.value, title: '' }]
+                                    }));
+                                  } else {
+                                    updateSocialLink(platform.id, link.id, 'value', e.target.value);
+                                  }
+                                }}
+                                className={`w-full flex-1 px-3 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900 ${platform.prefix ? '' : 'text-left'} ${platform.suffix ? 'text-right' : ''}`}
+                                placeholder={platform.placeholder || 'kullaniciadi'}
+                              />
+                              {platform.suffix && <span className="text-gray-500 text-sm whitespace-nowrap">{platform.suffix}</span>}
+                            </div>
+                            
+                            {/* Çoklu link veya isteğe bağlı başlık */}
+                            {(links.length > 1 || link.title) && (
+                              <input
+                                type="text"
+                                value={link.title}
+                                onChange={(e) => updateSocialLink(platform.id, link.id, 'title', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-sm text-gray-900"
+                                placeholder="Açıklama (Örn: Kişisel Hesabım)"
+                              />
+                            )}
 
-            {/* Profesyonel */}
-            <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-5">Profesyonel</h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Github size={16} />GitHub</label>
-                  <input
-                    type="text"
-                    name="github"
-                    value={formData.github}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.GitLabIcon size={16} />GitLab</label>
-                  <input
-                    type="text"
-                    name="gitlab"
-                    value={formData.gitlab}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Palette size={16} />Behance</label>
-                  <input
-                    type="text"
-                    name="behance"
-                    value={formData.behance}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Palette size={16} />Dribbble</label>
-                  <input
-                    type="text"
-                    name="dribbble"
-                    value={formData.dribbble}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Pen size={16} />Medium</label>
-                  <input
-                    type="text"
-                    name="medium"
-                    value={formData.medium}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="@kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.DevToIcon size={16} />Dev.to</label>
-                  <input
-                    type="text"
-                    name="devto"
-                    value={formData.devto}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.StackOverflowIcon size={16} />Stack Overflow</label>
-                  <input
-                    type="text"
-                    name="stackoverflow"
-                    value={formData.stackoverflow}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="user/12345"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.FigmaIcon size={16} />Figma</label>
-                  <input
-                    type="text"
-                    name="figma"
-                    value={formData.figma}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="@kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.NotionIcon size={16} />Notion</label>
-                  <input
-                    type="text"
-                    name="notion"
-                    value={formData.notion}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="Workspace URL"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Calendar size={16} />Calendly</label>
-                  <input
-                    type="text"
-                    name="calendly"
-                    value={formData.calendly}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Link2 size={16} />Linktree</label>
-                  <input
-                    type="text"
-                    name="linktree"
-                    value={formData.linktree}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.SubstackIcon size={16} />Substack</label>
-                  <input
-                    type="text"
-                    name="substack"
-                    value={formData.substack}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="newsletter-adi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.PatreonIcon size={16} />Patreon</label>
-                  <input
-                    type="text"
-                    name="patreon"
-                    value={formData.patreon}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.KoFiIcon size={16} />Ko-fi</label>
-                  <input
-                    type="text"
-                    name="kofi"
-                    value={formData.kofi}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.BuyMeACoffeeIcon size={16} />Buy Me a Coffee</label>
-                  <input
-                    type="text"
-                    name="buymeacoffee"
-                    value={formData.buymeacoffee}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="kullaniciadi"
-                  />
+                            {/* Sil Butonu (sadece çoklu ise veya değer varsa) */}
+                            {links.length > 0 && (
+                              <button 
+                                type="button"
+                                onClick={() => removeSocialLink(platform.id, link.id)}
+                                className="text-xs text-red-500 hover:text-red-700 self-end"
+                              >
+                                Kaldır
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        
+                        <button
+                          type="button"
+                          onClick={() => addSocialLink(platform.id)}
+                          className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 self-start"
+                        >
+                          <Plus size={14} /> Başka Ekle
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            </div>
-
-            {/* Ödeme */}
-            <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-5">Ödeme Bilgileri</h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="md:col-span-3">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><DollarSign size={16} />IBAN</label>
-                  <input
-                    type="text"
-                    name="iban"
-                    value={formData.iban}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900 font-mono"
-                    placeholder="TR00 0000 0000 0000 0000 0000 00"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><CreditCard size={16} />PayPal</label>
-                  <input
-                    type="text"
-                    name="paypal"
-                    value={formData.paypal}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="paypal.me/kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><DollarSign size={16} />Cash App</label>
-                  <input
-                    type="text"
-                    name="cashapp"
-                    value={formData.cashapp}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="$kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><DollarSign size={16} />Venmo</label>
-                  <input
-                    type="text"
-                    name="venmo"
-                    value={formData.venmo}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="@kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.RevolutIcon size={16} />Revolut</label>
-                  <input
-                    type="text"
-                    name="revolut"
-                    value={formData.revolut}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="@kullaniciadi"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.WiseIcon size={16} />Wise</label>
-                  <input
-                    type="text"
-                    name="wise"
-                    value={formData.wise}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="email@example.com"
-                  />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.PaparaIcon size={16} />Papara</label>
-                  <input
-                    type="text"
-                    name="papara"
-                    value={formData.papara}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900"
-                    placeholder="Papara No"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* E-ticaret & Satış Kanalları */}
-            <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-5">E-ticaret & Satış Kanalları</h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.EtsyIcon size={16} />Etsy</label>
-                  <input type="text" name="etsy" value={formData.etsy} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="magaza-adi" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.AmazonIcon size={16} />Amazon</label>
-                  <input type="text" name="amazon" value={formData.amazon} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Mağaza URL" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.EbayIcon size={16} />eBay</label>
-                  <input type="text" name="ebay" value={formData.ebay} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Mağaza adı" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.ShopifyIcon size={16} />Shopify</label>
-                  <input type="text" name="shopify" value={formData.shopify} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="magaza.myshopify.com" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.TrendyolIcon size={16} />Trendyol</label>
-                  <input type="text" name="trendyol" value={formData.trendyol} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Mağaza adı" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.HepsiburadaIcon size={16} />Hepsiburada</label>
-                  <input type="text" name="hepsiburada" value={formData.hepsiburada} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Mağaza adı" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.TemuIcon size={16} />Temu</label>
-                  <input type="text" name="temu" value={formData.temu} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Mağaza URL" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.AliExpressIcon size={16} />AliExpress</label>
-                  <input type="text" name="aliexpress" value={formData.aliexpress} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Mağaza adı" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.SahibindenIcon size={16} />Sahibinden</label>
-                  <input type="text" name="sahibinden" value={formData.sahibinden} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Profil adı" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.GittigidiyorIcon size={16} />GittiGidiyor</label>
-                  <input type="text" name="gittigidiyor" value={formData.gittigidiyor} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Mağaza adı" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.N11Icon size={16} />N11</label>
-                  <input type="text" name="n11" value={formData.n11} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Mağaza adı" />
-                </div>
-              </div>
-            </div>
-
-            {/* Müzik Platformları */}
-            <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-5">Müzik Platformları</h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.SoundCloudIcon size={16} />SoundCloud</label>
-                  <input type="text" name="soundcloud" value={formData.soundcloud} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="kullaniciadi" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.BandcampIcon size={16} />Bandcamp</label>
-                  <input type="text" name="bandcamp" value={formData.bandcamp} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="sanatci" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.AppleMusicIcon size={16} />Apple Music</label>
-                  <input type="text" name="applemusic" value={formData.applemusic} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Sanatçı profili" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.DeezerIcon size={16} />Deezer</label>
-                  <input type="text" name="deezer" value={formData.deezer} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Sanatçı profili" />
-                </div>
-              </div>
-            </div>
-
-            {/* Video & Streaming */}
-            <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-5">Video & Streaming</h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.VimeoIcon size={16} />Vimeo</label>
-                  <input type="text" name="vimeo" value={formData.vimeo} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="kullaniciadi" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.DailymotionIcon size={16} />Dailymotion</label>
-                  <input type="text" name="dailymotion" value={formData.dailymotion} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="kullaniciadi" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.RumbleIcon size={16} />Rumble</label>
-                  <input type="text" name="rumble" value={formData.rumble} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="kullaniciadi" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.KickIcon size={16} />Kick</label>
-                  <input type="text" name="kick" value={formData.kick} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="kullaniciadi" />
-                </div>
-              </div>
-            </div>
-
-            {/* Profesyonel Ağlar */}
-            <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-5">Profesyonel Ağlar</h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.XingIcon size={16} />Xing</label>
-                  <input type="text" name="xing" value={formData.xing} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="kullaniciadi" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.AngelListIcon size={16} />AngelList</label>
-                  <input type="text" name="angellist" value={formData.angellist} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="kullaniciadi" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.CrunchbaseIcon size={16} />Crunchbase</label>
-                  <input type="text" name="crunchbase" value={formData.crunchbase} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="organization/sirket" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.ProductHuntIcon size={16} />Product Hunt</label>
-                  <input type="text" name="producthunt" value={formData.producthunt} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="@kullaniciadi" />
-                </div>
-              </div>
-            </div>
-
-            {/* Rezervasyon & Servis */}
-            <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-5">Rezervasyon & Servis</h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.BookingIcon size={16} />Booking.com</label>
-                  <input type="text" name="booking" value={formData.booking} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Property ID" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.AirbnbIcon size={16} />Airbnb</label>
-                  <input type="text" name="airbnb" value={formData.airbnb} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Listing URL" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.TripAdvisorIcon size={16} />TripAdvisor</label>
-                  <input type="text" name="tripadvisor" value={formData.tripadvisor} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="İşletme URL" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.UberIcon size={16} />Uber</label>
-                  <input type="text" name="uber" value={formData.uber} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Profil" />
-                </div>
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><PlatformIcons.BoltIcon size={16} />Bolt</label>
-                  <input type="text" name="bolt" value={formData.bolt} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Profil" />
-                </div>
-              </div>
-            </div>
+            ))}
 
             {/* Özel Linkler */}
             <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
@@ -1506,7 +832,7 @@ export default function CardSetupPage() {
           </form>
 
           {/* Sticky Footer */}
-          <div className="fixed bottom-0 left-60 right-0 bg-white border-t border-gray-200 z-50">
+          <div className="fixed bottom-0 lg:left-60 left-0 right-0 bg-white border-t border-gray-200 z-50">
             <div className="max-w-4xl mx-auto px-6 py-4">
               <button
                 type="submit"
@@ -1523,9 +849,8 @@ export default function CardSetupPage() {
 
       {/* Modal */}
       {modal.isOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-100 p-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[110] p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
-            {/* Icon */}
             <div className="flex justify-center mb-4">
               {modal.type === 'success' && (
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
@@ -1556,48 +881,16 @@ export default function CardSetupPage() {
                 </div>
               )}
             </div>
-
-            {/* Content */}
-            <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
-              {modal.title}
-            </h3>
-            <p className="text-gray-600 text-center mb-6">
-              {modal.message}
-            </p>
-
-            {/* Buttons */}
+            <h3 className="text-xl font-bold text-gray-900 text-center mb-2">{modal.title}</h3>
+            <p className="text-gray-600 text-center mb-6">{modal.message}</p>
             <div className="flex gap-3">
               {modal.onConfirm ? (
                 <>
-                  <button
-                    onClick={() => {
-                      closeModal();
-                    }}
-                    className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
-                  >
-                    {modal.cancelText || 'İptal'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      modal.onConfirm?.();
-                      closeModal();
-                    }}
-                    className={`flex-1 px-4 py-2.5 rounded-lg transition font-medium text-white ${
-                      modal.type === 'error' || modal.type === 'warning'
-                        ? 'bg-red-600 hover:bg-red-700'
-                        : 'bg-black hover:bg-gray-800'
-                    }`}
-                  >
-                    {modal.confirmText || 'Tamam'}
-                  </button>
+                  <button onClick={closeModal} className="w-full flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">{modal.cancelText || 'İptal'}</button>
+                  <button onClick={() => { modal.onConfirm?.(); closeModal(); }} className={`flex-1 px-4 py-2.5 rounded-lg transition font-medium text-white ${modal.type === 'error' || modal.type === 'warning' ? 'bg-red-600 hover:bg-red-700' : 'bg-black hover:bg-gray-800'}`}>{modal.confirmText || 'Tamam'}</button>
                 </>
               ) : (
-                <button
-                  onClick={closeModal}
-                  className="w-full px-4 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition font-medium"
-                >
-                  Tamam
-                </button>
+                <button onClick={closeModal} className="w-full px-4 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition font-medium">Tamam</button>
               )}
             </div>
           </div>
