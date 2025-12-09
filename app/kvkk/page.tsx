@@ -4,13 +4,10 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import CartModal from '../components/CartModal';
 import { useState } from 'react';
-import { useCart } from '../context/CartContext';
 import { Shield, FileText } from 'lucide-react';
 
 export default function KvkkPage() {
   const [isCartVisible, setIsCartVisible] = useState(false);
-  const cart = useCart() as any;
-  const cartItemsCount = Array.isArray(cart?.items) ? cart.items.length : 0;
 
   return (
     <div className="min-h-screen bg-white">
@@ -83,7 +80,7 @@ export default function KvkkPage() {
         </div>
       </main>
 
-      <Footer cartItemsCount={cartItemsCount} onCartClick={() => setIsCartVisible(true)} />
+      <Footer />
     </div>
   );
 }
