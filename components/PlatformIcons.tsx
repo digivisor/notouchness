@@ -1,4 +1,4 @@
-// Platform SVG Icons
+                  // Platform SVG Icons
 import React from 'react';
 
 interface IconProps {

@@ -381,8 +381,15 @@ export default function CardSetupPage() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Check file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        showModal('error', 'Dosya Çok Büyük', 'Profil fotoğrafı maksimum 2MB olabilir.');
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onloadend = () => {
+        // Directly set the image without cropper
         setProfileImage(reader.result as string);
       };
       reader.readAsDataURL(file);
@@ -610,6 +617,17 @@ export default function CardSetupPage() {
             <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-5">Temel Bilgiler</h2>
               <div className="grid md:grid-cols-2 gap-6">
+                {/* Satır 1: Ad Soyad ve Ünvan yan yana */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Ad Soyad *</label>
+                  <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Ad Soyad" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Ünvan</label>
+                  <input type="text" name="title" value={formData.title} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Ünvan" />
+                </div>
+                
+                {/* Satır 2: Kullanıcı Adı tam genişlik */}
                 <div className="md:col-span-2">
                   <label className="block text-xs font-medium text-gray-600 mb-1">Kullanıcı Adı *</label>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
@@ -636,14 +654,8 @@ export default function CardSetupPage() {
                     <p className="mt-1 text-sm text-green-600">✓ Kullanıcı adı kullanılabilir</p>
                   )}
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Ad Soyad *</label>
-                  <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Ad Soyad" required />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Ünvan</label>
-                  <input type="text" name="title" value={formData.title} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Ünvan" />
-                </div>
+                
+                {/* Satır 3: Şirket ve Konum yan yana */}
                 <div>
                   <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><Briefcase size={16} /> Şirket</label>
                   <input type="text" name="company" value={formData.company} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Şirket" />
@@ -652,6 +664,8 @@ export default function CardSetupPage() {
                   <label className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1.5"><MapPin size={16} /> Konum</label>
                   <input type="text" name="location" value={formData.location} onChange={handleInputChange} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Konum" />
                 </div>
+                
+                {/* Satır 4: Hakkında tam genişlik */}
                 <div className="md:col-span-2">
                   <label className="block text-xs font-medium text-gray-600 mb-1">Hakkında</label>
                   <textarea name="bio" value={formData.bio} onChange={handleInputChange} rows={3} className="w-full px-4 py-2 border border-gray-200 rounded-md focus:ring-1 focus:ring-black text-base focus:border-transparent text-gray-900" placeholder="Kendinden kısaca bahset..." />
