@@ -163,6 +163,7 @@ export default function CardSetupPage() {
   const [usernameError, setUsernameError] = useState<string>('');
   const [isCheckingUsername, setIsCheckingUsername] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
   
   // Sosyal Medya Linkleri State'i
   const [socialMediaLinks, setSocialMediaLinks] = useState<SocialMediaState>({});
@@ -419,8 +420,12 @@ export default function CardSetupPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    
+    if (isSaving) return; // Çift tıklamayı önle
     
     if (usernameError) {
       showModal('error', 'Geçersiz Kullanıcı Adı', usernameError);
@@ -432,11 +437,14 @@ export default function CardSetupPage() {
       return;
     }
     
+    setIsSaving(true);
+    
     if (formData.username && formData.username !== currentCard?.username) {
       const isAvailable = await cardDb.checkUsernameAvailability(formData.username, currentCard?.id);
       if (!isAvailable) {
         setUsernameError('Bu kullanıcı adı zaten kullanılıyor');
         showModal('error', 'Kullanıcı Adı Kullanımda', 'Bu kullanıcı adı zaten başka bir kart tarafından kullanılıyor.');
+        setIsSaving(false);
         return;
       }
     }
@@ -484,21 +492,28 @@ export default function CardSetupPage() {
       }
     }
     
-    const success = await updateCard({
-      ...formData,
-      ...socialMediaUpdates,
-      profileImage,
-      customLinks: newCustomLinks
-    });
-    
-    if (success) {
-      showModal('success', 'Başarılı!', 'Profil bilgileriniz başarıyla güncellendi.', () => {
-        if (formData.username) {
-          router.push(`/${formData.username}`);
-        }
-      }, 'Profili Görüntüle');
-    } else {
+    try {
+      const success = await updateCard({
+        ...formData,
+        ...socialMediaUpdates,
+        profileImage,
+        customLinks: newCustomLinks
+      });
+      
+      if (success) {
+        showModal('success', 'Başarılı!', 'Profil bilgileriniz başarıyla güncellendi.', () => {
+          if (formData.username) {
+            router.push(`/${formData.username}`);
+          }
+        }, 'Profili Görüntüle');
+      } else {
+        showModal('error', 'Hata!', 'Profil güncellenirken bir hata oluştu. Lütfen tekrar deneyin.');
+      }
+    } catch (error) {
+      console.error('Save error:', error);
       showModal('error', 'Hata!', 'Profil güncellenirken bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -835,12 +850,22 @@ export default function CardSetupPage() {
           <div className="fixed bottom-0 lg:left-60 left-0 right-0 bg-white border-t border-gray-200 z-50">
             <div className="max-w-4xl mx-auto px-6 py-4">
               <button
-                type="submit"
-                onClick={handleSubmit}
-                className="w-full flex items-center justify-center gap-2 bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition"
+                type="button"
+                onClick={(e) => handleSubmit(e)}
+                disabled={isSaving}
+                className="w-full flex items-center justify-center gap-2 bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Save size={18} />
-                Değişiklikleri Kaydet
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                    <span>Kaydediliyor...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save size={18} />
+                    <span>Değişiklikleri Kaydet</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

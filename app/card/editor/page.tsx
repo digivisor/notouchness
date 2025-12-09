@@ -289,7 +289,7 @@ export default function EditorPage() {
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex-1 flex items-center gap-2 overflow-x-auto scrollbar-hide relative px-4 lg:px-6">
+            <div className="flex-1 flex items-center gap-2 overflow-x-auto scrollbar-hide relative px-2 sm:px-4 lg:px-6">
               {/* Scroll indicator - Left */}
               <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent pointer-events-none z-10 hidden lg:block" />
               {/* Scroll indicator - Right */}
@@ -390,7 +390,7 @@ export default function EditorPage() {
           {/* Orta - Editor Kontrolleri */}
           <div className="flex-1 bg-white border-r border-gray-200 overflow-y-auto flex flex-col lg:mr-[650px]">
             {/* Tab Content */}
-            <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-6">
               {/* Layout Ayarları */}
               {activeTab === 'layout' && (
                 <div className="mb-8">
@@ -401,7 +401,7 @@ export default function EditorPage() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-3">Layout Stili</label>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {/* Sadece İkonlar */}
                         <button
                           onClick={() => handleSettingChange('layoutStyle', 'icons-only')}
@@ -530,7 +530,7 @@ export default function EditorPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-3">Grid Sütun Sayısı</label>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {/* 3 Sütun */}
                         <button
                           onClick={() => handleSettingChange('gridCols', 3)}
@@ -591,7 +591,7 @@ export default function EditorPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-3">Profil Resmi Pozisyonu</label>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {/* Üstte Taşan */}
                         <button
                           onClick={() => handleSettingChange('avatarPosition', 'above')}
@@ -822,12 +822,12 @@ export default function EditorPage() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Sayfa Arka Plan</label>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           type="color"
                           value={editorSettings.backgroundColor}
                           onChange={(e) => handleSettingChange('backgroundColor', e.target.value)}
-                          className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                          className="w-full sm:w-12 h-10 rounded border border-gray-300 cursor-pointer"
                         />
                         <input
                           type="text"
@@ -840,12 +840,12 @@ export default function EditorPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Container Arka Plan</label>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           type="color"
                           value={editorSettings.containerBackgroundColor}
                           onChange={(e) => handleSettingChange('containerBackgroundColor', e.target.value)}
-                          className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                          className="w-full sm:w-12 h-10 rounded border border-gray-300 cursor-pointer"
                         />
                         <input
                           type="text"
@@ -858,12 +858,12 @@ export default function EditorPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Ana Renk</label>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           type="color"
                           value={editorSettings.primaryColor}
                           onChange={(e) => handleSettingChange('primaryColor', e.target.value)}
-                          className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                          className="w-full sm:w-12 h-10 rounded border border-gray-300 cursor-pointer"
                         />
                         <input
                           type="text"
@@ -876,12 +876,12 @@ export default function EditorPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">İkon Rengi</label>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           type="color"
                           value={editorSettings.iconColor}
                           onChange={(e) => handleSettingChange('iconColor', e.target.value)}
-                          className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                          className="w-full sm:w-12 h-10 rounded border border-gray-300 cursor-pointer"
                         />
                         <input
                           type="text"
@@ -897,12 +897,12 @@ export default function EditorPage() {
                         Buton Arka Plan Rengi
                         <span className="text-xs text-gray-500 ml-1">(Tam Genişlik Butonlar)</span>
                       </label>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           type="color"
                           value={editorSettings.buttonBackgroundColor}
                           onChange={(e) => handleSettingChange('buttonBackgroundColor', e.target.value)}
-                          className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                          className="w-full sm:w-12 h-10 rounded border border-gray-300 cursor-pointer"
                         />
                         <input
                           type="text"
@@ -916,12 +916,12 @@ export default function EditorPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Yazı Rengi</label>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           type="color"
                           value={editorSettings.textColor}
                           onChange={(e) => handleSettingChange('textColor', e.target.value)}
-                          className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                          className="w-full sm:w-12 h-10 rounded border border-gray-300 cursor-pointer"
                         />
                         <input
                           type="text"
@@ -1099,12 +1099,12 @@ export default function EditorPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Border Rengi</label>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           type="color"
                           value={editorSettings.avatarBorderColor}
                           onChange={(e) => handleSettingChange('avatarBorderColor', e.target.value)}
-                          className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                          className="w-full sm:w-12 h-10 rounded border border-gray-300 cursor-pointer"
                         />
                         <input
                           type="text"
@@ -1322,13 +1322,14 @@ export default function EditorPage() {
             </div>
 
             {/* Kaydet Butonu */}
-            <div className="sticky bottom-0 bg-white border-t border-gray-200 py-4 px-4 lg:px-6 flex-shrink-0">
+            <div className="sticky bottom-0 bg-white border-t border-gray-200 py-4 px-4 sm:px-6 lg:px-6 flex-shrink-0 z-10">
               <button
                 onClick={handleSave}
-                className="w-full flex items-center justify-center gap-2 bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition"
+                className="w-full flex items-center justify-center gap-2 bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition cursor-pointer"
               >
                 <Save size={18} />
-                Değişiklikleri Kaydet
+                <span className="hidden sm:inline">Değişiklikleri Kaydet</span>
+                <span className="sm:hidden">Kaydet</span>
               </button>
             </div>
           </div>

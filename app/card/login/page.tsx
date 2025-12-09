@@ -13,6 +13,7 @@ export default function CardLoginPage() {
   
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -29,11 +30,22 @@ export default function CardLoginPage() {
     e.preventDefault();
     setError('');
     
-    const success = await loginToCard(formData.email, formData.password);
-    if (success) {
-      router.push('/card/setup');
-    } else {
-      setError('E-posta veya şifre hatalı! Demo: fazilcanakbas5@gmail.com / demo123');
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    
+    try {
+      const success = await loginToCard(formData.email, formData.password);
+      if (success) {
+        router.push('/card/setup');
+      } else {
+        setError('E-posta veya şifre hatalı! Demo: fazilcanakbas5@gmail.com / demo123');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -124,9 +136,17 @@ export default function CardLoginPage() {
 
             <button
               type="submit"
-              className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition mt-6"
+              disabled={isLoading}
+              className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition mt-6 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Giriş Yap
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  <span>Giriş yapılıyor...</span>
+                </>
+              ) : (
+                'Giriş Yap'
+              )}
             </button>
           </form>
 
