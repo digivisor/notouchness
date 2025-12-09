@@ -959,6 +959,29 @@ export default function UserProfilePage() {
               </p>
             </div>
           </div>
+
+          {/* Legal Links */}
+          <div className={`mt-4 text-[10px] text-center space-x-3 opacity-70`}>
+            <a
+              href="/gizlilik-sozlesmesi"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: textColor, fontFamily: fontFamily }}
+              className="hover:underline"
+            >
+              Gizlilik Politikası
+            </a>
+            <span style={{ color: textColor }}>•</span>
+            <a
+              href="/kvkk"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: textColor, fontFamily: fontFamily }}
+              className="hover:underline"
+            >
+              KVKK / Açık Rıza Metni
+            </a>
+          </div>
         </div>
         </div>
       </div>
