@@ -164,6 +164,18 @@ export default function EditorPage() {
     }
   };
 
+  const handleBackgroundImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        handleSettingChange('backgroundImage', reader.result as string);
+        handleSettingChange('backgroundType', 'image');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSettingChange = (key: string, value: any) => {
     setEditorSettings(prev => ({ ...prev, [key]: value }));
   };
@@ -1183,6 +1195,57 @@ export default function EditorPage() {
                 </div>
               )}
 
+              {/* Arka Plan Resmi */}
+              {activeTab === 'cover' && (
+                <div className="mb-8">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <ImageIcon size={18} />
+                    Arka Plan Resmi
+                  </h2>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Arka Plan Resmi</label>
+                      {editorSettings.backgroundImage ? (
+                        <div className="relative">
+                          <div className="relative w-full h-32 rounded-lg overflow-hidden border border-gray-300 mb-2">
+                            <Image
+                              src={editorSettings.backgroundImage}
+                              alt="Background"
+                              fill
+                              unoptimized
+                              className="object-cover"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleSettingChange('backgroundImage', '');
+                              handleSettingChange('backgroundType', 'solid');
+                            }}
+                            className="w-full px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition text-sm font-medium"
+                          >
+                            Arka Plan Resmini Kaldır
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="cursor-pointer">
+                          <div className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-gray-400 transition">
+                            <Upload size={24} className="text-gray-400 mb-2" />
+                            <span className="text-sm text-gray-600">Arka Plan Resmi Yükle</span>
+                          </div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleBackgroundImageUpload}
+                            className="hidden"
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Container Ayarları */}
               {activeTab === 'container' && (
                 <div className="mb-8">
@@ -1364,7 +1427,13 @@ export default function EditorPage() {
               <div className={`${previewMode === 'mobile' ? 'flex items-center justify-center p-4' : 'p-2'}`}>
                 <div
                   className={`min-h-screen flex items-center justify-center ${previewMode === 'mobile' ? 'w-full max-w-[375px] p-2' : 'p-4'}`}
-                  style={{ backgroundColor: bgColor }}
+                  style={{
+                    backgroundColor: editorSettings.backgroundImage ? 'transparent' : bgColor,
+                    backgroundImage: editorSettings.backgroundImage ? `url(${editorSettings.backgroundImage})` : undefined,
+                    backgroundSize: editorSettings.backgroundImage ? 'cover' : undefined,
+                    backgroundPosition: editorSettings.backgroundImage ? 'center' : undefined,
+                    backgroundRepeat: editorSettings.backgroundImage ? 'no-repeat' : undefined,
+                  }}
                 >
                 <div className={`relative w-full ${previewMode === 'mobile' ? 'max-w-[375px]' : 'max-w-md'}`}>
                   {/* Avatar - Above position (taşan profil resmi) - kapak resmi varsa da çalışır */}

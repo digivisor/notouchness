@@ -35,6 +35,7 @@ export default function AdminDashboardPage() {
   const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set());
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'single' | 'multiple' | 'group'; id?: string; groupName?: string } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -43,28 +44,36 @@ export default function AdminDashboardPage() {
   });
 
   const loadCards = useCallback(async () => {
-    const allCards = await getAllCards();
-    setCards(allCards);
-    
-    // Grupları hesapla
-    const groupMap = new Map<string, number>();
-    allCards.forEach(card => {
-      if (card.groupName) {
-        console.log('Grup bulundu:', card.groupName, 'Kart ID:', card.id);
-        groupMap.set(card.groupName, (groupMap.get(card.groupName) || 0) + 1);
-      }
-    });
-    const groupList = Array.from(groupMap.entries()).map(([name, count]) => ({ name, count }));
-    console.log('Toplam grup sayısı:', groupList.length, 'Gruplar:', groupList);
-    setGroups(groupList);
-    
-    // İstatistikleri hesapla
-    setStats({
-      total: allCards.length,
-      active: allCards.filter(c => c.isActive).length,
-      inactive: allCards.filter(c => !c.isActive).length,
-      totalViews: allCards.reduce((sum, c) => sum + (c.viewCount || 0), 0),
-    });
+    setIsLoading(true);
+    try {
+      const allCards = await getAllCards();
+      setCards(allCards);
+      
+      // Grupları hesapla
+      const groupMap = new Map<string, number>();
+      allCards.forEach(card => {
+        if (card.groupName) {
+          console.log('Grup bulundu:', card.groupName, 'Kart ID:', card.id);
+          groupMap.set(card.groupName, (groupMap.get(card.groupName) || 0) + 1);
+        }
+      });
+      const groupList = Array.from(groupMap.entries()).map(([name, count]) => ({ name, count }));
+      console.log('Toplam grup sayısı:', groupList.length, 'Gruplar:', groupList);
+      setGroups(groupList);
+      
+      // İstatistikleri hesapla
+      setStats({
+        total: allCards.length,
+        active: allCards.filter(c => c.isActive).length,
+        inactive: allCards.filter(c => !c.isActive).length,
+        totalViews: allCards.reduce((sum, c) => sum + (c.viewCount || 0), 0),
+      });
+    } catch (error) {
+      console.error('Kartlar yüklenirken hata oluştu:', error);
+      setToast({ message: 'Kartlar yüklenirken bir hata oluştu!', type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
   }, [getAllCards]);
 
   useEffect(() => {
@@ -75,14 +84,14 @@ export default function AdminDashboardPage() {
       return;
     }
 
-    // loadCards'ı asenkron olarak çağır
-    const loadCardsAsync = async () => {
-      await loadCards();
-    };
-    loadCardsAsync();
+    // İlk yükleme
+    loadCards();
+    
+    // 5 saniyede bir güncelle
     const interval = setInterval(() => {
-      loadCardsAsync();
-    }, 5000); // 5 saniyede bir güncelle
+      loadCards();
+    }, 5000);
+    
     return () => clearInterval(interval);
   }, [router, loadCards]);
 
@@ -339,7 +348,11 @@ export default function AdminDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Toplam Kart</p>
-                  <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+                  {isLoading ? (
+                    <div className="h-9 w-16 bg-gray-200 rounded animate-pulse"></div>
+                  ) : (
+                    <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+                  )}
                 </div>
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                   <CreditCard className="text-blue-600" size={24} />
@@ -351,7 +364,11 @@ export default function AdminDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Aktif Kartlar</p>
-                  <p className="text-3xl font-bold text-green-600">{stats.active}</p>
+                  {isLoading ? (
+                    <div className="h-9 w-16 bg-gray-200 rounded animate-pulse"></div>
+                  ) : (
+                    <p className="text-3xl font-bold text-green-600">{stats.active}</p>
+                  )}
                 </div>
                 <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                   <CheckCircle className="text-green-600" size={24} />
@@ -363,7 +380,11 @@ export default function AdminDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Pasif Kartlar</p>
-                  <p className="text-3xl font-bold text-orange-600">{stats.inactive}</p>
+                  {isLoading ? (
+                    <div className="h-9 w-16 bg-gray-200 rounded animate-pulse"></div>
+                  ) : (
+                    <p className="text-3xl font-bold text-orange-600">{stats.inactive}</p>
+                  )}
                 </div>
                 <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
                   <XCircle className="text-orange-600" size={24} />
@@ -375,7 +396,11 @@ export default function AdminDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Toplam Görüntüleme</p>
-                  <p className="text-3xl font-bold text-purple-600">{stats.totalViews}</p>
+                  {isLoading ? (
+                    <div className="h-9 w-20 bg-gray-200 rounded animate-pulse"></div>
+                  ) : (
+                    <p className="text-3xl font-bold text-purple-600">{stats.totalViews}</p>
+                  )}
                 </div>
                 <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                   <Eye className="text-purple-600" size={24} />
@@ -700,7 +725,9 @@ export default function AdminDashboardPage() {
           {/* Kart Listesi */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Kartlar ({filteredCards.length})</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                Kartlar {isLoading ? '(Yükleniyor...)' : `(${filteredCards.length})`}
+              </h2>
               <div className="flex gap-2">
                 {selectedCards.size > 0 && (
                   <>
@@ -733,7 +760,12 @@ export default function AdminDashboardPage() {
               </div>
             </div>
             
-            {filteredCards.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-500">Kartlar yükleniyor...</p>
+              </div>
+            ) : filteredCards.length === 0 ? (
               <div className="text-center py-12">
                 <CreditCard className="mx-auto text-gray-400 mb-4" size={48} />
                 <p className="text-gray-500">Kart bulunamadı</p>

@@ -137,6 +137,7 @@ export default function UserProfilePage() {
   const letterSpacing = (card as any).letterSpacing || '0';
   const logoUrl = (card as any).logoUrl || '';
   const logoSize = (card as any).logoSize || '80';
+  const backgroundImage = (card as any).backgroundImage || '';
   
   // Platform icon mapping
   // Type definition for both Lucide icons and custom SVG components
@@ -409,7 +410,13 @@ export default function UserProfilePage() {
   return (
     <div 
       className="min-h-screen flex items-center justify-center p-4"
-      style={{ backgroundColor: bgColor }}
+      style={{
+        backgroundColor: backgroundImage ? 'transparent' : bgColor,
+        backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
+        backgroundSize: backgroundImage ? 'cover' : undefined,
+        backgroundPosition: backgroundImage ? 'center' : undefined,
+        backgroundRepeat: backgroundImage ? 'no-repeat' : undefined,
+      }}
     >
       <div className="relative w-full max-w-md">
         {/* Avatar - Above position (taşan profil resmi) - kapak resmi varsa da çalışır */}
