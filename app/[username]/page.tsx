@@ -111,6 +111,37 @@ export default function UserProfilePage() {
   const bgColor = card.backgroundColor || card.primaryColor || '#dc2626';
   const containerBg = card.containerBackgroundColor || '#ffffff';
   const textColor = card.textColor || '#111827';
+  
+  // Background opacity
+  const backgroundOpacity = parseInt((card as any).backgroundOpacity || '100', 10);
+  
+  // Convert color to rgba with opacity
+  const toRgba = (color: string, opacityPercent: number) => {
+    const opacity = Math.min(100, Math.max(0, opacityPercent)) / 100;
+    
+    // Hex color
+    if (color.startsWith('#')) {
+      const hex = color.slice(1);
+      const r = parseInt(hex.slice(0, 2), 16);
+      const g = parseInt(hex.slice(2, 4), 16);
+      const b = parseInt(hex.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
+    
+    // rgb or rgba
+    const rgbMatch = color.match(/rgba?\(([^)]+)\)/);
+    if (rgbMatch) {
+      const values = rgbMatch[1].split(',').map(v => v.trim());
+      const r = parseInt(values[0]);
+      const g = parseInt(values[1]);
+      const b = parseInt(values[2]);
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
+    
+    return color;
+  };
+  
+  const containerBgWithOpacity = toRgba(containerBg, backgroundOpacity);
   const gridCols = card.gridCols || 3;
   const avatarPos = card.avatarPosition || 'above';
   
@@ -483,7 +514,7 @@ export default function UserProfilePage() {
         <div 
           className="w-full overflow-hidden"
           style={{ 
-            backgroundColor: containerBg,
+            backgroundColor: containerBgWithOpacity,
             borderRadius: `${containerBorderRadius}px`,
             boxShadow: getShadowStyle(containerShadow),
           }}
