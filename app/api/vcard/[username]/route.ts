@@ -15,11 +15,25 @@ export async function GET(
       return new NextResponse('Card not found', { status: 404 });
     }
 
+    const displayName = (card.fullName && card.fullName.trim()) || card.username || 'Kullanıcı';
+
+    // Ad-soyad alanını N: için ayır
+    let firstName = '';
+    let lastName = '';
+    const parts = (card.fullName || '').trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      lastName = parts.pop() || '';
+      firstName = parts.join(' ');
+    } else if (parts.length === 1) {
+      firstName = parts[0];
+    }
+
     // VCard oluştur
     const vcard = [
       'BEGIN:VCARD',
       'VERSION:3.0',
-      `FN:${card.fullName || 'Kullanıcı'}`,
+      `FN:${displayName}`,
+      `N:${lastName};${firstName};;;`,
       card.title ? `TITLE:${card.title}` : '',
       card.company ? `ORG:${card.company}` : '',
       card.phone ? `TEL;TYPE=CELL:${card.phone}` : '',

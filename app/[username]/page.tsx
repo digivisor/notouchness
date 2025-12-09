@@ -165,7 +165,7 @@ export default function UserProfilePage() {
       // Mevcut Lucide İkonları
       instagram: Instagram,
       linkedin: Linkedin,
-      twitter: Twitter,
+      twitter: PlatformIcons.XIcon as IconType,
       facebook: Facebook,
       youtube: Youtube,
       github: Github,

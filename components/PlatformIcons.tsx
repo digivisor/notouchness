@@ -120,6 +120,22 @@ export const ThreadsIcon: React.FC<IconProps> = ({ size = 16, className = '', co
   </svg>
 );
 
+// X (Twitter) ikonu - marka X için basit bir "X" işareti
+export const XIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="-480 -466.815 2160 2160"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      fill={color}
+      d="M306.615 79.694H144.011L892.476 1150.3h162.604ZM0 0h357.328l309.814 450.883L1055.03 0h105.86L714.15 519.295 1200 1226.37H842.672L515.493 750.215 105.866 1226.37H0l468.485-544.568Z"
+    />
+  </svg>
+);
+
 export const ClubhouseIcon: React.FC<IconProps> = ({ size = 16, className = '', color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
     <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
