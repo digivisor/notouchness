@@ -22,6 +22,7 @@ ALTER TABLE cards ADD COLUMN IF NOT EXISTS letter_spacing TEXT;
 ALTER TABLE cards ADD COLUMN IF NOT EXISTS background_type TEXT;
 ALTER TABLE cards ADD COLUMN IF NOT EXISTS background_gradient TEXT;
 ALTER TABLE cards ADD COLUMN IF NOT EXISTS background_image TEXT;
+ALTER TABLE cards ADD COLUMN IF NOT EXISTS background_opacity TEXT;
 
 -- Add comments
 COMMENT ON COLUMN cards.avatar_shape IS 'Avatar shape: round, square, rounded-square';
@@ -47,4 +48,5 @@ COMMENT ON COLUMN cards.letter_spacing IS 'Letter spacing';
 COMMENT ON COLUMN cards.background_type IS 'Background type: solid, gradient, image';
 COMMENT ON COLUMN cards.background_gradient IS 'Background gradient CSS';
 COMMENT ON COLUMN cards.background_image IS 'Background image URL';
+COMMENT ON COLUMN cards.background_opacity IS 'Background opacity (0-100, string)';
 

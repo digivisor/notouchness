@@ -13,6 +13,8 @@ export default function AdminCardsPage() {
   const [cards, setCards] = useState<CardProfile[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 50;
 
   const loadCards = useCallback(async () => {
     const allCards = await getAllCards();
@@ -47,6 +49,15 @@ export default function AdminCardsPage() {
     
     return matchesSearch && matchesFilter;
   });
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredCards.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedCards = filteredCards.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, filterStatus, cards.length]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -136,7 +147,7 @@ export default function AdminCardsPage() {
                       </td>
                     </tr>
                   ) : (
-                    filteredCards.map((card) => (
+                    pagedCards.map((card) => (
                       <tr key={card.id} className="hover:bg-gray-50">
                         <td className="px-4 py-4">
                           <span className="font-mono text-sm text-gray-900 break-all">{card.id}</span>
@@ -189,6 +200,31 @@ export default function AdminCardsPage() {
               </table>
             </div>
           </div>
+          
+          {/* Pagination */}
+          {filteredCards.length > 0 && (
+            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
+              <p className="text-sm text-gray-600">
+                Toplam {filteredCards.length} kart · Sayfa {currentPage}/{totalPages}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 rounded-lg border text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Önceki
+                </button>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 rounded-lg border text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Sonraki
+                </button>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>

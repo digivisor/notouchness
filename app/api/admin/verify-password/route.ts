@@ -19,7 +19,6 @@ function hashPassword(password: string): string {
 
 // Hash karşılaştırma - bcrypt veya SHA256 destekler
 async function comparePassword(password: string, storedHash: string): Promise<boolean> {
-  // bcrypt hash'leri genellikle 60 karakterdir ve $2a$, $2b$, $2y$ ile başlar
   if (storedHash.length === 60 && storedHash.startsWith('$2')) {
     // bcrypt hash'i
     return await bcrypt.compare(password, storedHash);

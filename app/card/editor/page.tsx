@@ -86,6 +86,7 @@ export default function EditorPage() {
     backgroundType: 'solid', // solid, gradient, image
     backgroundGradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     backgroundImage: '',
+    backgroundOpacity: '100',
   });
 
   useEffect(() => {
@@ -101,6 +102,7 @@ export default function EditorPage() {
       setEditorSettings({
         backgroundColor: currentCard.backgroundColor || '#ffffff',
         containerBackgroundColor: currentCard.containerBackgroundColor || '#f9fafb',
+        backgroundOpacity: (currentCard as any).backgroundOpacity || '100',
         primaryColor: currentCard.primaryColor || '#000000',
         secondaryColor: currentCard.secondaryColor || '#6b7280',
         textColor: currentCard.textColor || '#111827',
@@ -264,6 +266,36 @@ export default function EditorPage() {
   // Önizleme için stil objesi
   const bgColor = editorSettings.backgroundColor || editorSettings.primaryColor || '#dc2626';
   const containerBg = editorSettings.containerBackgroundColor || '#ffffff';
+  const containerOpacity = parseInt((editorSettings as any).backgroundOpacity || '100', 10);
+
+  const toRgba = (color: string, opacityPercent: number) => {
+    const opacity = Math.min(100, Math.max(0, opacityPercent)) / 100;
+    // Hex
+    if (color.startsWith('#')) {
+      let r = 0, g = 0, b = 0;
+      const hex = color.replace('#', '');
+      if (hex.length === 3) {
+        r = parseInt(hex[0] + hex[0], 16);
+        g = parseInt(hex[1] + hex[1], 16);
+        b = parseInt(hex[2] + hex[2], 16);
+      } else if (hex.length === 6) {
+        r = parseInt(hex.substring(0, 2), 16);
+        g = parseInt(hex.substring(2, 4), 16);
+        b = parseInt(hex.substring(4, 6), 16);
+      } else {
+        return color;
+      }
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
+    // rgb or rgba
+    const rgbMatch = color.match(/rgba?\(([^)]+)\)/);
+    if (rgbMatch) {
+      const parts = rgbMatch[1].split(',').map(p => p.trim());
+      const [r, g, b] = parts;
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
+    return color;
+  };
   const textColor = editorSettings.textColor || '#111827';
   const gridCols = editorSettings.gridCols || 3;
   const avatarPos = editorSettings.avatarPosition || 'above';
@@ -1270,6 +1302,21 @@ export default function EditorPage() {
                     </div>
 
                     <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Arka Plan Opaklığı: {containerOpacity}%
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="5"
+                        value={containerOpacity}
+                        onChange={(e) => handleSettingChange('backgroundOpacity', e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Gölge</label>
                       <select
                         value={editorSettings.containerShadow}
@@ -1465,7 +1512,7 @@ export default function EditorPage() {
                   <div
                     className="w-full overflow-hidden"
                     style={{
-                      backgroundColor: containerBg,
+                      backgroundColor: toRgba(containerBg, containerOpacity),
                       borderRadius: `${editorSettings.containerBorderRadius}px`,
                       boxShadow: editorSettings.containerShadow === 'none' ? 'none' :
                         editorSettings.containerShadow === 'sm' ? '0 1px 2px 0 rgb(0 0 0 / 0.05)' :

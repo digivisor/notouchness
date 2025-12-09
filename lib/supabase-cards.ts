@@ -120,6 +120,7 @@ const cardToDbFormat = (card: CardProfile): DbCard => {
     // Gelişmiş Görünüm Ayarları
     background_color: card.backgroundColor || null,
     container_background_color: card.containerBackgroundColor || null,
+    background_opacity: (card as any).backgroundOpacity || null,
     text_color: card.textColor || null,
     grid_cols: card.gridCols || 3,
     avatar_position: card.avatarPosition || 'above',
@@ -283,6 +284,7 @@ const dbToCardFormat = (row: DbCard): CardProfile => {
     // Gelişmiş Görünüm Ayarları
     backgroundColor: row.background_color ? String(row.background_color) : undefined,
     containerBackgroundColor: row.container_background_color ? String(row.container_background_color) : undefined,
+    backgroundOpacity: row.background_opacity ? String(row.background_opacity) : undefined,
     textColor: row.text_color ? String(row.text_color) : undefined,
     gridCols: typeof row.grid_cols === 'number' ? row.grid_cols : 3,
     avatarPosition: (row.avatar_position || 'above') as 'top' | 'center' | 'above' | 'cover-left' | 'cover-center' | 'cover-right',

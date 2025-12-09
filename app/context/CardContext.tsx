@@ -122,6 +122,7 @@ export interface CardProfile {
   // Gelişmiş Görünüm Ayarları
   backgroundColor?: string;
   containerBackgroundColor?: string;
+  backgroundOpacity?: string;
   textColor?: string;
   gridCols?: number;
   avatarPosition?: 'top' | 'center' | 'above' | 'cover-left' | 'cover-center' | 'cover-right';
