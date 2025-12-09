@@ -65,8 +65,8 @@ const SOCIAL_PLATFORMS = [
   // Sosyal Medya
   { id: 'instagram', label: 'Instagram', icon: Instagram, prefix: 'instagram.com/', category: 'Sosyal Medya' },
   { id: 'facebook', label: 'Facebook', icon: Facebook, prefix: 'facebook.com/', category: 'Sosyal Medya' },
-  { id: 'twitter', label: 'Twitter/X', icon: Twitter, prefix: 'twitter.com/', category: 'Sosyal Medya' },
-  { id: 'linkedin', label: 'LinkedIn', icon: Linkedin, prefix: 'linkedin.com/in/', category: 'Sosyal Medya' },
+  { id: 'twitter', label: 'X', icon: Twitter, prefix: 'x.com/', category: 'Sosyal Medya' },
+  { id: 'linkedin', label: 'LinkedIn (Kişisel/Şirket)', icon: Linkedin, prefix: 'linkedin.com/', category: 'Sosyal Medya' },
   { id: 'youtube', label: 'YouTube', icon: Youtube, prefix: 'youtube.com/', category: 'Sosyal Medya' },
   { id: 'tiktok', label: 'TikTok', icon: PlatformIcons.TiktokIcon, prefix: 'tiktok.com/@', category: 'Sosyal Medya' },
   { id: 'snapchat', label: 'Snapchat', icon: PlatformIcons.SnapchatIcon, prefix: 'snapchat.com/add/', category: 'Sosyal Medya' },

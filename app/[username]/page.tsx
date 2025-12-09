@@ -248,14 +248,36 @@ export default function UserProfilePage() {
   const buttonBorderRadius = (card as any).buttonBorderRadius || '999';
 
   // Collect all social links
-  const socialLinks: Array<{ platform: string; url: string; icon: IconType }> = [];
+  const socialLinks: Array<{ platform: string; url: string; icon: IconType; displayName?: string }> = [];
   
   // Social media platforms
   const platforms = [
     // Mevcutlar
     { key: 'instagram', value: card.instagram, urlPattern: (v: string) => `https://instagram.com/${v}` },
-    { key: 'linkedin', value: card.linkedin, urlPattern: (v: string) => `https://linkedin.com/in/${v}` },
-    { key: 'twitter', value: card.twitter, urlPattern: (v: string) => `https://twitter.com/${v}` },
+    { 
+      key: 'linkedin', 
+      value: card.linkedin, 
+      urlPattern: (v: string) => {
+        if (v.startsWith('http')) return v;
+        const normalized = v.replace(/^https?:\/\//, '').replace(/^www\./, '');
+        if (normalized.startsWith('company/') || normalized.includes('/company/')) {
+          return `https://www.linkedin.com/${normalized.replace(/^\/?/, '')}`;
+        }
+        if (normalized.startsWith('in/')) {
+          return `https://www.linkedin.com/${normalized.replace(/^\/?/, '')}`;
+        }
+        return `https://www.linkedin.com/in/${normalized}`;
+      }
+    },
+    { 
+      key: 'twitter', 
+      value: card.twitter, 
+      urlPattern: (v: string) => {
+        if (v.startsWith('http')) return v;
+        const normalized = v.replace(/^@/, '');
+        return `https://x.com/${normalized}`;
+      }
+    },
     { key: 'facebook', value: card.facebook, urlPattern: (v: string) => `https://facebook.com/${v}` },
     { key: 'youtube', value: card.youtube, urlPattern: (v: string) => `https://youtube.com/${v}` },
     { key: 'github', value: card.github, urlPattern: (v: string) => `https://github.com/${v}` },
@@ -346,7 +368,8 @@ export default function UserProfilePage() {
       socialLinks.push({
         platform: p.key,
         url: p.urlPattern(p.value),
-        icon: getPlatformIcon(p.key)
+        icon: getPlatformIcon(p.key),
+        displayName: p.key === 'twitter' ? 'X' : p.key === 'linkedin' ? 'LinkedIn' : undefined,
       });
     }
   });
@@ -360,14 +383,16 @@ export default function UserProfilePage() {
           socialLinks.push({
             platform: link.title || link.platform, // Başlık varsa başlığı, yoksa platform adını kullan
             url: link.url, // Custom linklerde zaten tam URL olmalı
-            icon: getPlatformIcon(link.platform)
+            icon: getPlatformIcon(link.platform),
+            displayName: link.title || (link.platform === 'twitter' ? 'X' : link.platform === 'linkedin' ? 'LinkedIn' : link.platform),
           });
         } else if (link.title) {
           // Standart custom link
           socialLinks.push({
             platform: link.title,
             url: link.url,
-            icon: Link2 // Custom ikon desteği eklenebilir
+            icon: Link2, // Custom ikon desteği eklenebilir
+            displayName: link.title,
           });
         }
       }
@@ -404,6 +429,16 @@ export default function UserProfilePage() {
       // CSS ile taşmayı engelleyeceğiz
       return value;
     }
+    if (platform.toLowerCase() === 'twitter') return 'X';
+    if (platform.toLowerCase() === 'linkedin') return 'LinkedIn';
+    return platform;
+  };
+
+  const formatPlatformLabel = (platform: string, displayName?: string) => {
+    if (displayName) return displayName;
+    const lower = platform.toLowerCase();
+    if (lower === 'twitter') return 'X';
+    if (lower === 'linkedin') return 'LinkedIn';
     return platform;
   };
 
@@ -835,7 +870,7 @@ export default function UserProfilePage() {
                           fontFamily: fontFamily,
                         }}
                       >
-                        {isIban ? formatDisplayValue(link.url, 'iban') : link.platform}
+                        {isIban ? formatDisplayValue(link.url, 'iban') : formatPlatformLabel(link.platform, link.displayName)}
                       </span>
                       
                       {/* Sağ İkon - Iban ise Kopyala ikonu, değilse 3 nokta */}
@@ -914,7 +949,7 @@ export default function UserProfilePage() {
                           fontFamily: fontFamily,
                         }}
                       >
-                        {isIban ? 'IBAN' : link.platform}
+                        {isIban ? 'IBAN' : formatPlatformLabel(link.platform, link.displayName)}
                       </span>
                     )}
                     
