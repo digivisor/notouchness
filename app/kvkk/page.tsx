@@ -27,54 +27,91 @@ export default function KvkkPage() {
         </div>
       </div>
 
-      <main className="max-w-4xl mx-auto px-6 py-12 sm:py-16">
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8 space-y-6 leading-relaxed text-gray-800">
+      <main className="max-w-5xl mx-auto px-6 py-12 sm:py-16">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8 space-y-8 leading-relaxed text-gray-800">
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
               <FileText size={20} />
-              Aydınlatma
+              Aydınlatma Metni
             </h2>
             <p>
-              Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında kişisel
-              verilerinizin işlenme amaçları, saklama süreleri, aktarım süreçleri ve haklarınız
-              hakkında bilgi vermek için hazırlanmıştır.
+              6698 sayılı KVKK uyarınca veri sorumlusu sıfatıyla; kimlik, iletişim, işlem güvenliği,
+              ödeme/işlem bilgisi, cihaz/çerez verisi ve kullanım tercihleriniz; ürün/hizmet sunumu,
+              sipariş ve ödeme süreçleri, destek talepleri, güvenlik/denetim, pazarlama ve deneyim
+              kişiselleştirme amaçlarıyla işlenmektedir.
             </p>
+            <ul className="list-disc pl-5 space-y-1 text-sm sm:text-base">
+              <li><span className="font-medium">Hukuki sebepler:</span> sözleşmenin ifası, hukuki yükümlülük, meşru menfaat, açık rıza (gerektiğinde).</li>
+              <li><span className="font-medium">Toplama yöntemleri:</span> web sitesi, mobil arayüz, destek kanalları, ödeme altyapısı, log/çerezler.</li>
+              <li><span className="font-medium">Saklama:</span> ilgili mevzuat ve meşru menfaat süresi boyunca; süresi dolan veriler anonimleştirilir veya silinir.</li>
+            </ul>
           </section>
 
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
               <FileText size={20} />
-              Açık Rıza
+              Açık Rıza Metni
             </h2>
             <p>
-              Aşağıdaki hususlarda açık rızanız bulunmaktadır: ürün/hizmet tanıtımları,
-              kampanya ve duyuru iletileri, profil ve deneyim kişiselleştirmeleri.
-              Rızanızı dilediğiniz zaman geri çekebilirsiniz.
+              Aşağıdaki işlemler için açık rıza vermektesiniz; dilediğiniz zaman geri çekebilirsiniz:
             </p>
+            <ul className="list-disc pl-5 space-y-1 text-sm sm:text-base">
+              <li>Ürün/hizmet tanıtımı, kampanya ve duyuru iletileri</li>
+              <li>Deneyim ve içerik kişiselleştirme (profil, tercih, öneri)</li>
+              <li>Çerez/benzeri teknolojilerle pazarlama ve analitik</li>
+            </ul>
           </section>
 
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
               <FileText size={20} />
-              Haklarınız
+              Veri Aktarımları
             </h2>
-            <p>
-              KVKK kapsamında verilerinize erişme, düzeltme, silme, işlemeyi kısıtlama,
-              aktarıma itiraz etme ve şikayette bulunma haklarına sahipsiniz.
-            </p>
+            <p>Hizmet sağlayıcılar ve tedarikçilerle, yalnızca hizmet sunumu için gerekli ölçüde paylaşım yapılabilir:</p>
+            <ul className="list-disc pl-5 space-y-1 text-sm sm:text-base">
+              <li>Ödeme/iyzico altyapısı, bulut ve barındırma sağlayıcıları, e-posta/SMS servisleri</li>
+              <li>Güvenlik, log, hata izleme ve analitik hizmetleri</li>
+              <li>Yasal gereklilik halinde yetkili kurumlar</li>
+            </ul>
           </section>
 
           <section className="space-y-3">
             <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
               <FileText size={20} />
-              İletişim
+              Haklarınız (KVKK m.11)
+            </h2>
+            <ul className="list-disc pl-5 space-y-1 text-sm sm:text-base">
+              <li>Verilerinizin işlenip işlenmediğini öğrenme, bilgi talep etme</li>
+              <li>Amacına uygun kullanılıp kullanılmadığını öğrenme</li>
+              <li>Eksik/yanlış işlenen verilerin düzeltilmesini ve ilgilisine bildirilmesini isteme</li>
+              <li>Silme/yok etme/anonimleştirme ve aktarımın bildirimi talebi</li>
+              <li>Otomatik işleme sonucu aleyhe çıkacak sonuca itiraz</li>
+              <li>Zarara uğramanız hâlinde tazmin talebi</li>
+            </ul>
+          </section>
+
+          <section className="space-y-3">
+            <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+              <FileText size={20} />
+              Başvuru & İletişim
             </h2>
             <p>
-              Haklarınızı kullanmak veya sorularınız için{' '}
+              Haklarınızı kullanmak, rızanızı geri çekmek veya sorularınız için{' '}
               <a href="mailto:info@notouchness.com" className="text-blue-600 hover:underline">
                 info@notouchness.com
               </a>{' '}
-              adresi üzerinden bize ulaşabilirsiniz.
+              adresi üzerinden bize ulaşabilirsiniz. Başvurular mevzuattaki süreler içinde yanıtlanır.
+            </p>
+          </section>
+
+          <section className="space-y-3">
+            <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+              <FileText size={20} />
+              Güvenlik Önlemleri
+            </h2>
+            <p>
+              Verileriniz; erişim kontrolü, şifreleme, ağ ve uygulama güvenliği önlemleri, loglama ve
+              düzenli denetim süreçleriyle korunmaktadır. Paylaşımlar asgari veri ilkesiyle yapılır.
             </p>
           </section>
         </div>

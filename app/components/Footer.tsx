@@ -45,6 +45,7 @@ export default function Footer() {
             <h4 className="text-lg font-semibold mb-4 text-black">Yasal</h4>
             <ul className="space-y-2 mb-6">
               <li><Link href="/gizlilik-sozlesmesi" className="text-gray-600 hover:text-black transition text-sm">Gizlilik Sözleşmesi</Link></li>
+              <li><Link href="/kvkk" className="text-gray-600 hover:text-black transition text-sm">KVKK & Açık Rıza Metni</Link></li>
               <li><Link href="/mesafeli-satis-sozlesmesi" className="text-gray-600 hover:text-black transition text-sm">Mesafeli Satış Sözleşmesi</Link></li>
               <li><Link href="/teslimat-ve-iade" className="text-gray-600 hover:text-black transition text-sm">Teslimat ve İade</Link></li>
               <li><Link href="/ssl-sertifikasi" className="text-gray-600 hover:text-black transition text-sm">SSL Sertifikası</Link></li>
