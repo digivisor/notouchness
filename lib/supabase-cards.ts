@@ -369,6 +369,49 @@ export const cardDb = {
     return data.map(dbToCardFormat);
   },
 
+  // Sayfalı kart getir (filtreleme ve arama ile)
+  async getAllPaginated(
+    page: number = 1, 
+    pageSize: number = 50,
+    options?: {
+      searchTerm?: string;
+      filterStatus?: 'all' | 'active' | 'inactive';
+    }
+  ): Promise<{ cards: CardProfile[]; total: number }> {
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    // Base query
+    let query = supabase
+      .from('cards')
+      .select('*', { count: 'exact' });
+
+    // Arama filtresi
+    if (options?.searchTerm && options.searchTerm.trim()) {
+      const search = options.searchTerm.toLowerCase().trim();
+      query = query.or(`id.ilike.%${search}%,username.ilike.%${search}%,full_name.ilike.%${search}%,email.ilike.%${search}%`);
+    }
+
+    // Durum filtresi
+    if (options?.filterStatus && options.filterStatus !== 'all') {
+      query = query.eq('is_active', options.filterStatus === 'active');
+    }
+
+    // Sıralama ve sayfalama
+    query = query.order('created_at', { ascending: false }).range(from, to);
+
+    const { data, error, count } = await query;
+    
+    if (error || !data) {
+      return { cards: [], total: count || 0 };
+    }
+    
+    return {
+      cards: data.map(dbToCardFormat),
+      total: count || 0
+    };
+  },
+
   // Yeni kart oluştur
   async create(card: CardProfile): Promise<CardProfile | null> {
     const dbCard = cardToDbFormat(card);

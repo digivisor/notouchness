@@ -183,6 +183,7 @@ interface CardContextType {
   createCard: (hash: string, ownerEmail: string, password: string) => Promise<boolean>;
   createCardByAdmin: (customHash?: string, groupName?: string, cardType?: 'nfc' | 'comment') => Promise<CardProfile | null>; // Admin için kart oluştur
   getAllCards: () => Promise<CardProfile[]>; // Tüm kartları getir
+  getAllCardsPaginated: (page: number, pageSize: number, options?: { searchTerm?: string; filterStatus?: 'all' | 'active' | 'inactive' }) => Promise<{ cards: CardProfile[]; total: number }>; // Sayfalı kart getir
   updateCard: (cardData: Partial<CardProfile>) => Promise<boolean>;
   deleteCard: (id: string) => Promise<boolean>; // Tek kart sil
   deleteMultipleCards: (ids: string[]) => Promise<boolean>; // Toplu kart sil
@@ -451,6 +452,16 @@ export function CardProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const getAllCardsPaginated = async (page: number, pageSize: number, options?: { searchTerm?: string; filterStatus?: 'all' | 'active' | 'inactive' }): Promise<{ cards: CardProfile[]; total: number }> => {
+    try {
+      const result = await cardDb.getAllPaginated(page, pageSize, options);
+      return result;
+    } catch (error) {
+      console.error('Error fetching paginated cards:', error);
+      return { cards: [], total: 0 };
+    }
+  };
+
   const generateHash = (): string => {
     // Benzersiz hash üret
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -682,6 +693,7 @@ export function CardProvider({ children }: { children: ReactNode }) {
       createCard,
       createCardByAdmin,
       getAllCards,
+      getAllCardsPaginated,
       updateCard,
       deleteCard,
       deleteMultipleCards,

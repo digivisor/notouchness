@@ -7,7 +7,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import JSZip from 'jszip';
 import { 
   Plus, Copy, Download, ExternalLink, CheckCircle, XCircle, 
-  CreditCard, Eye, Search, Folder, FileDown, Trash2
+  CreditCard, Eye, Search, Folder, FileDown, Trash2, Edit
 } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
 import AdminHeader from '../components/AdminHeader';
@@ -15,7 +15,7 @@ import Toast from '../../components/Toast';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const { createCardByAdmin, getAllCards, deleteCard, deleteMultipleCards, deleteGroup } = useCard();
+  const { createCardByAdmin, getAllCards, deleteCard, deleteMultipleCards, deleteGroup, loginToCard } = useCard();
   const [cards, setCards] = useState<CardProfile[]>([]);
   const [selectedCard, setSelectedCard] = useState<CardProfile | null>(null);
   const [customHash, setCustomHash] = useState('');
@@ -36,6 +36,7 @@ export default function AdminDashboardPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'single' | 'multiple' | 'group'; id?: string; groupName?: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 50;
   const [stats, setStats] = useState({
@@ -99,6 +100,34 @@ export default function AdminDashboardPage() {
 
   const showToast = (message: string, type: 'success' | 'error' | 'info') => {
     setToast({ message, type });
+  };
+
+  const handleEditCard = async (card: CardProfile) => {
+    if (!card.isActive) {
+      showToast('Sadece aktif kartlar düzenlenebilir!', 'error');
+      return;
+    }
+
+    if (!card.ownerEmail || !card.hashedPassword) {
+      showToast('Bu kart için giriş bilgileri bulunamadı!', 'error');
+      return;
+    }
+
+    setIsEditing(card.id);
+    
+    try {
+      const success = await loginToCard(card.ownerEmail, card.hashedPassword);
+      if (success) {
+        router.push('/card/setup');
+      } else {
+        showToast('Karta giriş yapılamadı!', 'error');
+      }
+    } catch (error) {
+      console.error('Edit card error:', error);
+      showToast('Bir hata oluştu!', 'error');
+    } finally {
+      setIsEditing(null);
+    }
   };
 
   const handleCreateCard = async () => {
@@ -804,6 +833,8 @@ export default function AdminDashboardPage() {
                           isChecked={selectedCards.has(card.id)}
                           onToggleCheck={() => toggleCardSelection(card.id)}
                           onDelete={() => handleDeleteClick('single', card.id)}
+                          onEdit={() => handleEditCard(card)}
+                          isEditing={isEditing === card.id}
                         />
                       ))}
                     </div>
@@ -830,6 +861,8 @@ export default function AdminDashboardPage() {
                           isChecked={selectedCards.has(card.id)}
                           onToggleCheck={() => toggleCardSelection(card.id)}
                           onDelete={() => handleDeleteClick('single', card.id)}
+                          onEdit={() => handleEditCard(card)}
+                          isEditing={isEditing === card.id}
                         />
                       ))}
                     </div>
@@ -940,9 +973,11 @@ interface CardItemProps {
   isChecked: boolean;
   onToggleCheck: () => void;
   onDelete: () => void;
+  onEdit?: () => void;
+  isEditing?: boolean;
 }
 
-function CardItem({ card, getCardUrl, copyToClipboard, downloadQRCode, isSelected, onSelect, isChecked, onToggleCheck, onDelete }: CardItemProps) {
+function CardItem({ card, getCardUrl, copyToClipboard, downloadQRCode, isSelected, onSelect, isChecked, onToggleCheck, onDelete, onEdit, isEditing }: CardItemProps) {
   return (
     <div
       className={`border-2 rounded-xl p-4 transition-all ${
@@ -1026,6 +1061,19 @@ function CardItem({ card, getCardUrl, copyToClipboard, downloadQRCode, isSelecte
         >
           <Download size={14} />
         </button>
+        {card.isActive && onEdit && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+            disabled={isEditing}
+            className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Kartı Düzenle"
+          >
+            <Edit size={14} />
+          </button>
+        )}
       </div>
     </div>
   );

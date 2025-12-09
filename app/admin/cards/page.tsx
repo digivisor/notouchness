@@ -5,21 +5,35 @@ import { useRouter } from 'next/navigation';
 import { useCard, CardProfile } from '../../context/CardContext';
 import AdminSidebar from '../components/AdminSidebar';
 import AdminHeader from '../components/AdminHeader';
-import { CreditCard, Search } from 'lucide-react';
+import { CreditCard, Search, Edit } from 'lucide-react';
 
 export default function AdminCardsPage() {
   const router = useRouter();
-  const { getAllCards } = useCard();
+  const { getAllCardsPaginated, loginToCard } = useCard();
   const [cards, setCards] = useState<CardProfile[]>([]);
+  const [totalCards, setTotalCards] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 50;
+  const [isEditing, setIsEditing] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const loadCards = useCallback(async () => {
-    const allCards = await getAllCards();
-    setCards(allCards);
-  }, [getAllCards]);
+  const loadCards = useCallback(async (currentPage: number) => {
+    setIsLoading(true);
+    try {
+      const result = await getAllCardsPaginated(currentPage, PAGE_SIZE, {
+        searchTerm: searchTerm.trim() || undefined,
+        filterStatus: filterStatus
+      });
+      setCards(result.cards);
+      setTotalCards(result.total);
+    } catch (error) {
+      console.error('Kartlar yüklenirken hata oluştu:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getAllCardsPaginated, searchTerm, filterStatus]);
 
   useEffect(() => {
     const session = localStorage.getItem('admin_session');
@@ -28,36 +42,54 @@ export default function AdminCardsPage() {
       return;
     }
 
-    // loadCards'ı asenkron olarak çağır
-    const loadCardsAsync = async () => {
-      await loadCards();
-    };
-    loadCardsAsync();
-  }, [router, loadCards]);
+    // İlk yükleme
+    loadCards(page);
+  }, [router, loadCards, page]);
 
-  const filteredCards = cards.filter(card => {
-    const matchesSearch = 
-      card.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (card.username && card.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (card.fullName && card.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (card.email && card.email.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesFilter = 
-      filterStatus === 'all' ||
-      (filterStatus === 'active' && card.isActive) ||
-      (filterStatus === 'inactive' && !card.isActive);
-    
-    return matchesSearch && matchesFilter;
-  });
-
-  // Pagination
-  const totalPages = Math.max(1, Math.ceil(filteredCards.length / PAGE_SIZE));
+  // Pagination - server-side sayfalama
+  const totalPages = Math.max(1, Math.ceil(totalCards / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
-  const pagedCards = filteredCards.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
+  // Arama veya filtre değiştiğinde sayfa 1'e dön ve yeniden yükle
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, filterStatus, cards.length]);
+  }, [searchTerm, filterStatus]);
+
+  // Sayfa değiştiğinde veya arama/filtre değiştiğinde yükle
+  useEffect(() => {
+    const session = localStorage.getItem('admin_session');
+    if (!session) return;
+    
+    loadCards(page);
+  }, [page, searchTerm, filterStatus, loadCards]);
+
+  const handleEditCard = async (card: CardProfile) => {
+    if (!card.isActive) {
+      alert('Sadece aktif kartlar düzenlenebilir!');
+      return;
+    }
+
+    if (!card.ownerEmail || !card.hashedPassword) {
+      alert('Bu kart için giriş bilgileri bulunamadı!');
+      return;
+    }
+
+    setIsEditing(card.id);
+    
+    try {
+      const success = await loginToCard(card.ownerEmail, card.hashedPassword);
+      if (success) {
+        router.push('/card/setup');
+      } else {
+        alert('Karta giriş yapılamadı!');
+      }
+    } catch (error) {
+      console.error('Edit card error:', error);
+      alert('Bir hata oluştu!');
+    } finally {
+      setIsEditing(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -139,7 +171,14 @@ export default function AdminCardsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredCards.length === 0 ? (
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={8} className="px-6 py-12 text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <p className="text-gray-500">Kartlar yükleniyor...</p>
+                      </td>
+                    </tr>
+                  ) : cards.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="px-6 py-12 text-center">
                         <CreditCard className="mx-auto text-gray-400 mb-4" size={48} />
@@ -147,7 +186,7 @@ export default function AdminCardsPage() {
                       </td>
                     </tr>
                   ) : (
-                    pagedCards.map((card) => (
+                    cards.map((card) => (
                       <tr key={card.id} className="hover:bg-gray-50">
                         <td className="px-4 py-4">
                           <span className="font-mono text-sm text-gray-900 break-all">{card.id}</span>
@@ -185,13 +224,26 @@ export default function AdminCardsPage() {
                           {new Date(card.createdAt).toLocaleDateString('tr-TR')}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <a
-                            href={`/card/${card.id}`}
-                            target="_blank"
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            Görüntüle
-                          </a>
+                          <div className="flex items-center justify-end gap-3">
+                            <a
+                              href={`/card/${card.id}`}
+                              target="_blank"
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              Görüntüle
+                            </a>
+                            {card.isActive && (
+                              <button
+                                onClick={() => handleEditCard(card)}
+                                disabled={isEditing === card.id}
+                                className="flex items-center gap-1 text-green-600 hover:text-green-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Kartı Düzenle"
+                              >
+                                <Edit size={16} />
+                                {isEditing === card.id ? 'Giriş yapılıyor...' : 'Düzenle'}
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -202,10 +254,12 @@ export default function AdminCardsPage() {
           </div>
           
           {/* Pagination */}
-          {filteredCards.length > 0 && (
+          {!isLoading && (
             <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
               <p className="text-sm text-gray-600">
-                Toplam {filteredCards.length} kart · Sayfa {currentPage}/{totalPages}
+                {searchTerm || filterStatus !== 'all' 
+                  ? `Filtrelenmiş: ${totalCards} kart` 
+                  : `Toplam ${totalCards} kart`} · Sayfa {currentPage}/{totalPages}
               </p>
               <div className="flex gap-2">
                 <button
